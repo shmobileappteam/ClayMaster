@@ -1,0 +1,93 @@
+import React, { useState } from 'react';
+import { StatusBar } from 'react-native';
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
+//----
+import StackNavigator from './StackNavigator';
+import { COLORS } from '../globalStyle/Theme';
+
+const RootStack = () => {
+  const navigationRef = useNavigationContainerRef();
+
+  const [appBarStyle, setAppBarStyle] = useState({
+    bgColor: COLORS.mainBg,
+    contStyle: 'light-content',
+    translucent: null,
+  });
+
+  const authScreens = [
+    'LoginSignupScreen',
+    'SignupScreen',
+    'VerifyEmailScreen',
+    'ForgotPasswordScreen',
+    'ResetPasswordScreen',
+    'GetStartedScreen',
+    'SplashScreen',
+    "AddPetScreen-"
+  ];
+
+  const handleStatusBar = () => {
+    const route = navigationRef.getCurrentRoute();
+
+    if (authScreens.includes(route.name)) {
+      setAppBarStyle({
+        bgColor: COLORS.mainBg,
+        contStyle: 'dark-content',
+        translucent: false,
+      });
+    } else if (route.name == 'OnBoardingScreen') {
+      setAppBarStyle({
+        bgColor: COLORS.red100,
+        contStyle: 'dark-content',
+        translucent: false,
+      });
+    } else if (route.name == 'Home') {
+      setAppBarStyle({
+        bgColor: COLORS.white100,
+        contStyle: 'dark-content',
+        translucent: false,
+      });
+    } else {
+      setAppBarStyle({
+        bgColor: COLORS.secondary,
+        contStyle: 'light-content',
+        translucent: true,
+      });
+    }
+  };
+
+  // useEffect(() => {
+  //   (async () => {
+  //     let fcmToken = await AsyncStorage.getItem(KEYS.FCM_TOKEN);
+  //     __DEV__ && console.log(' RootStack:83 ~ fcmToken:', !!fcmToken);
+
+  //     if (!fcmToken) {
+  //       requestNotificationPermission();
+  //     }
+  //     notificationListener(dispatch);
+  //   })();
+  // }, []);
+
+  return (
+    <NavigationContainer
+      ref={navigationRef}
+      onReady={handleStatusBar}
+      onStateChange={handleStatusBar}
+    >
+      {/* <FlashMessage position="top" onHide={handleStatusBar} /> */}
+      <StatusBar
+        animated={true}
+        backgroundColor={appBarStyle.bgColor}
+        barStyle={appBarStyle.contStyle}
+        translucent={appBarStyle.translucent}
+        showHideTransition={'fade'}
+      />
+      <StackNavigator />
+      {/* <Loader /> */}
+      {/* <NoInternetModal /> */}
+    </NavigationContainer>
+  );
+};
+export default RootStack;
