@@ -1,21 +1,43 @@
-import {View} from 'react-native';
+import { View, KeyboardAvoidingView, Platform } from 'react-native';
 import React from 'react';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import {COLORS, GLOBALSTYLE} from '../globalStyle/Theme';
+//----
+import { COLORS, GLOBALSTYLE } from '../globalStyle/Theme';
 
 const SafeAreaWrapper = ({
   children,
   edges = null,
   contentStyle = {},
-  bgColor = COLORS.whiteV1,
+  bgColor = COLORS.mainBg,
+  keyboardAvoid = false,
+  isPadding = true,
 }) => {
-  console.log('✅ ~ edges:', edges);
+  const Wrapper = keyboardAvoid ? KeyboardAvoidingView : React.Fragment;
+
   return (
     <SafeAreaView
-      style={{...GLOBALSTYLE.wrap, backgroundColor: bgColor}}
+      {...(Platform.OS === "ios" ? { edges: { bottom: 'off', top: 'maximum' } } : {})}
+
+      style={[
+        {
+          flex: 1,
+          backgroundColor: bgColor,
+          ...contentStyle,
+        },
+        isPadding && GLOBALSTYLE.paddingHor,
+      ]}
       {...edges}>
-      {children}
+      <Wrapper
+        {...(keyboardAvoid
+          ? {
+            behavior: Platform.OS === 'ios' ? 'padding' : 'height',
+            style: { flex: 1 },
+            keyboardVerticalOffset: -100,
+          }
+          : {})}>
+        {children}
+      </Wrapper>
     </SafeAreaView>
   );
 };

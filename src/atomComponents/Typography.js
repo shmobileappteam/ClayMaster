@@ -1,11 +1,11 @@
 import React from 'react';
-import {Text} from 'react-native';
+import { Text } from 'react-native';
 
-import {COLORS, FONTS} from '../globalStyle/Theme';
+import { COLORS, FONTS } from '../globalStyle/Theme';
 import Sizer from '../helpers/Sizer';
 
 const Typography = ({
-  color = COLORS.dark,
+  color = COLORS.black100,
   size = 14,
   pT = 0,
   pB = 0,
@@ -15,7 +15,7 @@ const Typography = ({
   mB = 0,
   mL = 0,
   mR = 0,
-  fFamily = 'regular',
+  fFamily = 'barlowRegular400',
   textAlign = 'left',
   textTransform,
   numberOfLines,
@@ -30,22 +30,26 @@ const Typography = ({
     fontSize: Sizer.fS(size),
     paddingTop: Sizer.hSize(pT),
     paddingBottom: Sizer.hSize(pB),
-    paddingLeft: Sizer.wSize(pL),
-    paddingRight: Sizer.wSize(pR),
+    paddingLeft: Sizer.vSize(pL),
+    paddingRight: Sizer.vSize(pR),
     marginTop: Sizer.hSize(mT),
     marginBottom: Sizer.hSize(mB),
-    marginLeft: Sizer.wSize(mL),
-    marginRight: Sizer.wSize(mR),
+    marginLeft: Sizer.vSize(mL),
+    marginRight: Sizer.vSize(mR),
     fontFamily: FONTS[fFamily],
     textAlign: textAlign,
-    ...(textTransform && {textTransform: textTransform}),
-    ...(LineHeight && {lineHeight: Sizer.hSize(LineHeight)}),
+    ...(textTransform && { textTransform: textTransform }),
+    ...(LineHeight && { lineHeight: Sizer.hSize(LineHeight) }),
     ...style,
-    ...props,
   };
 
   return (
-    <Text style={styleObj} numberOfLines={numberOfLines} onPress={onPress}>
+    <Text
+      style={styleObj}
+      numberOfLines={numberOfLines}
+      onPress={onPress}
+      {...props}
+    >
       {children}
     </Text>
   );

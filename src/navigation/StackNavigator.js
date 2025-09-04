@@ -4,14 +4,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
   ForgotPasswordScreen,
   LoginScreen,
-  OnBoardingScreen,
   ResetPasswordScreen,
   SignupScreen,
   SplashScreen,
   VerifyEmailScreen,
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
-// import BottomNavigator from './BottomNavigator';
+import BottomNavigator from './BottomNavigator';
 
 const StackNavigator = () => {
   const Stack = createNativeStackNavigator();
@@ -31,7 +30,6 @@ const StackNavigator = () => {
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
 
       {/* Onboard */}
-      <Stack.Screen name="OnBoardingScreen" component={OnBoardingScreen} />
 
       {/* Auth */}
       <Stack.Screen name="SignupScreen" component={SignupScreen} />
@@ -47,11 +45,9 @@ const StackNavigator = () => {
         component={ResetPasswordScreen}
       />
 
-      {/* Stack */}
-
       {/* Main */}
 
-      {/* <Stack.Screen name="BottomTabs" component={BottomNavigator} /> */}
+      <Stack.Screen name="BottomTabs" component={BottomNavigator} />
     </Stack.Navigator>
   );
 };

@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const OnBoardingScreen = () => {
+const SettingsScreen = () => {
   return (
     <View>
-      <Text>OnBoardingScreen</Text>
+      <Text>SettingsScreen</Text>
     </View>
   )
 }
 
-export default OnBoardingScreen
+export default SettingsScreen
 
 const styles = StyleSheet.create({})

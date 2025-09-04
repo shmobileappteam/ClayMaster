@@ -1,9 +1,9 @@
 import React from 'react';
-import {Text, TouchableOpacity} from 'react-native';
-import {ActivityIndicator} from 'react-native-paper';
+import { Text, TouchableOpacity } from 'react-native';
+import { ActivityIndicator } from 'react-native-paper';
 
 import Sizer from '../../helpers/Sizer';
-import {BASEOPACITY, COLORS, FONTS} from '../../globalStyle/Theme';
+import { BASEOPACITY, COLORS, FONTS } from '../../globalStyle/Theme';
 import Flex from '../../atomComponents/Flex';
 
 function Button({
@@ -20,60 +20,46 @@ function Button({
   mb = 0,
   mt = 0,
   iconGap = 8,
-  fontSize = 14,
+  fontSize = 18,
+  fontFamily = FONTS.plusJakartaSansMedium500,
+  bgColor = null,
+  textColor = null,
+  loadColor = null,
   ...props
 }) {
-  let bgColor;
-  let textColor = COLORS.whiteV1;
-  let loaderColor = COLORS.whiteV1;
-  let borderColor = COLORS.primary;
-  let borderWidth = 1;
+  let defaultBgColor;
+  let defaultTextColor = COLORS.white100;
+  let loaderColor = loadColor || COLORS.white100;
+  let borderColor = COLORS.black100;
+  let borderWidth = 0;
 
   if (type === 'primary') {
-    bgColor = disabled ? COLORS.greyV1 : COLORS.primary;
-    borderColor = disabled ? COLORS.greyV1 : COLORS.primary;
+    defaultBgColor = disabled ? COLORS.grey200 : COLORS.primary;
   } else if (type === 'secondary') {
-    bgColor = disabled ? COLORS.greyV1 : COLORS.secondary;
-    borderColor = disabled ? COLORS.greyV1 : COLORS.secondary;
-  } else if (type === 'danger') {
-    bgColor = COLORS.dangerV1;
-    borderColor = COLORS.dangerV1;
-  } else if (type === 'success') {
-    bgColor = COLORS.greenV1;
-    borderColor = COLORS.greenV1;
-  } else if (type === 'dark') {
-    bgColor = disabled ? COLORS.greyV1 : COLORS.darkV3;
-    borderColor = disabled ? COLORS.greyV1 : COLORS.darkV3;
-  } else if (type === 'outline') {
-    borderWidth = 1;
-    bgColor = 'transparent';
-    textColor = COLORS.darkV1;
-    loaderColor = COLORS.whiteV1;
-    borderColor = COLORS.greyV1;
-  } else if (type === 'blue') {
-    bgColor = COLORS.blueV1;
-    borderColor = COLORS.blueV1;
-    textColor = COLORS.whiteV1;
-    loaderColor = COLORS.whiteV1;
+    defaultBgColor = disabled ? COLORS.grey200 : COLORS.white100;
+    defaultTextColor = disabled ? COLORS.white100 : COLORS.black100;
+    borderWidth = disabled ? 0 : Sizer.hSize(1);
   } else {
-    bgColor = COLORS.whiteV1;
-    borderColor = COLORS.whiteV1;
-    textColor = COLORS.darkV1;
-    loaderColor = COLORS.whiteV1;
+    defaultBgColor = COLORS.grey100;
+    defaultTextColor = COLORS.white100;
   }
+
+  const backgroundColor = bgColor || defaultBgColor;
+  const color = textColor || defaultTextColor;
 
   const styles = {
     btn: {
-      borderRadius: Sizer.fS(15),
+      borderRadius: Sizer.fS(12),
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: Sizer.hSize(10),
-      paddingHorizontal: Sizer.hSize(12),
+      height: Sizer.hSize(50),
+      // paddingVertical: Sizer.vSize(13),
+      // paddingHorizontal: Sizer.hSize(12),
       borderColor: borderColor,
       borderWidth: borderWidth,
     },
     btnTextStyle: {
-      fontFamily: FONTS.medium,
+      fontFamily: fontFamily,
       fontSize: Sizer.fS(fontSize),
       textAlign: 'center',
       textTransform: upperCase ? 'uppercase' : 'capitalize',
@@ -87,20 +73,26 @@ function Button({
       style={[
         styles.btn,
         {
-          backgroundColor: bgColor,
-          marginBottom: Sizer.hSize(mb),
-          marginTop: Sizer.hSize(mt),
+          backgroundColor: backgroundColor,
+          marginBottom: Sizer.vSize(mb),
+          marginTop: Sizer.vSize(mt),
+          boxSizing: 'content-box',
         },
         btnStyle,
       ]}
       onPress={onPress}
-      {...props}>
+      {...props}
+    >
       {loader ? (
-        <ActivityIndicator size={Sizer.fS(16)} color={loaderColor} />
+        <ActivityIndicator
+          size={Sizer.fS(20)}
+          style={{ paddingVertical: 5 }}
+          color={loaderColor}
+        />
       ) : (
         <Flex gap={iconGap} algItems="center">
           {!!icon && icon}
-          <Text style={[styles.btnTextStyle, {color: textColor}, textStyle]}>
+          <Text style={[styles.btnTextStyle, { color: color }, textStyle]}>
             {label}
           </Text>
           {!!rightIcon && rightIcon}
@@ -110,4 +102,4 @@ function Button({
   );
 }
 
-export default React.memo(Button);
+export default Button;

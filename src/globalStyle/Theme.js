@@ -8,38 +8,23 @@ const IMAGEONLOADCOLOR = {
 };
 
 const COLORS = {
-  mainBg: '#FFFFFF',
-  primary: '#FF0000',
+  mainBg: '#FFEFE3',
+  primary: '#EB6C0F',
   secondary: '#7C0000',
 
-  //Red Variants:
-  red100: '#FCECEC',
-  red200: '#FFD9D9',
-  red300: '#FFEFEF',
-  red400: '#FEDEDE',
-  red500: '#9A0101',
-  red600: '#FFE0E0',
-  red700: '#FFB6B6',
-  red800: '#FFE5E5',
-  red900: '#3C0E0E',
+  //Orange Variants:
+  orange100: '#EE7615',
+  orange200: '#F9F9F9',
 
   //Black Variants:
-  black100: '#161616',
-  black200: '#060B15',
-  black300: '#494C58',
-  black400: '#12141A',
-  black500: '#101520',
-  black600: '#000000',
+  black100: '#000000',
+  black200: '#3F3F3F',
+  black300: '#181818',
+  black400: '#434343',
 
   //Grey Variants:
-  grey100: '#9E9E9E',
-  grey200: '#7B7B8D',
-  grey300: '#E1E1E1',
-  grey400: '#EEEEEE',
-  grey500: '#404040',
-  grey600: '#B7B7B7',
-  grey700: '#F0F0F0',
-  grey800: '#7D7D7D',
+  grey100: '#AFAFAF',
+  grey200: '#797979',
 
   //White Variants:
   white100: '#FFFFFF',
@@ -52,15 +37,12 @@ const COLORS = {
 
 const FONTS = {
   //Font 01
-  //Poppins
-  poppinsRegular400: 'Poppins-Regular',
-  poppinsMedium500: 'Poppins-Medium',
-  poppinsSemiBold600: 'Poppins-SemiBold',
-  poppinsBold700: 'Poppins-Bold',
-
-  //Font 02
-  // SF PRO Dispaly:
-  sfprodisplayMedium500: 'SFPRODISPLAYMEDIUM',
+  //Barlow
+  barlowRegular400: 'Barlow-Regular',
+  barlowMedium500: 'Barlow-Medium',
+  barlowSemiBold600: 'Barlow-SemiBold',
+  barlowBold700: 'Barlow-Bold',
+  barlowBoldItalic700: 'Barlow-BoldItalic',
 };
 
 const WINDOW = {

@@ -56,8 +56,8 @@ export default memo(CustomDropdown);
 
 const styles = StyleSheet.create({
   dropdown: {
-    paddingLeft: Sizer.wSize(16),
-    paddingRight: Sizer.wSize(10),
+    paddingLeft: Sizer.hSize(16),
+    paddingRight: Sizer.hSize(10),
     borderRadius: Sizer.fS(12),
     borderWidth: 1,
     borderColor: COLORS.greyV1,

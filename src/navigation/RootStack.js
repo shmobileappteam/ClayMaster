@@ -18,7 +18,7 @@ const RootStack = () => {
   });
 
   const authScreens = [
-    'LoginSignupScreen',
+    'LoginScreen',
     'SignupScreen',
     'VerifyEmailScreen',
     'ForgotPasswordScreen',
@@ -46,7 +46,7 @@ const RootStack = () => {
     } else if (route.name == 'Home') {
       setAppBarStyle({
         bgColor: COLORS.white100,
-        contStyle: 'dark-content',
+        contStyle: 'light-content',
         translucent: false,
       });
     } else {
