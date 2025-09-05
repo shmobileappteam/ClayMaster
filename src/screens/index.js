@@ -6,6 +6,9 @@ import ForgotPasswordScreen from './Auth/ForgotPasswordScreen';
 import ResetPasswordScreen from './Auth/ResetPasswordScreen';
 import CustomScoreCard from './Main/Score/CustomScoreCard';
 import SettingsScreen from './Main/Setting/SettingsScreen';
+import NewRoundScreen from './Main/Score/NewRoundScreen';
+import CompleteRoundScreen from './Main/Score/CompleteRoundScreen';
+import NotificationScreen from './Main/Notification/NotificationScreen';
 
 export {
   SplashScreen,
@@ -16,5 +19,8 @@ export {
   ResetPasswordScreen,
   //---
   CustomScoreCard,
-SettingsScreen
+  SettingsScreen,
+  NewRoundScreen,
+  CompleteRoundScreen,
+  NotificationScreen,
 };

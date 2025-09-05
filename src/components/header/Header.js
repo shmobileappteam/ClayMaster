@@ -23,7 +23,7 @@ const Header = ({
   title = '',
   onPresBack = null,
   isBackVisible = true,
-  iconColor = COLORS.white100,
+  iconColor = COLORS.primary,
   isEdit,
   onEditPress,
   profileEidtState,
@@ -62,50 +62,59 @@ const Header = ({
                 </Typography>
               </View>
             </Flex>
-            <BellSvg />
+            <BellSvg
+              onPress={() => navigation.navigate('NotificationScreen')}
+            />
           </Flex>
         </SlideInView>
       ) : type == 'app' ? (
-        <Flex
-          jusContent={'center'}
-          extraStyle={{
-            backgroundColor: COLORS.primary,
-            width: '100%',
-            paddingTop: Sizer.vSize(60),
-            position: 'relative',
-            borderBottomLeftRadius: Sizer.fS(24),
-            borderBottomRightRadius: Sizer.fS(24),
-          }}
-        >
-          <TouchableOpacity
-            activeOpacity={BASEOPACITY}
-            onPress={onPresBack ?? (() => navigation.goBack())}
-            style={{
-              padding: Sizer.fS(8),
-              backgroundColor: COLORS.secondary,
-              borderRadius: 100,
-              position: 'absolute',
-              left: Sizer.hSize(24),
-              top: Sizer.vSize(60),
-            }}
-          >
-            <Icon
-              color={iconColor}
-              iconFamily={'Ionicons'}
-              size={Sizer.vSize(20)}
-              name={'arrow-back'}
-            />
-          </TouchableOpacity>
+        <View style={{ width: '100%' }}>
+          <SlideInView slide="up" slideDuration={800}>
+            <Flex
+              jusContent={'center'}
+              algItems={'flex-end'}
+              extraStyle={{
+                backgroundColor: COLORS.primary,
+                width: '100%',
+                position: 'relative',
+                borderBottomLeftRadius: Sizer.fS(12),
+                borderBottomRightRadius: Sizer.fS(12),
+                height: Sizer.hSize(120),
+                paddingBottom: Sizer.hSize(24),
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={BASEOPACITY}
+                onPress={onPresBack ?? (() => navigation.goBack())}
+                style={{
+                  // padding: Sizer.fS(8),
+                  backgroundColor: COLORS.white100,
+                  borderRadius: 100,
+                  position: 'absolute',
+                  left: Sizer.hSize(24),
+                  bottom: Sizer.hSize(30),
+                }}
+              >
+                <Icon
+                  color={iconColor}
+                  iconFamily={'Ionicons'}
+                  size={Sizer.vSize(20)}
+                  name={'arrow-back'}
+                />
+              </TouchableOpacity>
 
-          <Typography
-            size={26}
-            mB={26}
-            color="white"
-            fFamily="interSemiBold600"
-          >
-            {title}
-          </Typography>
-        </Flex>
+              <Typography
+                size={24}
+                // mB={26}
+                color="white"
+                numberOfLines={1}
+                fFamily="barlowBoldItalic700"
+              >
+                {title}
+              </Typography>
+            </Flex>
+          </SlideInView>
+        </View>
       ) : (
         <View style={{ marginTop: Sizer.hSize(24), alignItems: 'center' }}>
           <SlideInView slide="left" slideDuration={800}>

@@ -6,9 +6,9 @@ import { Typography } from '../../atomComponents';
 import Sizer from '../../helpers/Sizer';
 import { BASEOPACITY, COLORS } from '../../globalStyle/Theme';
 
-const IconButton = ({ text = 'New Round' }) => {
+const IconButton = ({ text = 'New Round', onPress }) => {
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={BASEOPACITY}>
+    <TouchableOpacity style={styles.container} activeOpacity={BASEOPACITY} onPress={onPress}>
       <Icon
         iconFamily={'Octicons'}
         name={'plus'}
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Sizer.hSize(5),
     backgroundColor: COLORS.primary,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
     paddingVertical: Sizer.hSize(12),
     paddingHorizontal: Sizer.hSize(20),
     borderRadius: Sizer.hSize(10),

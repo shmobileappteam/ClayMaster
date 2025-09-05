@@ -12,6 +12,7 @@ import { AntDesign } from '@react-native-vector-icons/ant-design';
 import { Feather } from '@react-native-vector-icons/feather';
 // import { SimpleLineIcons } from '@react-native-vector-icons/simple-line-icons';
 import { FontAwesome5 } from '@react-native-vector-icons/fontawesome5';
+import { Lucide } from '@react-native-vector-icons/lucide';
 // import { FontAwesome6 } from '@react-native-vector-icons/fontawesome6';
 
 const Icon = ({ name, iconFamily, size, color, style }) => {
@@ -49,8 +50,10 @@ const Icon = ({ name, iconFamily, size, color, style }) => {
     //   return <SimpleLineIcons name={name} size={size} color={color} style={style} />;
     case 'FontAwesome5':
       return (
-        <FontAwesome5 name={name} size={size} color={color} style={style} ss />
+        <FontAwesome5 name={name} size={size} color={color} style={style} />
       );
+    case 'Lucide':
+      return <Lucide name={name} size={size} color={color} style={style} />;
     // case 'FontAwesome6':
     //   return <FontAwesome6 name={name} size={size} color={color} style={style} />;
 

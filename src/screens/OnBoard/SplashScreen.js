@@ -10,7 +10,7 @@ import Sizer from '../../helpers/Sizer';
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.navigate('BottomTabs');
+      navigation.navigate('LoginScreen');
     }, 2000);
     return () => clearTimeout(timer);
   }, []);

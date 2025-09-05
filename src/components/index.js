@@ -3,8 +3,8 @@ import IconButton from './customButtons/IconButton';
 import TextField from './customFields/TextField';
 import SearchField from './customFields/SeacrhField';
 import CustomDropdown from './customFields/CustomDropDown';
+import Label from './customFields/Label';
 import Header from './header/Header';
-
 
 import ImagePicker from './imagePicker/ImagePicker';
 
@@ -19,4 +19,5 @@ export {
   Header,
   ImagePicker,
   Accordion,
+  Label,
 };

@@ -2,8 +2,11 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 //------
 import {
+  CompleteRoundScreen,
   ForgotPasswordScreen,
   LoginScreen,
+  NewRoundScreen,
+  NotificationScreen,
   ResetPasswordScreen,
   SignupScreen,
   SplashScreen,
@@ -44,6 +47,12 @@ const StackNavigator = () => {
         name="ResetPasswordScreen"
         component={ResetPasswordScreen}
       />
+      <Stack.Screen name="NewRoundScreen" component={NewRoundScreen} />
+      <Stack.Screen
+        name="CompleteRoundScreen"
+        component={CompleteRoundScreen}
+      />
+      <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
 
       {/* Main */}
 

@@ -42,7 +42,7 @@ const LoginScreen = ({ navigation }) => {
           textAlign="right"
           mT={15}
           color={COLORS.primary}
-          onPress={() => navigation.navigate('ForgotPasswordScreen')}
+          // onPress={() => navigation.navigate('ForgotPasswordScreen')}
         >
           Forgot password?
         </Typography>

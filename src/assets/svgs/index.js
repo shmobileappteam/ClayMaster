@@ -6,6 +6,7 @@ import HamburgerSvg from './HamburgerSvg';
 import BellSvg from './BellSvg';
 import ReadytoShootSvg from './ReadytoShootSvg';
 import TargetPartSvg from './TargetPartSvg';
+import NotificationSvg from './NotificationSvg';
 
 export {
   AppIconSvg,
@@ -16,4 +17,5 @@ export {
   BellSvg,
   ReadytoShootSvg,
   TargetPartSvg,
+  NotificationSvg
 };

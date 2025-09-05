@@ -15,6 +15,7 @@ const COLORS = {
   //Orange Variants:
   orange100: '#EE7615',
   orange200: '#F9F9F9',
+  orange300: 'rgba(235, 108, 15, 0.1)',
 
   //Black Variants:
   black100: '#000000',
@@ -25,11 +26,23 @@ const COLORS = {
   //Grey Variants:
   grey100: '#AFAFAF',
   grey200: '#797979',
+  grey300: '#464646',
+  grey400: 'rgba(113, 113, 113, 0.1)',
+  grey500: '#8C8C8C',
+  grey600: '#E6E6E6',
+  grey700: '#EBEBEB',
+  grey800: 'rgba(71, 71, 71, 0.1)',
+  grey900: '#929292',
 
   //White Variants:
   white100: '#FFFFFF',
   white200: '#F5F5F5',
 
+  //Red Variants:
+  red100: 'rgba(235, 15, 15, 0.1)',
+  red200: '#EB0F0F',
+
+  //Extras
   red: '#B90205',
   green: '#1b8567',
   yellow: '#E9C80D',
