@@ -18,9 +18,9 @@ import {
 import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
-import StationsList from '../../../components/Round/StationsList';
 import Icon from '../../../helpers/Icon';
 import StationCard from '../../../components/Round/StationCard';
+
 const nscaClasses = [
   { name: 'A', selected: false },
   { name: 'AA', selected: false },
@@ -99,9 +99,12 @@ const NewRoundScreen = ({ navigation }) => {
           <View style={styles.container}>
             <View>
               <Label title="Squad Sequence" />
-              <TextField placeholder="Enter sequence" />
+              <TextField placeholder="Enter sequence" defaultValue="2" />
               <Label title="Course Name" />
-              <TextField placeholder="Enter course name" />
+              <TextField
+                placeholder="Enter course name"
+                defaultValue="Saltwaters Black Course"
+              />
               <Label title="Your Current NSCA Class" />
               <View style={styles.nscaClassContainer}>
                 {nscaClasses.map((item, index) => (
@@ -142,7 +145,17 @@ const NewRoundScreen = ({ navigation }) => {
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>
-                  <IconButton text="Add Station" onPress={HandleAddStation} />
+                  <IconButton
+                    text="Add Station"
+                    contStyle={{
+                      paddingVertical: Sizer.hSize(7),
+                      paddingHorizontal: Sizer.hSize(9),
+                      borderRadius: Sizer.hSize(5),
+                    }}
+                    iconStyle={{ size: Sizer.hSize(12) }}
+                    textStyle={{ size: Sizer.hSize(14) }}
+                    onPress={HandleAddStation}
+                  />
                 </View>
               </View>
               <View>

@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
-import { View, StyleSheet , TouchableOpacity} from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 //--------
 import { Flex, Typography } from '../../atomComponents';
 import { BASEOPACITY, COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
 import Icon from '../../helpers/Icon';
+import SlideInView from '../../animations/SlideView';
 
-const Header = ({ titleLeft = '', titleRight = '', isExpanded, onToggle }) => {
+const Header = ({
+  titleLeft = '',
+  titleRight = '',
+  isExpanded,
+  onToggle,
+  isTargetPairSelected,
+}) => {
   return (
-    <TouchableOpacity onPress={onToggle} activeOpacity={BASEOPACITY}>
+    <TouchableOpacity
+      onPress={isTargetPairSelected ? onToggle : () => {}}
+      activeOpacity={BASEOPACITY}
+    >
       <Flex direction="row" jusContent="space-between" algItems="center">
         <Flex gap={8}>
           <View style={styles.stationLine} />
           <Typography
-            size={16}
+            size={14}
             fFamily="barlowMedium500"
             color={COLORS.black100}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            flexShrink={1}
           >
             {titleLeft}
           </Typography>
@@ -36,12 +49,14 @@ const Header = ({ titleLeft = '', titleRight = '', isExpanded, onToggle }) => {
               {titleRight}
             </Typography>
           )}
-          <Icon
-            name={isExpanded ? 'play-arrow' : 'play-arrow'}
-            size={Sizer.hSize(18)}
-            color={COLORS.black100}
-            iconFamily={'MaterialIcons'}
-          />
+          {isTargetPairSelected && (
+            <Icon
+              name={isExpanded ? 'play-arrow' : 'play-arrow'}
+              size={Sizer.hSize(18)}
+              color={COLORS.black100}
+              iconFamily={'MaterialIcons'}
+            />
+          )}
         </Flex>
       </Flex>
     </TouchableOpacity>
@@ -96,30 +111,157 @@ const RadioButton = ({ selected, onPress, label }) => (
     style={[
       styles.radioContainer,
       {
-        backgroundColor: selected ? COLORS.primary : COLORS.grey700,
+        backgroundColor: COLORS.grey700,
       },
     ]}
   >
-    <Typography
-      size={14}
-      color={selected ? COLORS.white100 : COLORS.black100}
-      fFamily="barlowMedium500"
-    >
+    <Typography size={14} color={COLORS.black100} fFamily="barlowMedium500">
       {label}
     </Typography>
     <Icon
       iconFamily={'Octicons'}
       name={selected ? 'check-circle-fill' : 'circle'}
-      color={selected ? COLORS.white100 : 'transparent'}
+      color={selected ? COLORS.primary : COLORS.black100}
       size={20}
     />
   </TouchableOpacity>
 );
 
+const TargetSelection = ({
+  station,
+  hitCount,
+  missedCount,
+  isTargetPairSelected,
+  onSetIsTargetPairSelected,
+}) => {
+  return (
+    <>
+      {isTargetPairSelected ? (
+        <SlideInView slide="right" slideDuration={500}>
+          <Flex
+            direction="row"
+            jusContent="space-between"
+            algItems="center"
+            flexWrap="wrap"
+            gap={4}
+            mT={16}
+          >
+            {station.shots.map(shot => (
+              <ShotCircle key={shot.id} status={shot.status} />
+            ))}
+          </Flex>
+          <Flex
+            direction="row"
+            jusContent="space-between"
+            algItems="center"
+            mT={15}
+            gap={9}
+          >
+            <View
+              style={[
+                styles.shotsInfoBox,
+                {
+                  backgroundColor: hitCount ? COLORS.orange300 : COLORS.grey400,
+                },
+              ]}
+            >
+              <Typography
+                size={14}
+                color={hitCount ? COLORS.primary : COLORS.grey500}
+                Family="barlowMedium500"
+              >
+                Dead {station.hits}
+              </Typography>
+            </View>
+
+            <View
+              style={[
+                styles.shotsInfoBox,
+                {
+                  backgroundColor: missedCount ? COLORS.red100 : COLORS.grey400,
+                },
+              ]}
+            >
+              <Typography
+                size={14}
+                fFamily="barlowMedium500"
+                color={missedCount ? COLORS.primary : COLORS.grey500}
+              >
+                Lost {station.missed}
+              </Typography>
+            </View>
+          </Flex>
+        </SlideInView>
+      ) : (
+        <View style={{ marginTop: Sizer.hSize(15) }}>
+          <SlideInView slide="down" slideDuration={500}>
+            <Flex
+              jusContent={'space-between'}
+              extraStyle={{
+                backgroundColor: COLORS.orange300,
+              }}
+            >
+              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+              <Typography fFamily="barlowMedium500">
+                Select Pair of Targets
+              </Typography>
+              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+            </Flex>
+            <Flex
+              direction="row"
+              jusContent="space-between"
+              algItems="center"
+              mT={15}
+              gap={9}
+            >
+              <TouchableOpacity
+                activeOpacity={BASEOPACITY}
+                onPress={() => {
+                  onSetIsTargetPairSelected(true);
+                }}
+                style={[
+                  styles.shotsInfoBox,
+                  {
+                    backgroundColor: '#F0F0F0',
+                  },
+                ]}
+              >
+                <Typography size={14} Family="barlowMedium500">
+                  3 Target Pair{' '}
+                </Typography>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={BASEOPACITY}
+                onPress={() => {
+                  onSetIsTargetPairSelected(true);
+                }}
+                style={[
+                  styles.shotsInfoBox,
+                  {
+                    backgroundColor: '#F0F0F0',
+                  },
+                ]}
+              >
+                <Typography size={14} fFamily="barlowMedium500">
+                  5 Target Pair{' '}
+                </Typography>
+              </TouchableOpacity>
+            </Flex>
+          </SlideInView>
+        </View>
+      )}
+    </>
+  );
+};
 // ---------------- Main Card ----------------
 
 const StationCard = ({ station, isExpanded, onToggle }) => {
   const [reportPair, setReportPair] = useState(station.reportPair);
+  const [isTargetPairSelected, setIsTargetPairSelected] = useState(
+    station?.isPairSelected || false,
+  );
+
   const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
   const missedCount = station.shots.filter(
     item => item.status == 'missed',
@@ -132,60 +274,17 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
         titleLeft={station.name}
         isExpanded={isExpanded}
         onToggle={onToggle}
+        isTargetPairSelected={isTargetPairSelected}
       />
 
       {/* Shots Grid */}
-      <Flex
-        direction="row"
-        jusContent="space-between"
-        algItems="center"
-        flexWrap="wrap"
-        gap={4}
-        mT={16}
-      >
-        {station.shots.map(shot => (
-          <ShotCircle key={shot.id} status={shot.status} />
-        ))}
-      </Flex>
-
-      {/* Stats */}
-      <Flex
-        direction="row"
-        jusContent="space-between"
-        algItems="center"
-        mT={15}
-        gap={9}
-      >
-        <View
-          style={[
-            styles.shotsInfoBox,
-            { backgroundColor: hitCount ? COLORS.orange300 : COLORS.grey400 },
-          ]}
-        >
-          <Typography
-            size={14}
-            color={hitCount ? COLORS.primary : COLORS.grey500}
-            Family="barlowMedium500"
-          >
-            Hits {station.hits}
-          </Typography>
-        </View>
-
-        <View
-          style={[
-            styles.shotsInfoBox,
-            { backgroundColor: missedCount ? COLORS.red100 : COLORS.grey400 },
-          ]}
-        >
-          <Typography
-            size={14}
-            fFamily="barlowMedium500"
-            color={missedCount ? COLORS.primary : COLORS.grey500}
-          >
-            Missed {station.missed}
-          </Typography>
-        </View>
-      </Flex>
+      <TargetSelection
+        station={station}
+        hitCount={hitCount}
+        missedCount={missedCount}
+        isTargetPairSelected={isTargetPairSelected}
+        onSetIsTargetPairSelected={setIsTargetPairSelected}
+      />
 
       {/* Expanded Content */}
       {isExpanded && (
@@ -195,20 +294,21 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
             <RadioButton
               selected={reportPair === 'TP'}
               onPress={() => setReportPair('TP')}
-              label="Report Pair  (RP)"
+              label="Report Pair"
             />
             <RadioButton
               selected={reportPair === 'RP'}
               onPress={() => setReportPair('RP')}
-              label="True Pair  (TP)"
+              label="True Pair"
             />
           </Flex>
 
           {/* Traps Section */}
           <Header
-            titleLeft="Traps"
+            titleLeft="Traps / Target Presentations"
             titleRight="Trap 01"
             isExpanded={isExpanded}
+            isTargetPairSelected={isTargetPairSelected}
           />
 
           {/* Trap Details */}

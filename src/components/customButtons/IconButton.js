@@ -6,16 +6,32 @@ import { Typography } from '../../atomComponents';
 import Sizer from '../../helpers/Sizer';
 import { BASEOPACITY, COLORS } from '../../globalStyle/Theme';
 
-const IconButton = ({ text = 'New Round', onPress }) => {
+const IconButton = ({
+  text = 'New Round',
+  onPress,
+  contStyle = {},
+  textStyle = {},
+  iconStyle = {},
+}) => {
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={BASEOPACITY} onPress={onPress}>
+    <TouchableOpacity
+      style={[styles.container, contStyle]}
+      activeOpacity={BASEOPACITY}
+      onPress={onPress}
+    >
       <Icon
         iconFamily={'Octicons'}
         name={'plus'}
         size={Sizer.hSize(20)}
         color={COLORS.white100}
+        {...iconStyle}
       />
-      <Typography fFamily="barlowSemiBold600" size={18} color={COLORS.white100}>
+      <Typography
+        fFamily="barlowSemiBold600"
+        color={COLORS.white100}
+        size={18}
+        {...textStyle}
+      >
         {text}
       </Typography>
     </TouchableOpacity>

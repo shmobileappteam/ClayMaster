@@ -17,7 +17,11 @@ const CustomScoreCard = ({ navigation }) => {
         contentContainerStyle={{ paddingBottom: 32 }}
       >
         <View style={GLOBALSTYLE.paddingHor}>
-        <Image source={homebanner} style={styles.banneerimg} resizeMode='cover'/>
+          <Image
+            source={homebanner}
+            style={styles.banneerimg}
+            resizeMode="cover"
+          />
           <Typography
             size={28}
             textAlign="center"
@@ -63,8 +67,9 @@ const styles = StyleSheet.create({
   },
   banneerimg: {
     height: Sizer.hSize(173),
-    marginTop:Sizer.hSize(60),
-    width:"100%", borderRadius:Sizer.hSize(10)
+    marginTop: Sizer.hSize(60),
+    width: '100%',
+    borderRadius: Sizer.hSize(10),
   },
 });
 

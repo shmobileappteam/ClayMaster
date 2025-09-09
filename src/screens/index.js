@@ -10,6 +10,7 @@ import NewRoundScreen from './Main/Score/NewRoundScreen';
 import CompleteRoundScreen from './Main/Score/CompleteRoundScreen';
 import NotificationScreen from './Main/Notification/NotificationScreen';
 import SubscriptionScreen from './Main/Subscription/SubscriptionScreen';
+import SavedScoredcardSuccessScreen from './Main/Score/SavedScoredcardSuccessScreen';
 
 export {
   SplashScreen,
@@ -25,4 +26,5 @@ export {
   CompleteRoundScreen,
   NotificationScreen,
   SubscriptionScreen,
+  SavedScoredcardSuccessScreen,
 };

@@ -8,6 +8,7 @@ import {
   NewRoundScreen,
   NotificationScreen,
   ResetPasswordScreen,
+  SavedScoredcardSuccessScreen,
   SignupScreen,
   SplashScreen,
   SubscriptionScreen,
@@ -55,6 +56,7 @@ const StackNavigator = () => {
       />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
       <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
+      <Stack.Screen name="SavedScoredcardSuccessScreen" component={SavedScoredcardSuccessScreen} />
 
       {/* Main */}
 

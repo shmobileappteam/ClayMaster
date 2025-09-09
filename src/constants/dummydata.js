@@ -1,3 +1,5 @@
+import { COLORS } from "../globalStyle/Theme";
+
 export const stationsData = [
   {
     id: 1,
@@ -5,6 +7,7 @@ export const stationsData = [
     hits: 6,
     missed: 4,
     totalShots: 10,
+    isPairSelected: true,
     shots: [
       { id: 1, status: 'hit' }, // orange
       { id: 2, status: 'hit' }, // orange
@@ -33,6 +36,8 @@ export const stationsData = [
     hits: 1,
     missed: 0,
     totalShots: 10,
+    isPairSelected: true,
+
     shots: [
       { id: 1, status: 'hit' }, // orange
       { id: 2, status: 'empty' }, // white
@@ -45,7 +50,7 @@ export const stationsData = [
       { id: 9, status: 'empty' }, // white
       { id: 10, status: 'empty' }, // white
     ],
-    reportPair: 'RF',
+    reportPair: 'RP',
     traps: {
       chandelle: 'Crosser',
       incomer: 'Knuckleball/Off-Speed',
@@ -61,6 +66,8 @@ export const stationsData = [
     hits: 6,
     missed: 4,
     totalShots: 10,
+    isPairSelected: true,
+
     shots: [
       { id: 1, status: 'hit' },
       { id: 2, status: 'hit' },
@@ -89,34 +96,8 @@ export const stationsData = [
     hits: 6,
     missed: 4,
     totalShots: 10,
-    shots: [
-      { id: 1, status: 'hit' },
-      { id: 2, status: 'hit' },
-      { id: 3, status: 'missed' },
-      { id: 4, status: 'hit' },
-      { id: 5, status: 'missed' },
-      { id: 6, status: 'missed' },
-      { id: 7, status: 'hit' },
-      { id: 8, status: 'missed' },
-      { id: 9, status: 'hit' },
-      { id: 10, status: 'hit' },
-    ],
-    reportPair: 'RF',
-    traps: {
-      chandelle: 'Crosser',
-      incomer: 'Knuckleball/Off-Speed',
-      overhead: 'Quartering',
-      rabbit: 'Tee',
-      tower: 'Rabbit',
-      trapTee: 'Trap Shot',
-    },
-  },
-  {
-    id: 5,
-    name: 'Station 05',
-    hits: 6,
-    missed: 4,
-    totalShots: 10,
+    isPairSelected: true,
+
     shots: [
       { id: 1, status: 'hit' },
       { id: 2, status: 'hit' },
@@ -139,6 +120,35 @@ export const stationsData = [
       trapTee: 'Trap Shot',
     },
   },
+  // {
+  //   id: 5,
+  //   name: 'Station 05',
+  //   hits: 6,
+  //   missed: 4,
+  //   totalShots: 10,
+  // isPairSelected:true
+  //   shots: [
+  //     { id: 1, status: 'hit' },
+  //     { id: 2, status: 'hit' },
+  //     { id: 3, status: 'missed' },
+  //     { id: 4, status: 'hit' },
+  //     { id: 5, status: 'missed' },
+  //     { id: 6, status: 'missed' },
+  //     { id: 7, status: 'hit' },
+  //     { id: 8, status: 'missed' },
+  //     { id: 9, status: 'hit' },
+  //     { id: 10, status: 'hit' },
+  //   ],
+  //   reportPair: 'TP',
+  //   traps: {
+  //     chandelle: 'Crosser',
+  //     incomer: 'Knuckleball/Off-Speed',
+  //     overhead: 'Quartering',
+  //     rabbit: 'Tee',
+  //     tower: 'Rabbit',
+  //     trapTee: 'Trap Shot',
+  //   },
+  // },
 ];
 
 export const generalMenus = [
@@ -185,7 +195,6 @@ export const settingData = [
     navLink: 'LoginScreen',
   },
 ];
-
 
 export const subscriptionPlans = [
   {
@@ -236,5 +245,27 @@ export const subscriptionPlans = [
     additionalCount: 10,
     isPopular: false,
     backgroundColor: '#2C5F41', // Dark green/platinum color
+  },
+];
+
+
+export const statsData = [
+  {
+    id: 1,
+    label: 'Total Dead',
+    value: '70',
+    labelColor: COLORS.primary, // Orange color
+  },
+  {
+    id: 2,
+    label: 'Total Lost',
+    value: '30',
+    labelColor: "#656565", // Grey color
+  },
+  {
+    id: 3,
+    label: 'Total Shots',
+    value: '100',
+    labelColor: COLORS.black100, // Black color
   },
 ];

@@ -177,14 +177,12 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
     const scrollX = event.nativeEvent.contentOffset.x;
     const index = Math.round((scrollX + paddingHorizontal) / cardWidth);
 
-    // Snap to the nearest card
     if (scrollViewRef.current) {
       const snapX = index * cardWidth - paddingHorizontal;
       scrollViewRef.current.scrollTo({ x: snapX, animated: true });
     }
   };
 
-  // // Auto-scroll to selected plan when selectedPlanId changes externally
   useEffect(() => {
     if (selectedPlanId !== null) {
       const index = subscriptionPlans.findIndex(
@@ -207,7 +205,7 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
       showsHorizontalScrollIndicator={false}
       snapToInterval={cardWidth}
       snapToAlignment="center"
-      decelerationRate={"fast"}
+      decelerationRate={'fast'}
       contentContainerStyle={{
         paddingHorizontal: paddingHorizontal,
       }}
@@ -229,7 +227,7 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
   );
 };
 
-const SubscriptionScreen = () => {
+const SubscriptionScreen = ({ navigation }) => {
   const [selectedPlan, setSelectedPlan] = React.useState(1);
 
   const handlePlanSelection = planId => {
@@ -254,7 +252,10 @@ const SubscriptionScreen = () => {
           selectedPlanId={selectedPlan}
         />
         <View style={{ ...GLOBALSTYLE.paddingHor, marginTop: Sizer.hSize(32) }}>
-          <Button label="Subscribe" />
+          <Button
+            label="Subscribe"
+            onPress={() => navigation.navigate('BottomTabs')}
+          />
           <Typography mT={16} color={COLORS.white100} textAlign="center">
             Restore My Subscription
           </Typography>
