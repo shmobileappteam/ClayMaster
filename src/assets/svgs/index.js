@@ -7,6 +7,8 @@ import BellSvg from './BellSvg';
 import ReadytoShootSvg from './ReadytoShootSvg';
 import TargetPartSvg from './TargetPartSvg';
 import NotificationSvg from './NotificationSvg';
+import ScorecardSvg from './ScorecardSvg';
+import CircledTickSvg from './CircledTickSvg';
 
 export {
   AppIconSvg,
@@ -17,5 +19,7 @@ export {
   BellSvg,
   ReadytoShootSvg,
   TargetPartSvg,
-  NotificationSvg
+  NotificationSvg,
+  ScorecardSvg,
+  CircledTickSvg,
 };

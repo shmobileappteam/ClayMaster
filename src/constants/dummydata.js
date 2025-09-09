@@ -140,3 +140,48 @@ export const stationsData = [
     },
   },
 ];
+
+export const generalMenus = [
+  {
+    label: 'Profile Details',
+    icon: 'person-outline',
+    family: 'Ionicons',
+    navLink: 'ProfileDetailsScreen',
+    stack: null,
+  },
+  {
+    label: 'My Scorecards',
+    icon: 'book-outline',
+    family: 'Ionicons',
+    navLink: 'Home',
+    stack: 'BottomTabs',
+  },
+];
+
+export const moreMenus = [
+  {
+    label: 'About Us',
+    icon: 'information-circle-outline',
+    family: 'Ionicons',
+    navLink: 'AboutusScreen',
+    stack: null,
+  },
+
+  { label: 'Our Reviews', icon: 'star-outline', family: 'Ionicons' },
+];
+
+export const settingData = [
+  { label: 'Change Password', icon: 'help-circle-outline', family: 'Ionicons' },
+  { label: 'Help & Support', icon: 'help-circle-outline', family: 'Ionicons' },
+  {
+    label: 'Terms & Conditions',
+    icon: 'document-text-outline',
+    family: 'Ionicons',
+  },
+  {
+    label: 'Log out',
+    icon: 'logout',
+    family: 'AntDesign',
+    navLink: 'LoginScreen',
+  },
+];

@@ -22,6 +22,8 @@ const COLORS = {
   black200: '#3F3F3F',
   black300: '#181818',
   black400: '#434343',
+  black500: '#767676',
+  black600: '#525252',
 
   //Grey Variants:
   grey100: '#AFAFAF',
@@ -41,6 +43,7 @@ const COLORS = {
   //Red Variants:
   red100: 'rgba(235, 15, 15, 0.1)',
   red200: '#EB0F0F',
+  red300: '#930D0D',
 
   //Extras
   red: '#B90205',

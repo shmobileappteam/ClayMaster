@@ -1,7 +1,13 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, { useState } from 'react';
 //----
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Flex, Typography } from '../../../atomComponents';
 import {
   Button,
   Header,
@@ -13,6 +19,8 @@ import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
 import StationsList from '../../../components/Round/StationsList';
+import Icon from '../../../helpers/Icon';
+import StationCard from '../../../components/Round/StationCard';
 const nscaClasses = [
   { name: 'A', selected: false },
   { name: 'AA', selected: false },
@@ -20,10 +28,62 @@ const nscaClasses = [
   { name: 'B', selected: false },
   { name: 'C', selected: false },
   { name: 'D', selected: true },
+  { name: 'N/A', selected: false },
 ];
 
-const NewRoundScreen = ({navigation}) => {
+const NewRoundScreen = ({ navigation }) => {
   const [sectionNumber, setSectionNumber] = useState(1);
+  const [addStation, setAddStation] = useState([
+    {
+      id: 1,
+      name: 'Station 01',
+      hits: 6,
+      missed: 4,
+      totalShots: 10,
+      shots: [
+        { id: 1, status: 'hit' }, // orange
+        { id: 2, status: 'hit' }, // orange
+        { id: 3, status: 'missed' }, // grey
+        { id: 4, status: 'hit' }, // orange
+        { id: 5, status: 'missed' }, // grey
+        { id: 6, status: 'missed' }, // grey
+        { id: 7, status: 'empty' }, // orange
+        { id: 8, status: 'missed' }, // grey
+        { id: 9, status: 'hit' }, // orange
+        { id: 10, status: 'hit' }, // orange
+      ],
+      reportPair: 'TP', // TP or RF
+      traps: {
+        chandelle: 'Crosser',
+        incomer: 'Knuckleball/Off-Speed',
+        overhead: 'Quartering',
+        rabbit: 'Tee',
+        tower: 'Rabbit',
+        trapTee: 'Trap Shot',
+      },
+    },
+  ]);
+
+  const [expandedStations, setExpandedStations] = useState({});
+
+  const toggleStation = stationId => {
+    setExpandedStations(prev => ({
+      ...prev,
+      [stationId]: !prev[stationId],
+    }));
+  };
+
+  const HandleAddStation = () => {
+    setAddStation(prev => {
+      const lastStation = prev[prev.length - 1];
+      const newStation = {
+        ...lastStation,
+        id: prev.length + 1,
+        name: `Station 0${prev.length + 1}`,
+      };
+      return [...prev, newStation];
+    });
+  };
 
   return (
     <Container isPadding={false}>
@@ -42,10 +102,10 @@ const NewRoundScreen = ({navigation}) => {
               <TextField placeholder="Enter sequence" />
               <Label title="Course Name" />
               <TextField placeholder="Enter course name" />
-              <Label title="NSCA Class" />
+              <Label title="Your Current NSCA Class" />
               <View style={styles.nscaClassContainer}>
-                {nscaClasses.map(item => (
-                  <Box item={item} />
+                {nscaClasses.map((item, index) => (
+                  <Box item={item} key={index} />
                 ))}
               </View>
             </View>
@@ -56,62 +116,113 @@ const NewRoundScreen = ({navigation}) => {
             />
           </View>
         ) : sectionNumber == 2 ? (
-          <View
-            style={{
-              justifyContent: 'space-between',
-              flex: 1,
-            }}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ flexGrow: 1 }}
           >
-            <View style={{}}>
-              <Label
-                title="Custom Score Card"
-                fFamily={'barlowBold700'}
-                size={20}
-              />
-              <StationsList
-                contStyle={{}}
-                data={[
-                  {
-                    id: 5,
-                    name: 'Station 05',
-                    hits: 6,
-                    missed: 4,
-                    totalShots: 10,
-                    shots: [
-                      { id: 1, status: 'hit' },
-                      { id: 2, status: 'hit' },
-                      { id: 3, status: 'missed' },
-                      { id: 4, status: 'hit' },
-                      { id: 5, status: 'missed' },
-                      { id: 6, status: 'missed' },
-                      { id: 7, status: 'hit' },
-                      { id: 8, status: 'missed' },
-                      { id: 9, status: 'hit' },
-                      { id: 10, status: 'hit' },
-                    ],
-                    reportPair: 'TP',
-                    traps: {
-                      chandelle: 'Crosser',
-                      incomer: 'Knuckleball/Off-Speed',
-                      overhead: 'Quartering',
-                      rabbit: 'Tee',
-                      tower: 'Rabbit',
-                      trapTee: 'Trap Shot',
-                    },
-                  },
-                ]}
-              />
-              <IconButton text="Add Station" />
-            </View>
-            <Button
-              mb={54}
-              label="Complete Record"
-              onPress={() => {
-                sectionNumber == 2 ? navigation.navigate("CompleteRoundScreen") :
-                setSectionNumber(2);
+            <View
+              style={{
+                justifyContent: 'space-between',
+                flex: 1,
               }}
-            />
-          </View>
+            >
+              <View style={{}}>
+                <Label
+                  title="Saltwaters Black Course - 9/4/25 Scorecard"
+                  fFamily={'barlowBold700'}
+                  size={18}
+                />
+
+                {addStation.map(station => (
+                  <StationCard
+                    key={station.id}
+                    station={station}
+                    isExpanded={expandedStations[station.id]}
+                    onToggle={() => toggleStation(station.id)}
+                  />
+                ))}
+                <View style={{ alignSelf: 'flex-start' }}>
+                  <IconButton text="Add Station" onPress={HandleAddStation} />
+                </View>
+              </View>
+              <View>
+                <Button
+                  mb={13}
+                  label="Complete Record"
+                  mt={100}
+                  onPress={() => {
+                    sectionNumber == 2
+                      ? navigation.navigate('CompleteRoundScreen')
+                      : setSectionNumber(2);
+                  }}
+                />
+                <SlideInView slide="down" slideDuration={700}>
+                  <Flex gap={10} mB={34}>
+                    <TouchableOpacity
+                      activeOpacity={BASEOPACITY}
+                      style={[
+                        styles.actionBxo,
+                        { backgroundColor: COLORS.grey900, flex: 0.6 },
+                      ]}
+                    >
+                      <Icon
+                        name={'undo'}
+                        iconFamily={'Lucide'}
+                        color={COLORS.white100}
+                        size={22}
+                      />
+                      <Typography
+                        color={COLORS.white100}
+                        fFamily="barlowSemiBold600"
+                        size={18}
+                      >
+                        Undo
+                      </Typography>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      activeOpacity={BASEOPACITY}
+                      style={styles.actionBxo}
+                    >
+                      <Icon
+                        name={'slash'}
+                        iconFamily={'Lucide'}
+                        color={COLORS.white100}
+                        size={22}
+                      />
+                      <Typography
+                        color={COLORS.white100}
+                        fFamily="barlowSemiBold600"
+                        size={18}
+                      >
+                        Dead
+                      </Typography>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      activeOpacity={BASEOPACITY}
+                      style={[
+                        styles.actionBxo,
+                        { backgroundColor: COLORS.black500 },
+                      ]}
+                    >
+                      <Icon
+                        name={'circle'}
+                        iconFamily={'Lucide'}
+                        color={COLORS.white100}
+                        size={22}
+                      />
+                      <Typography
+                        color={COLORS.white100}
+                        fFamily="barlowSemiBold600"
+                        size={18}
+                      >
+                        Undo
+                      </Typography>
+                    </TouchableOpacity>
+                  </Flex>
+                </SlideInView>
+              </View>
+            </View>
+          </ScrollView>
         ) : null}
       </View>
     </Container>
@@ -150,6 +261,14 @@ const styles = StyleSheet.create({
   nscaClassContainer: {
     flexDirection: 'row',
     gap: 10,
+  },
+  actionBxo: {
+    height: Sizer.hSize(134),
+    flex: 1,
+    backgroundColor: COLORS.primary,
+    borderRadius: Sizer.hSize(10),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

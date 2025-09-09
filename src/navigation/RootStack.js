@@ -25,7 +25,7 @@ const RootStack = () => {
     'ResetPasswordScreen',
     'GetStartedScreen',
     'SplashScreen',
-    "AddPetScreen-"
+    'AddPetScreen-',
   ];
 
   const handleStatusBar = () => {
@@ -43,15 +43,9 @@ const RootStack = () => {
         contStyle: 'dark-content',
         translucent: false,
       });
-    } else if (route.name == 'Home') {
-      setAppBarStyle({
-        bgColor: COLORS.white100,
-        contStyle: 'light-content',
-        translucent: false,
-      });
     } else {
       setAppBarStyle({
-        bgColor: COLORS.secondary,
+        bgColor: 'transparent',
         contStyle: 'light-content',
         translucent: true,
       });

@@ -3,11 +3,10 @@ import React from 'react';
 //--------------
 import { Container, Typography } from '../../../atomComponents';
 import { Header, IconButton } from '../../../components';
-import { ReadytoShootSvg, TargetPartSvg } from '../../../assets/svgs';
 import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
 import { GLOBALSTYLE } from '../../../globalStyle/Theme';
-import { downarrow } from '../../../assets/images';
+import { downarrow, homebanner } from '../../../assets/images';
 
 const CustomScoreCard = ({ navigation }) => {
   return (
@@ -17,20 +16,8 @@ const CustomScoreCard = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <View style={styles.svgImgContainer}>
-          <SlideInView slideDuration={1000}>
-            <TargetPartSvg />
-          </SlideInView>
-          <SlideInView slide="right" slideDuration={1000}>
-            <ReadytoShootSvg
-              style={{
-                alignSelf: 'center',
-                marginTop: -62,
-              }}
-            />
-          </SlideInView>
-        </View>
         <View style={GLOBALSTYLE.paddingHor}>
+        <Image source={homebanner} style={styles.banneerimg} resizeMode='cover'/>
           <Typography
             size={28}
             textAlign="center"
@@ -43,9 +30,11 @@ const CustomScoreCard = ({ navigation }) => {
             size={16}
             textAlign="center"
             mT={6}
+            mB={2}
             fFamily="barlowMedium500"
           >
-            Make your practice more analytic with filling our custom scorecard.{' '}
+            Master your sporting clays skills and start your analytics process
+            by using our custom ClayMaster scorecard.{' '}
           </Typography>
         </View>
         <Image
@@ -71,6 +60,11 @@ const styles = StyleSheet.create({
     width: Sizer.hSize(49),
     height: Sizer.hSize(70),
     alignSelf: 'center',
+  },
+  banneerimg: {
+    height: Sizer.hSize(173),
+    marginTop:Sizer.hSize(60),
+    width:"100%", borderRadius:Sizer.hSize(10)
   },
 });
 

@@ -2,9 +2,8 @@ import { StyleSheet, TouchableOpacity } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 //----
 import { CustomScoreCard, SettingsScreen } from '../screens';
-import { COLORS, FONTS } from '../globalStyle/Theme';
+import { COLORS } from '../globalStyle/Theme';
 import Sizer from '../helpers/Sizer';
-import Icon from '../helpers/Icon';
 import { HamburgerSvg, HomeSvg } from '../assets/svgs';
 import { Typography } from '../atomComponents';
 
@@ -17,14 +16,9 @@ const BottomNavigator = () => {
         tabBarHideOnKeyboard: true,
         headerShown: false,
         tabBarStyle: {
-          height: Sizer.hSize(90),
+          height: Sizer.hSize(75),
           backgroundColor: COLORS.orange200,
         },
-        // tabBarLabelStyle: {
-        //   fontFamily: FONTS.barlowMedium500,
-        // //   color: COLORS.primary,
-        //   fontSize: Sizer.hSize(14),
-        // },
       }}
       initialRouteName="Home"
     >
@@ -35,9 +29,9 @@ const BottomNavigator = () => {
           tabBarButton: props => (
             <BottomTabItem
               {...props}
-              svg={<HomeSvg />}
               label={'Custom Scorecard'}
               isFocus={props['aria-selected']}
+              renderSvg={isFocus => <HomeSvg active={isFocus} />}
             />
           ),
         }}
@@ -50,9 +44,9 @@ const BottomNavigator = () => {
           tabBarButton: props => (
             <BottomTabItem
               {...props}
-              svg={<HamburgerSvg />}
               label={'Setting'}
               isFocus={props['aria-selected']}
+              renderSvg={isFocus => <HamburgerSvg active={isFocus} />}
             />
           ),
         }}
@@ -62,8 +56,7 @@ const BottomNavigator = () => {
   );
 };
 
-const BottomTabItem = ({ svg, label, isFocus, ...props }) => {
-  console.log('🚀 ~ BottomTabItem ~ props:', props);
+const BottomTabItem = ({ renderSvg, label, isFocus, onPress, ...props }) => {
   return (
     <TouchableOpacity
       {...props}
@@ -72,18 +65,16 @@ const BottomTabItem = ({ svg, label, isFocus, ...props }) => {
         justifyContent: 'center',
         paddingTop: Sizer.hSize(12),
       }}
-      onPress={() => {
-        console.log('🚀 ~ BottomTabItem ~ isFocus:', props, isFocus);
-        // NavigationContainer.navigat
-      }}
+      onPress={onPress}
     >
-      {svg}
+      {renderSvg(isFocus)}
 
       <Typography
         color={isFocus ? COLORS.primary : COLORS.black400}
         numberOfLines={2}
         style={{ maxWidth: Sizer.hSize(80) }}
         textAlign="center"
+        mT={3}
       >
         {label}
       </Typography>

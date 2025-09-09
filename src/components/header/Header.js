@@ -1,5 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Avatar } from 'react-native-paper';
 //-------------
 import { Flex, Typography } from '../../atomComponents';
 import Icon from '../../helpers/Icon';
@@ -12,7 +13,6 @@ import {
 import Sizer from '../../helpers/Sizer';
 import { AppIconSvg, AppLogoSvg, BellSvg } from '../../assets/svgs';
 import SlideInView from '../../animations/SlideView';
-import { Avatar } from 'react-native-paper';
 // import { MainLogoSvg } from '../../assets/svgs';
 // import HamBurgerSvg from '../../assets/svgs/HamBurgerSvg';
 // import BellSvg from '../../assets/svgs/BellSvg';
@@ -83,7 +83,7 @@ const Header = ({
                 paddingBottom: Sizer.hSize(24),
               }}
             >
-              <TouchableOpacity
+             {isBackVisible && <TouchableOpacity
                 activeOpacity={BASEOPACITY}
                 onPress={onPresBack ?? (() => navigation.goBack())}
                 style={{
@@ -101,7 +101,7 @@ const Header = ({
                   size={Sizer.vSize(20)}
                   name={'arrow-back'}
                 />
-              </TouchableOpacity>
+              </TouchableOpacity>}
 
               <Typography
                 size={24}

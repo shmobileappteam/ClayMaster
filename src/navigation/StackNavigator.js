@@ -25,7 +25,7 @@ const StackNavigator = () => {
         headerTransparent: true,
         animationTypeForReplace: 'push',
         animation: 'slide_from_right',
-        navigationBarColor: COLORS.mainBg,
+        navigationBarColor: COLORS.orange200,
       }}
       initialRouteName={__DEV__ ? 'SplashScreen' : 'SplashScreen'}
     >
