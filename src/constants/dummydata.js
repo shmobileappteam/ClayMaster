@@ -185,3 +185,56 @@ export const settingData = [
     navLink: 'LoginScreen',
   },
 ];
+
+
+export const subscriptionPlans = [
+  {
+    id: 1,
+    name: 'Silver Plan',
+    price: '$25',
+    period: 'month',
+    icon: '👑',
+    features: [
+      'Self-assessment tab',
+      'Tips/techniques that can help improve your shooting performance.',
+      'Expanded practice drills.',
+      'Going beyond normal break points.',
+      'Additional 30 minute online coaching sessions can be purchased for $85/session.',
+    ],
+    additionalCount: 5,
+  },
+  {
+    id: 2,
+    name: 'Gold Plan',
+    price: '$45',
+    period: 'month',
+    icon: '👑',
+    features: [
+      'Everything in Silver Plan',
+      'Advanced performance analytics',
+      'Personalized training programs',
+      'Priority support',
+      'Monthly video analysis',
+      'Competition preparation guides',
+    ],
+    additionalCount: 8,
+  },
+  {
+    id: 3,
+    name: 'Platinum Plan',
+    price: '$75',
+    period: 'month',
+    icon: '💎',
+    features: [
+      'Everything in Gold Plan',
+      'One-on-one coaching sessions',
+      'Custom equipment recommendations',
+      'Weekly performance reviews',
+      'Access to exclusive tournaments',
+      'Mobile app premium features',
+    ],
+    additionalCount: 10,
+    isPopular: false,
+    backgroundColor: '#2C5F41', // Dark green/platinum color
+  },
+];

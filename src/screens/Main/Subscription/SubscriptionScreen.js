@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ScrollView, TouchableOpacity, View } from 'react-native';
 //-----
 import { Typography, Flex, Container } from '../../../atomComponents';
@@ -13,60 +13,14 @@ import { subbg } from '../../../assets/images';
 import { Button, Header } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import { SeperatorSvg, SubscribeTickSvg } from '../../../assets/svgs';
+import { subscriptionPlans } from '../../../constants/dummydata';
 
-const subscriptionPlans = [
-  {
-    id: 1,
-    name: 'Silver Plan',
-    price: '$25',
-    period: 'month',
-    icon: '👑',
-    features: [
-      'Self-assessment tab',
-      'Tips/techniques that can help improve your shooting performance.',
-      'Expanded practice drills.',
-      'Going beyond normal break points.',
-      'Additional 30 minute online coaching sessions can be purchased for $85/session.',
-    ],
-    additionalCount: 5,
-  },
-  {
-    id: 2,
-    name: 'Gold Plan',
-    price: '$45',
-    period: 'month',
-    icon: '👑',
-    features: [
-      'Everything in Silver Plan',
-      'Advanced performance analytics',
-      'Personalized training programs',
-      'Priority support',
-      'Monthly video analysis',
-      'Competition preparation guides',
-    ],
-    additionalCount: 8,
-  },
-  {
-    id: 3,
-    name: 'Platinum Plan',
-    price: '$75',
-    period: 'month',
-    icon: '💎',
-    features: [
-      'Everything in Gold Plan',
-      'One-on-one coaching sessions',
-      'Custom equipment recommendations',
-      'Weekly performance reviews',
-      'Access to exclusive tournaments',
-      'Mobile app premium features',
-    ],
-    additionalCount: 10,
-    isPopular: false,
-    backgroundColor: '#2C5F41', // Dark green/platinum color
-  },
-];
+const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
+  const handleLayout = e => {
+    const h = e.nativeEvent.layout.height;
+    onMeasure(h);
+  };
 
-const PlanCard = ({ plan, onSelect, isSelected }) => {
   return (
     <TouchableOpacity
       activeOpacity={BASEOPACITY}
@@ -77,6 +31,7 @@ const PlanCard = ({ plan, onSelect, isSelected }) => {
       }}
     >
       <View
+        onLayout={handleLayout}
         style={{
           backgroundColor: COLORS.orange400,
           borderRadius: Sizer.hSize(16),
@@ -84,8 +39,7 @@ const PlanCard = ({ plan, onSelect, isSelected }) => {
           borderWidth: Sizer.hSize(1.3),
           borderColor: isSelected ? COLORS.orange500 : COLORS.white100,
           position: 'relative',
-          height: Sizer.vSize(370),
-          // maxHeight:"90%"
+          height: maxHeight || 'auto',
         }}
       >
         <Flex
@@ -184,19 +138,82 @@ const PlanCard = ({ plan, onSelect, isSelected }) => {
 };
 
 const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
+  const [maxHeight, setMaxHeight] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollViewRef = useRef(null);
+
+  // Card width + margin
+  const cardWidth = WINDOW.width - 48 + Sizer.hSize(10);
+  const paddingHorizontal = Sizer.hSize(12);
+
+  const handleMeasure = h => {
+    setMaxHeight(prev => Math.max(prev, h));
+  };
+
   const handlePlanSelect = planId => {
     if (onPlanSelect) {
       onPlanSelect(planId);
     }
   };
 
+  const handleScroll = event => {
+    const scrollX = event.nativeEvent.contentOffset.x;
+    const index = Math.round((scrollX + paddingHorizontal) / cardWidth);
+
+    if (
+      index !== currentIndex &&
+      index >= 0 &&
+      index < subscriptionPlans.length
+    ) {
+      setCurrentIndex(index);
+      const centeredPlan = subscriptionPlans[index];
+      if (centeredPlan) {
+        handlePlanSelect(centeredPlan.id);
+      }
+    }
+  };
+
+  const handleMomentumScrollEnd = event => {
+    const scrollX = event.nativeEvent.contentOffset.x;
+    const index = Math.round((scrollX + paddingHorizontal) / cardWidth);
+
+    // Snap to the nearest card
+    if (scrollViewRef.current) {
+      const snapX = index * cardWidth - paddingHorizontal;
+      scrollViewRef.current.scrollTo({ x: snapX, animated: true });
+    }
+  };
+
+  // // Auto-scroll to selected plan when selectedPlanId changes externally
+  useEffect(() => {
+    if (selectedPlanId !== null) {
+      const index = subscriptionPlans.findIndex(
+        plan => plan.id === selectedPlanId,
+      );
+      if (index !== -1 && index !== currentIndex) {
+        setCurrentIndex(index);
+        if (scrollViewRef.current) {
+          const snapX = index * cardWidth - paddingHorizontal;
+          scrollViewRef.current.scrollTo({ x: snapX, animated: true });
+        }
+      }
+    }
+  }, [selectedPlanId]);
+
   return (
     <ScrollView
+      ref={scrollViewRef}
       horizontal
       showsHorizontalScrollIndicator={false}
+      snapToInterval={cardWidth}
+      snapToAlignment="center"
+      decelerationRate={"fast"}
       contentContainerStyle={{
-        paddingHorizontal: Sizer.hSize(12),
+        paddingHorizontal: paddingHorizontal,
       }}
+      onScroll={handleScroll}
+      onMomentumScrollEnd={handleMomentumScrollEnd}
+      scrollEventThrottle={16}
     >
       {subscriptionPlans.map(plan => (
         <PlanCard
@@ -204,6 +221,8 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
           plan={plan}
           onSelect={handlePlanSelect}
           isSelected={selectedPlanId === plan.id}
+          maxHeight={maxHeight}
+          onMeasure={handleMeasure}
         />
       ))}
     </ScrollView>
@@ -211,7 +230,8 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
 };
 
 const SubscriptionScreen = () => {
-  const [selectedPlan, setSelectedPlan] = React.useState(2);
+  const [selectedPlan, setSelectedPlan] = React.useState(1);
+
   const handlePlanSelection = planId => {
     setSelectedPlan(planId);
   };
