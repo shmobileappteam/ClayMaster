@@ -84,7 +84,7 @@ const PlanCard = ({ plan, onSelect, isSelected }) => {
           borderWidth: Sizer.hSize(1.3),
           borderColor: isSelected ? COLORS.orange500 : COLORS.white100,
           position: 'relative',
-          maxHeight: Sizer.vSize(500),
+          height: Sizer.vSize(370),
           // maxHeight:"90%"
         }}
       >
