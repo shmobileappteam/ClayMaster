@@ -6,6 +6,7 @@ import SlideInView from '../../animations/SlideView';
 import { AppIconSvg, AppLogoSvg } from '../../assets/svgs';
 
 import Sizer from '../../helpers/Sizer';
+import { COLORS } from '../../globalStyle/Theme';
 
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
@@ -22,7 +23,7 @@ const SplashScreen = ({ navigation }) => {
       </SlideInView>
       <View style={styles.margin} />
       <SlideInView slide="down" slideDuration={800}>
-        <AppLogoSvg />
+        <AppLogoSvg textColor={COLORS.black100}/>
       </SlideInView>
     </Container>
   );

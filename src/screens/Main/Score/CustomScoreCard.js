@@ -7,48 +7,71 @@ import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
 import { GLOBALSTYLE } from '../../../globalStyle/Theme';
 import { downarrow, homebanner } from '../../../assets/images';
+import ScorecardList from '../../../components/Round/ScorecardList';
+import { useRoute } from '@react-navigation/native';
 
 const CustomScoreCard = ({ navigation }) => {
+  const route = useRoute();
+
+  const comeFromScoreCardSucceed = route.params?.isSucceed;
+
   return (
     <Container isPadding={false}>
       <Header type="home" />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
-      >
-        <View style={GLOBALSTYLE.paddingHor}>
-          <Image
-            source={homebanner}
-            style={styles.banneerimg}
-            resizeMode="cover"
+
+      {comeFromScoreCardSucceed ? (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ marginTop: Sizer.hSize(30) }}
+          contentContainerStyle={{
+            paddingBottom: Sizer.vSize(20),
+            ...GLOBALSTYLE.paddingHor,
+          }}
+        >
+          <ScorecardList
+          // onItemPress={handleItemPress}
+          // onActionPress={handleActionPress}
           />
-          <Typography
-            size={28}
-            textAlign="center"
-            mT={20}
-            fFamily="barlowBoldItalic700"
-          >
-            Ready To Shoot?{' '}
-          </Typography>
-          <Typography
-            size={16}
-            textAlign="center"
-            mT={6}
-            mB={2}
-            fFamily="barlowMedium500"
-          >
-            Master your sporting clays skills and start your analytics process
-            by using our custom ClayMaster scorecard.{' '}
-          </Typography>
-        </View>
-        <Image
-          source={downarrow}
-          style={styles.downArrow}
-          resizeMode="contain"
-        />
-        <View style={{ marginTop: Sizer.hSize(12) }} />
-        <IconButton onPress={() => navigation.navigate('NewRoundScreen')} />
-      </ScrollView>
+        </ScrollView>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 32 }}
+        >
+          <View style={GLOBALSTYLE.paddingHor}>
+            <Image
+              source={homebanner}
+              style={styles.banneerimg}
+              resizeMode="cover"
+            />
+            <Typography
+              size={28}
+              textAlign="center"
+              mT={20}
+              fFamily="barlowBoldItalic700"
+            >
+              Ready To Shoot?{' '}
+            </Typography>
+            <Typography
+              size={16}
+              textAlign="center"
+              mT={6}
+              mB={2}
+              fFamily="barlowMedium500"
+            >
+              Master your sporting clays skills and start your analytics process
+              by using our custom ClayMaster scorecard.{' '}
+            </Typography>
+          </View>
+          <Image
+            source={downarrow}
+            style={styles.downArrow}
+            resizeMode="contain"
+          />
+          <View style={{ marginTop: Sizer.hSize(12) }} />
+          <IconButton onPress={() => navigation.navigate('NewRoundScreen')} />
+        </ScrollView>
+      )}
     </Container>
   );
 };

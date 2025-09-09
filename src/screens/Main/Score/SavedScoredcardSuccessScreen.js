@@ -43,7 +43,9 @@ const SavedScoredcardSuccessScreen = ({ navigation, route }) => {
         </SlideInView>
         <Button
           label="Back To Home"
-          onPress={() => navigation.navigate('BottomTabs')}
+          onPress={() =>
+            navigation.navigate('BottomTabs', {  screen:"Home", params: { isSucceed: true } })
+          }
           btnStyle={{
             position: 'absolute',
             bottom: Sizer.hSize(54),

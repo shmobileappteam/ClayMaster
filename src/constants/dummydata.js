@@ -269,3 +269,37 @@ export const statsData = [
     labelColor: COLORS.black100, // Black color
   },
 ];
+
+
+export const scorecardData = [
+  {
+    id: 1,
+    title: 'Saltwaters Black Course',
+    date: '26 - Aug - 2025',
+    status: 'sent', // ✅
+    action: 'download',
+    actionLabel: 'Download',
+    statusLabel: 'Sent',
+    hasNotification: true,
+  },
+  {
+    id: 2,
+    title: 'Saltwaters Black Course',
+    date: '26 - Aug - 2025',
+    status: 'completed', // ✅
+    action: 'saved',
+    actionLabel: 'Saved',
+    statusLabel: 'Completed',
+    hasNotification: false,
+  },
+  {
+    id: 3,
+    title: 'Saltwaters Black Course',
+    date: '26 - Aug - 2025',
+    status: 'completed', // ✅
+    action: 'saved',
+    actionLabel: 'Saved',
+    statusLabel: 'Completed',
+    hasNotification: false,
+  },
+];

@@ -49,7 +49,7 @@ const LoginScreen = ({ navigation }) => {
         <Button
           label="Login"
           mt={30}
-          onPress={() => navigation.navigate('BottomTabs')}
+          onPress={() => navigation.navigate('SubscriptionScreen')}
         />
         <Flex jusContent={'center'} mT={28} algItems={'center'}>
           <Typography color={COLORS.black100}>
