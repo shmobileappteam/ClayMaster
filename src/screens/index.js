@@ -9,6 +9,7 @@ import SettingsScreen from './Main/Setting/SettingsScreen';
 import NewRoundScreen from './Main/Score/NewRoundScreen';
 import CompleteRoundScreen from './Main/Score/CompleteRoundScreen';
 import NotificationScreen from './Main/Notification/NotificationScreen';
+import SubscriptionScreen from './Main/Subscription/SubscriptionScreen';
 
 export {
   SplashScreen,
@@ -23,4 +24,5 @@ export {
   NewRoundScreen,
   CompleteRoundScreen,
   NotificationScreen,
+  SubscriptionScreen,
 };

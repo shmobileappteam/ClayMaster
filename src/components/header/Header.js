@@ -31,6 +31,8 @@ const Header = ({
   isBackGreen,
   centerType = null,
   onPressRight = null,
+  defaultHeaderStyles,
+  logoTextColor = COLORS.black100,
   ...titleStyles
 }) => {
   const navigation = useNavigation();
@@ -83,25 +85,27 @@ const Header = ({
                 paddingBottom: Sizer.hSize(24),
               }}
             >
-             {isBackVisible && <TouchableOpacity
-                activeOpacity={BASEOPACITY}
-                onPress={onPresBack ?? (() => navigation.goBack())}
-                style={{
-                  // padding: Sizer.fS(8),
-                  backgroundColor: COLORS.white100,
-                  borderRadius: 100,
-                  position: 'absolute',
-                  left: Sizer.hSize(24),
-                  bottom: Sizer.hSize(30),
-                }}
-              >
-                <Icon
-                  color={iconColor}
-                  iconFamily={'Ionicons'}
-                  size={Sizer.vSize(20)}
-                  name={'arrow-back'}
-                />
-              </TouchableOpacity>}
+              {isBackVisible && (
+                <TouchableOpacity
+                  activeOpacity={BASEOPACITY}
+                  onPress={onPresBack ?? (() => navigation.goBack())}
+                  style={{
+                    // padding: Sizer.fS(8),
+                    backgroundColor: COLORS.white100,
+                    borderRadius: 100,
+                    position: 'absolute',
+                    left: Sizer.hSize(24),
+                    bottom: Sizer.hSize(30),
+                  }}
+                >
+                  <Icon
+                    color={iconColor}
+                    iconFamily={'Ionicons'}
+                    size={Sizer.vSize(20)}
+                    name={'arrow-back'}
+                  />
+                </TouchableOpacity>
+              )}
 
               <Typography
                 size={24}
@@ -116,12 +120,22 @@ const Header = ({
           </SlideInView>
         </View>
       ) : (
-        <View style={{ marginTop: Sizer.hSize(24), alignItems: 'center' }}>
+        <View
+          style={{
+            marginTop: Sizer.hSize(24),
+            alignItems: 'center',
+            ...defaultHeaderStyles,
+          }}
+        >
           <SlideInView slide="left" slideDuration={800}>
             <AppIconSvg width={Sizer.hSize(151)} height={Sizer.hSize(59)} />
           </SlideInView>
           <SlideInView slide="right" slideDuration={800}>
-            <AppLogoSvg width={Sizer.hSize(150)} height={Sizer.hSize(27)} />
+            <AppLogoSvg
+              textColor={logoTextColor}
+              width={Sizer.hSize(150)}
+              height={Sizer.hSize(27)}
+            />
           </SlideInView>
         </View>
       )}

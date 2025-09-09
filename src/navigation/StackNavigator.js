@@ -10,6 +10,7 @@ import {
   ResetPasswordScreen,
   SignupScreen,
   SplashScreen,
+  SubscriptionScreen,
   VerifyEmailScreen,
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
@@ -53,6 +54,7 @@ const StackNavigator = () => {
         component={CompleteRoundScreen}
       />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
+      <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
 
       {/* Main */}
 

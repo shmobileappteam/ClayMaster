@@ -16,6 +16,8 @@ const COLORS = {
   orange100: '#EE7615',
   orange200: '#F9F9F9',
   orange300: 'rgba(235, 108, 15, 0.1)',
+  orange400: 'rgba(0, 0, 0, 0.5)',
+  orange500: '#FFCA28',
 
   //Black Variants:
   black100: '#000000',
