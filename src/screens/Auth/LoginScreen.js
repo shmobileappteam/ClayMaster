@@ -10,7 +10,6 @@ const LoginScreen = ({ navigation }) => {
   return (
     <SafeAreaWrapper>
       <Header />
-      <SlideInView slide="down" slideDuration={800}>
         <Typography
           size={40}
           textAlign="center"
@@ -19,6 +18,7 @@ const LoginScreen = ({ navigation }) => {
         >
           Welcome Back!{' '}
         </Typography>
+
         <Typography size={16} textAlign="center" color={COLORS.black200} mT={8}>
           Sign in to continue{' '}
         </Typography>
@@ -66,7 +66,6 @@ const LoginScreen = ({ navigation }) => {
             Sign Up{' '}
           </Typography>
         </Flex>
-      </SlideInView>
     </SafeAreaWrapper>
   );
 };

@@ -11,6 +11,9 @@ import ScorecardSvg from './ScorecardSvg';
 import CircledTickSvg from './CircledTickSvg';
 import SubscribeTickSvg from './SubscribeTickSvg';
 import SeperatorSvg from './SeperatorSvg';
+import CircleSvg from './CircleSvg';
+import SlashSvg from './SlashSvg';
+import UndoSvg from './UndoSvg';
 
 export {
   AppIconSvg,
@@ -26,4 +29,7 @@ export {
   CircledTickSvg,
   SubscribeTickSvg,
   SeperatorSvg,
+  CircleSvg,
+  SlashSvg,
+  UndoSvg
 };

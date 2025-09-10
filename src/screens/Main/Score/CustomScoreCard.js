@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import React from 'react';
 //--------------
 import { Container, Typography } from '../../../atomComponents';
@@ -8,7 +9,6 @@ import SlideInView from '../../../animations/SlideView';
 import { GLOBALSTYLE } from '../../../globalStyle/Theme';
 import { downarrow, homebanner } from '../../../assets/images';
 import ScorecardList from '../../../components/Round/ScorecardList';
-import { useRoute } from '@react-navigation/native';
 
 const CustomScoreCard = ({ navigation }) => {
   const route = useRoute();
@@ -29,8 +29,8 @@ const CustomScoreCard = ({ navigation }) => {
           }}
         >
           <ScorecardList
-          // onItemPress={handleItemPress}
-          // onActionPress={handleActionPress}
+            onItemPress={(item) => navigation.navigate('ScorecardDetailsScreen',{cardDetails:item})}
+            // onActionPress={handleActionPress}
           />
         </ScrollView>
       ) : (

@@ -6,6 +6,7 @@ import { BASEOPACITY, COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
 import Icon from '../../helpers/Icon';
 import SlideInView from '../../animations/SlideView';
+import { CircleSvg, SlashSvg } from '../../assets/svgs';
 
 const Header = ({
   titleLeft = '',
@@ -16,7 +17,7 @@ const Header = ({
 }) => {
   return (
     <TouchableOpacity
-      onPress={isTargetPairSelected ? onToggle : () => {}}
+      onPress={isTargetPairSelected ? onToggle : () => { }}
       activeOpacity={BASEOPACITY}
     >
       <Flex direction="row" jusContent="space-between" algItems="center">
@@ -55,7 +56,9 @@ const Header = ({
               size={Sizer.hSize(18)}
               color={COLORS.black100}
               iconFamily={'MaterialIcons'}
-            />
+              {...(!titleRight
+                ? { style: { transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] } }
+                : {})} />
           )}
         </Flex>
       </Flex>
@@ -92,14 +95,12 @@ const ShotCircle = ({ status }) => {
         },
       ]}
     >
-      {status !== 'empty' && (
-        <Icon
-          name={status == 'hit' ? 'circle' : 'slash'}
-          iconFamily={'Lucide'}
-          size={18}
-          color={COLORS.white100}
-        />
-      )}
+      {status !== 'empty' &&
+        (status == 'hit' ? (
+          <CircleSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
+        ) : (
+          <SlashSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
+        ))}
     </View>
   );
 };
@@ -226,7 +227,7 @@ const TargetSelection = ({
                   },
                 ]}
               >
-                <Typography size={14} Family="barlowMedium500">
+                <Typography  Family="barlowMedium500">
                   3 Target Pair{' '}
                 </Typography>
               </TouchableOpacity>
@@ -243,7 +244,7 @@ const TargetSelection = ({
                   },
                 ]}
               >
-                <Typography size={14} fFamily="barlowMedium500">
+                <Typography  fFamily="barlowMedium500">
                   5 Target Pair{' '}
                 </Typography>
               </TouchableOpacity>

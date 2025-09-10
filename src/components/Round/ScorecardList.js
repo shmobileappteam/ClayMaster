@@ -53,8 +53,22 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
         borderRadius: Sizer.hSize(10),
         padding: Sizer.hSize(16),
         marginBottom: Sizer.vSize(12),
+        position: 'relative',
       }}
     >
+      {item.hasNotification && (
+        <View
+          style={{
+            width: Sizer.hSize(9),
+            height: Sizer.hSize(9),
+            backgroundColor: COLORS.primary,
+            borderRadius: Sizer.hSize(4),
+            position: 'absolute',
+            top: 0,
+            right: 0,
+          }}
+        />
+      )}
       <Flex direction="row" algItems="center" gap={16}>
         {/* Icon */}
         <View
@@ -79,17 +93,6 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
             >
               {item.title}
             </Typography>
-            {item.hasNotification && (
-              <View
-                style={{
-                  width: Sizer.hSize(8),
-                  height: Sizer.hSize(8),
-                  backgroundColor: COLORS.primary,
-                  borderRadius: Sizer.hSize(4),
-                  marginLeft: Sizer.hSize(8),
-                }}
-              />
-            )}
           </Flex>
 
           <Flex direction="row" algItems="center" gap={6}>
@@ -161,7 +164,7 @@ const ScorecardList = ({
   containerStyle = {},
 }) => {
   const handleItemPress = item => {
-    console.log('Scorecard pressed:', item.title);
+    console.log('Scorecard pressed:', item);
     onItemPress?.(item);
   };
 

@@ -26,8 +26,7 @@ const SignupScreen = ({ navigation }) => {
           >
             Sign up to get started{' '}
           </Typography>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:24}}>
-        <SlideInView slide="down" slideDuration={800}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:32}}>
           <TextField
             placeholder="Username"
             leftIcon
@@ -79,7 +78,6 @@ const SignupScreen = ({ navigation }) => {
               Sign In{' '}
             </Typography>
           </Flex>
-        </SlideInView>
       </ScrollView>
     </SafeAreaWrapper>
   );

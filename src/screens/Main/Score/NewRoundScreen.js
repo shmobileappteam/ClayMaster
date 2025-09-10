@@ -20,6 +20,7 @@ import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
 import Icon from '../../../helpers/Icon';
 import StationCard from '../../../components/Round/StationCard';
+import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 
 const nscaClasses = [
   { name: 'A', selected: false },
@@ -47,7 +48,7 @@ const NewRoundScreen = ({ navigation }) => {
         { id: 4, status: 'hit' }, // orange
         { id: 5, status: 'missed' }, // grey
         { id: 6, status: 'missed' }, // grey
-        { id: 7, status: 'empty' }, // orange
+        { id: 7, status: 'hit' }, // orange
         { id: 8, status: 'missed' }, // grey
         { id: 9, status: 'hit' }, // orange
         { id: 10, status: 'hit' }, // orange
@@ -178,15 +179,11 @@ const NewRoundScreen = ({ navigation }) => {
                         { backgroundColor: COLORS.grey900, flex: 0.6 },
                       ]}
                     >
-                      <Icon
-                        name={'undo'}
-                        iconFamily={'Lucide'}
-                        color={COLORS.white100}
-                        size={22}
-                      />
+                      <UndoSvg />
                       <Typography
                         color={COLORS.white100}
                         fFamily="barlowSemiBold600"
+                        mT={5}
                         size={18}
                       >
                         Undo
@@ -196,16 +193,13 @@ const NewRoundScreen = ({ navigation }) => {
                       activeOpacity={BASEOPACITY}
                       style={styles.actionBxo}
                     >
-                      <Icon
-                        name={'slash'}
-                        iconFamily={'Lucide'}
-                        color={COLORS.white100}
-                        size={22}
-                      />
+
+                      <SlashSvg />
                       <Typography
                         color={COLORS.white100}
                         fFamily="barlowSemiBold600"
                         size={18}
+                        mT={5}
                       >
                         Dead
                       </Typography>
@@ -217,18 +211,15 @@ const NewRoundScreen = ({ navigation }) => {
                         { backgroundColor: COLORS.black500 },
                       ]}
                     >
-                      <Icon
-                        name={'circle'}
-                        iconFamily={'Lucide'}
-                        color={COLORS.white100}
-                        size={22}
-                      />
+
+                      <CircleSvg />
                       <Typography
                         color={COLORS.white100}
                         fFamily="barlowSemiBold600"
                         size={18}
+                        mT={5}
                       >
-                        Undo
+                        Lost
                       </Typography>
                     </TouchableOpacity>
                   </Flex>
