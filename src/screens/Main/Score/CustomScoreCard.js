@@ -1,19 +1,18 @@
-import { View, Text, StyleSheet, Image, ScrollView } from 'react-native';
+import { View,  StyleSheet, Image, ScrollView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import React from 'react';
 //--------------
 import { Container, Typography } from '../../../atomComponents';
 import { Header, IconButton } from '../../../components';
 import Sizer from '../../../helpers/Sizer';
-import SlideInView from '../../../animations/SlideView';
 import { GLOBALSTYLE } from '../../../globalStyle/Theme';
 import { downarrow, homebanner } from '../../../assets/images';
 import ScorecardList from '../../../components/Round/ScorecardList';
 
 const CustomScoreCard = ({ navigation }) => {
   const route = useRoute();
-
   const comeFromScoreCardSucceed = route.params?.isSucceed;
+
 
   return (
     <Container isPadding={false}>

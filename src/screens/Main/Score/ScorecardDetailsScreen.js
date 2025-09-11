@@ -6,7 +6,7 @@ import { Button, Header, Label, TextField } from '../../../components';
 import Sizer from '../../../helpers/Sizer';
 import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import StationsList from '../../../components/Round/StationsList';
-import { stationsData } from '../../../constants/dummydata';
+import { stationsDataList } from '../../../constants/dummydata';
 import { ScrollView } from 'react-native-gesture-handler';
 
 const nscaClasses = [{ name: 'D', selected: true }];
@@ -63,7 +63,7 @@ const ScorecardDetailsScreen = ({ route, navigation }) => {
             ))}
           </View>
           <Label title="Round Summary" size={20} fFamily="barlowBold700" />
-          <StationsList data={stationsData} />
+          <StationsList data={stationsDataList} />
           <Button
             label={
               cardDetails?.status == 'sent'

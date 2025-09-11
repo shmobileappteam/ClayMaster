@@ -21,6 +21,10 @@ import SlideInView from '../../../animations/SlideView';
 import Icon from '../../../helpers/Icon';
 import StationCard from '../../../components/Round/StationCard';
 import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
+import {
+  expandedStationCardsObject,
+  stationsData,
+} from '../../../constants/dummydata';
 
 const nscaClasses = [
   { name: 'A', selected: false },
@@ -34,38 +38,11 @@ const nscaClasses = [
 
 const NewRoundScreen = ({ navigation }) => {
   const [sectionNumber, setSectionNumber] = useState(1);
-  const [addStation, setAddStation] = useState([
-    {
-      id: 1,
-      name: 'Station 01',
-      hits: 6,
-      missed: 4,
-      totalShots: 10,
-      shots: [
-        { id: 1, status: 'hit' }, // orange
-        { id: 2, status: 'hit' }, // orange
-        { id: 3, status: 'missed' }, // grey
-        { id: 4, status: 'hit' }, // orange
-        { id: 5, status: 'missed' }, // grey
-        { id: 6, status: 'missed' }, // grey
-        { id: 7, status: 'hit' }, // orange
-        { id: 8, status: 'missed' }, // grey
-        { id: 9, status: 'hit' }, // orange
-        { id: 10, status: 'hit' }, // orange
-      ],
-      reportPair: 'TP', // TP or RF
-      traps: {
-        chandelle: 'Crosser',
-        incomer: 'Knuckleball/Off-Speed',
-        overhead: 'Quartering',
-        rabbit: 'Tee',
-        tower: 'Rabbit',
-        trapTee: 'Trap Shot',
-      },
-    },
-  ]);
+  const [addStation, setAddStation] = useState([stationsData[0]]);
 
-  const [expandedStations, setExpandedStations] = useState({});
+  const [expandedStations, setExpandedStations] = useState(
+    expandedStationCardsObject,
+  );
 
   const toggleStation = stationId => {
     setExpandedStations(prev => ({
@@ -193,7 +170,6 @@ const NewRoundScreen = ({ navigation }) => {
                       activeOpacity={BASEOPACITY}
                       style={styles.actionBxo}
                     >
-
                       <SlashSvg />
                       <Typography
                         color={COLORS.white100}
@@ -211,7 +187,6 @@ const NewRoundScreen = ({ navigation }) => {
                         { backgroundColor: COLORS.black500 },
                       ]}
                     >
-
                       <CircleSvg />
                       <Typography
                         color={COLORS.white100}

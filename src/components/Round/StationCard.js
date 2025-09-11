@@ -7,6 +7,74 @@ import Sizer from '../../helpers/Sizer';
 import Icon from '../../helpers/Icon';
 import SlideInView from '../../animations/SlideView';
 import { CircleSvg, SlashSvg } from '../../assets/svgs';
+import { pairOfTargets } from '../../constants/dummydata';
+
+const TrapSelector = ({ traps = [], selectedTrap, onSelect }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <View>
+      {/* Selected Trap */}
+      <TouchableOpacity
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          backgroundColor: COLORS.grey700,
+          borderRadius: Sizer.hSize(5),
+          paddingHorizontal: Sizer.hSize(6),
+          paddingVertical: Sizer.hSize(4),
+          gap: 5,
+        }}
+        onPress={() => setIsOpen(!isOpen)}
+      >
+        <Typography fFamily="barlowMedium500" size={14}>
+          {selectedTrap}
+        </Typography>
+        <Icon
+          name="play-arrow"
+          size={Sizer.hSize(18)}
+          color={COLORS.black100}
+          iconFamily="MaterialIcons"
+          style={{
+            transform: [{ rotate: isOpen ? '90deg' : '0deg' }],
+          }}
+        />
+      </TouchableOpacity>
+
+      {/* Dropdown */}
+      {isOpen && (
+        <View
+          style={{
+            position: 'absolute',
+            top: Sizer.hSize(30),
+            right: 0,
+            left: 0,
+            backgroundColor: '#F8F8F8',
+            borderRadius: Sizer.hSize(5),
+            paddingHorizontal: Sizer.hSize(6),
+            paddingVertical: Sizer.hSize(4),
+          }}
+        >
+          {traps.map((trap, index) => (
+            <TouchableOpacity
+              key={index}
+              style={{
+                paddingVertical: Sizer.hSize(5),
+              }}
+              onPress={() => {
+                onSelect(trap);
+                setIsOpen(false);
+              }}
+            >
+              <Typography fFamily="barlowMedium500">{trap}</Typography>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+    </View>
+  );
+};
 
 const Header = ({
   titleLeft = '',
@@ -14,10 +82,12 @@ const Header = ({
   isExpanded,
   onToggle,
   isTargetPairSelected,
+  isDropDown = false,
 }) => {
+  const [selectedTrap, setSelectedTrap] = useState('Trap 1');
   return (
     <TouchableOpacity
-      onPress={isTargetPairSelected ? onToggle : () => { }}
+      onPress={isTargetPairSelected ? onToggle : () => {}}
       activeOpacity={BASEOPACITY}
     >
       <Flex direction="row" jusContent="space-between" algItems="center">
@@ -34,39 +104,53 @@ const Header = ({
             {titleLeft}
           </Typography>
         </Flex>
-        <Flex
-          gap={12}
-          {...(titleRight && {
-            extraStyle: {
-              paddingVertical: Sizer.hSize(4),
-              paddingHorizontal: Sizer.hSize(5),
-              backgroundColor: COLORS.grey700,
-              borderRadius: Sizer.fS(5),
-            },
-          })}
-        >
-          {titleRight && (
-            <Typography fFamily="barlowMedium500" size={13}>
-              {titleRight}
-            </Typography>
-          )}
-          {isTargetPairSelected && (
-            <Icon
-              name={isExpanded ? 'play-arrow' : 'play-arrow'}
-              size={Sizer.hSize(18)}
-              color={COLORS.black100}
-              iconFamily={'MaterialIcons'}
-              {...(!titleRight
-                ? { style: { transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] } }
-                : {})} />
-          )}
-        </Flex>
+
+        {isDropDown ? (
+          <TrapSelector
+            traps={['Trap 1', 'Trap 2']}
+            selectedTrap={selectedTrap}
+            onSelect={setSelectedTrap}
+          />
+        ) : (
+          <Flex
+            gap={12}
+            {...(titleRight && {
+              extraStyle: {
+                paddingVertical: Sizer.hSize(4),
+                paddingHorizontal: Sizer.hSize(5),
+                backgroundColor: COLORS.grey700,
+                borderRadius: Sizer.fS(5),
+              },
+            })}
+          >
+            {titleRight && (
+              <Typography fFamily="barlowMedium500" size={13}>
+                {titleRight}
+              </Typography>
+            )}
+            {isTargetPairSelected && (
+              <Icon
+                name={isExpanded ? 'play-arrow' : 'play-arrow'}
+                size={Sizer.hSize(18)}
+                color={COLORS.black100}
+                iconFamily={'MaterialIcons'}
+                {...(!titleRight
+                  ? {
+                      style: {
+                        transform: [{ rotate: isExpanded ? '90deg' : '0deg' }],
+                      },
+                    }
+                  : {})}
+              />
+            )}
+          </Flex>
+        )}
       </Flex>
     </TouchableOpacity>
   );
 };
 
-const ShotCircle = ({ status }) => {
+const ShotCircle = ({ status, shotNumber }) => {
   const getCircleColor = () => {
     switch (status) {
       case 'hit':
@@ -85,22 +169,28 @@ const ShotCircle = ({ status }) => {
   };
 
   return (
-    <View
-      style={[
-        styles.shotBox,
-        {
-          backgroundColor: getCircleColor(),
-          borderWidth: status === 'empty' ? Sizer.fS(1) : 0,
-          borderColor: getBorderColor(),
-        },
-      ]}
-    >
-      {status !== 'empty' &&
-        (status == 'hit' ? (
-          <CircleSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
-        ) : (
-          <SlashSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
-        ))}
+    <View>
+      <Typography size={12} mB={4} fFamily="barlowMedium500" textAlign="center">
+        {shotNumber}
+      </Typography>
+
+      <View
+        style={[
+          styles.shotBox,
+          {
+            backgroundColor: getCircleColor(),
+            borderWidth: status === 'empty' ? Sizer.fS(1) : 0,
+            borderColor: getBorderColor(),
+          },
+        ]}
+      >
+        {status !== 'empty' &&
+          (status == 'hit' ? (
+            <CircleSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
+          ) : (
+            <SlashSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
+          ))}
+      </View>
     </View>
   );
 };
@@ -128,28 +218,30 @@ const RadioButton = ({ selected, onPress, label }) => (
   </TouchableOpacity>
 );
 
-const TargetSelection = ({
-  station,
-  hitCount,
-  missedCount,
-  isTargetPairSelected,
+const TargetPairSelection = ({
   onSetIsTargetPairSelected,
+  onSelectTargetPair,
 }) => {
+  const handleTarhetPairSelection = pair => {
+    onSelectTargetPair(pair);
+    onSetIsTargetPairSelected(true);
+  };
+
   return (
     <>
-      {isTargetPairSelected ? (
-        <SlideInView slide="right" slideDuration={500}>
+      <View style={{ marginTop: Sizer.hSize(15) }}>
+        <SlideInView slideDuration={500}>
           <Flex
-            direction="row"
-            jusContent="space-between"
-            algItems="center"
-            flexWrap="wrap"
-            gap={4}
-            mT={16}
+            jusContent={'space-between'}
+            extraStyle={{
+              backgroundColor: COLORS.orange300,
+            }}
           >
-            {station.shots.map(shot => (
-              <ShotCircle key={shot.id} status={shot.status} />
-            ))}
+            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+            <Typography fFamily="barlowMedium500">
+              Select Pair of Targets
+            </Typography>
+            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
           </Flex>
           <Flex
             direction="row"
@@ -158,104 +250,123 @@ const TargetSelection = ({
             mT={15}
             gap={9}
           >
-            <View
+            <TouchableOpacity
+              activeOpacity={BASEOPACITY}
+              onPress={handleTarhetPairSelection.bind(this, 3)}
               style={[
                 styles.shotsInfoBox,
                 {
-                  backgroundColor: hitCount ? COLORS.orange300 : COLORS.grey400,
+                  backgroundColor: '#F0F0F0',
                 },
               ]}
             >
-              <Typography
-                size={14}
-                color={hitCount ? COLORS.primary : COLORS.grey500}
-                Family="barlowMedium500"
-              >
-                Dead {station.hits}
-              </Typography>
-            </View>
+              <Typography Family="barlowMedium500">3 Target Pair </Typography>
+            </TouchableOpacity>
 
-            <View
+            <TouchableOpacity
+              activeOpacity={BASEOPACITY}
+              onPress={handleTarhetPairSelection.bind(this, 4)}
               style={[
                 styles.shotsInfoBox,
                 {
-                  backgroundColor: missedCount ? COLORS.red100 : COLORS.grey400,
+                  backgroundColor: '#F0F0F0',
                 },
               ]}
             >
-              <Typography
-                size={14}
-                fFamily="barlowMedium500"
-                color={missedCount ? COLORS.primary : COLORS.grey500}
-              >
-                Lost {station.missed}
-              </Typography>
-            </View>
+              <Typography fFamily="barlowMedium500">4 Target Pair </Typography>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={BASEOPACITY}
+              onPress={handleTarhetPairSelection.bind(this, 5)}
+              style={[
+                styles.shotsInfoBox,
+                {
+                  backgroundColor: '#F0F0F0',
+                },
+              ]}
+            >
+              <Typography fFamily="barlowMedium500">5 Target Pair </Typography>
+            </TouchableOpacity>
           </Flex>
         </SlideInView>
-      ) : (
-        <View style={{ marginTop: Sizer.hSize(15) }}>
-          <SlideInView slide="down" slideDuration={500}>
-            <Flex
-              jusContent={'space-between'}
-              extraStyle={{
-                backgroundColor: COLORS.orange300,
-              }}
-            >
-              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-              <Typography fFamily="barlowMedium500">
-                Select Pair of Targets
-              </Typography>
-              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-            </Flex>
-            <Flex
-              direction="row"
-              jusContent="space-between"
-              algItems="center"
-              mT={15}
-              gap={9}
-            >
-              <TouchableOpacity
-                activeOpacity={BASEOPACITY}
-                onPress={() => {
-                  onSetIsTargetPairSelected(true);
-                }}
-                style={[
-                  styles.shotsInfoBox,
-                  {
-                    backgroundColor: '#F0F0F0',
-                  },
-                ]}
-              >
-                <Typography  Family="barlowMedium500">
-                  3 Target Pair{' '}
-                </Typography>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={BASEOPACITY}
-                onPress={() => {
-                  onSetIsTargetPairSelected(true);
-                }}
-                style={[
-                  styles.shotsInfoBox,
-                  {
-                    backgroundColor: '#F0F0F0',
-                  },
-                ]}
-              >
-                <Typography  fFamily="barlowMedium500">
-                  5 Target Pair{' '}
-                </Typography>
-              </TouchableOpacity>
-            </Flex>
-          </SlideInView>
-        </View>
-      )}
+      </View>
+      {/* )} */}
     </>
   );
 };
-// ---------------- Main Card ----------------
+
+const ShotsPresentation = ({
+  station,
+  hitCount,
+  missedCount,
+  shotsData = [],
+  isExpanded,
+}) => {
+  return (
+    <SlideInView slide="right" slideDuration={500}>
+      <Flex
+        direction="row"
+        jusContent="space-between"
+        algItems="center"
+        flexWrap="wrap"
+        gap={4}
+        mT={16}
+      >
+        {/* {station.shots.map(shot => (
+          <ShotCircle key={shot.id} status={shot.status} />
+        ))} */}
+        {shotsData.map((shot, index) => (
+          <ShotCircle
+            key={shot.id}
+            status={shot.status}
+            shotNumber={index + 1}
+          />
+        ))}
+      </Flex>
+      <Flex
+        direction="row"
+        jusContent="space-between"
+        algItems="center"
+        mT={15}
+        gap={9}
+      >
+        <View
+          style={[
+            styles.shotsInfoBox,
+            {
+              backgroundColor: hitCount ? COLORS.orange300 : COLORS.grey400,
+            },
+          ]}
+        >
+          <Typography
+            size={14}
+            color={hitCount ? COLORS.primary : COLORS.grey500}
+            Family="barlowMedium500"
+          >
+            Dead {station.hits}
+          </Typography>
+        </View>
+
+        <View
+          style={[
+            styles.shotsInfoBox,
+            {
+              backgroundColor: missedCount ? COLORS.red100 : COLORS.grey400,
+            },
+          ]}
+        >
+          <Typography
+            size={14}
+            fFamily="barlowMedium500"
+            color={missedCount ? COLORS.primary : COLORS.grey500}
+          >
+            Lost {station.missed}
+          </Typography>
+        </View>
+      </Flex>
+    </SlideInView>
+  );
+};
 
 const StationCard = ({ station, isExpanded, onToggle }) => {
   const [reportPair, setReportPair] = useState(station.reportPair);
@@ -263,107 +374,137 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
     station?.isPairSelected || false,
   );
 
+  const [selectedTargetPairs, setSelectedTargetPairs] = useState(4);
+
   const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
   const missedCount = station.shots.filter(
     item => item.status == 'missed',
   )?.length;
 
   return (
-    <View style={styles.stationCard}>
-      {/* Header */}
-      <Header
-        titleLeft={station.name}
-        isExpanded={isExpanded}
-        onToggle={onToggle}
-        isTargetPairSelected={isTargetPairSelected}
-      />
+    <SlideInView>
+      <View style={styles.stationCard}>
+        {/* Header */}
+        <Header
+          titleLeft={station.name}
+          isExpanded={isExpanded}
+          onToggle={onToggle}
+          isTargetPairSelected={isTargetPairSelected}
+        />
 
-      {/* Shots Grid */}
-      <TargetSelection
-        station={station}
-        hitCount={hitCount}
-        missedCount={missedCount}
-        isTargetPairSelected={isTargetPairSelected}
-        onSetIsTargetPairSelected={setIsTargetPairSelected}
-      />
-
-      {/* Expanded Content */}
-      {isExpanded && (
-        <View style={styles.expandedContainer}>
-          {/* Report Pair Selection */}
-          <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
-            <RadioButton
-              selected={reportPair === 'TP'}
-              onPress={() => setReportPair('TP')}
-              label="Report Pair"
-            />
-            <RadioButton
-              selected={reportPair === 'RP'}
-              onPress={() => setReportPair('RP')}
-              label="True Pair"
-            />
-          </Flex>
-
-          {/* Traps Section */}
-          <Header
-            titleLeft="Traps / Target Presentations"
-            titleRight="Trap 01"
-            isExpanded={isExpanded}
-            isTargetPairSelected={isTargetPairSelected}
+        {!isTargetPairSelected && (
+          <TargetPairSelection
+            onSetIsTargetPairSelected={setIsTargetPairSelected}
+            onSelectTargetPair={setSelectedTargetPairs}
           />
+        )}
 
-          {/* Trap Details */}
-          <View style={{ marginTop: Sizer.hSize(15) }}>
-            {Object.entries(station.traps).map(([key, value], index) => (
-              <Flex
-                key={key}
-                direction="row"
-                algItems="center"
-                mB={Object.entries(station.traps).length == index + 1 ? 0 : 10}
-              >
-                <View style={{ flex: 1 }}>
-                  <View style={styles.bottomRectangle}>
-                    <Typography
-                      size={14}
-                      color={COLORS.black200}
-                      fFamily="barlowMedium500"
-                      textTransform="capitalize"
-                    >
-                      {key
-                        .replace(/([A-Z])/g, ' $1')
-                        .replace(/^./, str => str.toUpperCase())}
-                    </Typography>
-                  </View>
-                </View>
+        {isTargetPairSelected && (
+          <Flex
+            jusContent={'space-between'}
+            extraStyle={{
+              backgroundColor: COLORS.orange300,
+            }}
+            mT={15}
+          >
+            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+            <Typography fFamily="barlowMedium500">
+              Selected Pair of {selectedTargetPairs} Targets{' '}
+            </Typography>
+            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+          </Flex>
+        )}
 
-                <View style={{ width: '60%' }}>
-                  <View
-                    style={[
-                      styles.bottomRectangle,
-                      value == 'Quartering' && {
-                        backgroundColor: COLORS.primary,
-                      },
-                    ]}
-                  >
-                    <Typography
-                      size={14}
-                      color={
-                        value == 'Quartering'
-                          ? COLORS.white100
-                          : COLORS.black200
-                      }
-                      fFamily="barlowMedium500"
+        {/* Expanded Content */}
+        {isExpanded && (
+          <View style={styles.expandedContainer}>
+            {/* Report Pair Selection */}
+            <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
+              <RadioButton
+                selected={reportPair === 'TP'}
+                onPress={() => setReportPair('TP')}
+                label="Report Pair"
+              />
+              <RadioButton
+                selected={reportPair === 'RP'}
+                onPress={() => setReportPair('RP')}
+                label="True Pair"
+              />
+            </Flex>
+
+            {/* Traps Section */}
+
+            <Header
+              titleLeft="Traps / Target Presentations"
+              titleRight="Trap 01"
+              isExpanded={isExpanded}
+              isTargetPairSelected={isTargetPairSelected}
+              isDropDown
+            />
+
+            {/* Trap Details */}
+            <View style={{ marginTop: Sizer.hSize(15) }}>
+              {Object.entries(station.traps).map(([key, value], index) => (
+                <Flex
+                  key={key}
+                  direction="row"
+                  algItems="center"
+                  mB={
+                    Object.entries(station.traps).length == index + 1 ? 0 : 10
+                  }
+                >
+                  <View style={{ flex: 1 }}>
+                    <View
+                      style={[
+                        styles.bottomRectangle,
+                        key == 'Quartering' && {
+                          backgroundColor: COLORS.primary,
+                        },
+                      ]}
                     >
-                      {value}
-                    </Typography>
+                      <Typography
+                        size={14}
+                        color={
+                          key == 'Quartering'
+                            ? COLORS.white100
+                            : COLORS.black100
+                        }
+                        fFamily="barlowMedium500"
+                        textTransform="capitalize"
+                      >
+                        {key
+                          .replace(/([A-Z])/g, ' $1')
+                          .replace(/^./, str => str.toUpperCase())}
+                      </Typography>
+                    </View>
                   </View>
-                </View>
-              </Flex>
-            ))}
+
+                  <View style={{ width: '60%' }}>
+                    <View style={[styles.bottomRectangle]}>
+                      <Typography size={14} fFamily="barlowMedium500">
+                        {value}
+                      </Typography>
+                    </View>
+                  </View>
+                </Flex>
+              ))}
+            </View>
           </View>
-        </View>
-      )}
-    </View>
+        )}
+
+        {/* Shots Grid */}
+
+        {isTargetPairSelected && (
+          <ShotsPresentation
+            station={station}
+            hitCount={hitCount}
+            missedCount={missedCount}
+            isExpanded={isExpanded}
+            shotsData={pairOfTargets[selectedTargetPairs]}
+          />
+        )}
+      </View>
+    </SlideInView>
   );
 };
 
@@ -396,9 +537,9 @@ const styles = StyleSheet.create({
     paddingVertical: Sizer.hSize(6),
   },
   expandedContainer: {
-    borderTopWidth: Sizer.hSize(1),
+    // borderTopWidth: Sizer.hSize(1),
+    // marginTop: Sizer.hSize(15),
     borderTopColor: COLORS.grey600,
-    marginTop: Sizer.hSize(15),
   },
   radioContainer: {
     flex: 1,

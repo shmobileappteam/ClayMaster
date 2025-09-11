@@ -5,20 +5,20 @@ import { Container, Flex, Typography } from '../../../atomComponents';
 import { Button, Header, Label } from '../../../components';
 import StationsList from '../../../components/Round/StationsList';
 import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
-import { stationsData, statsData } from '../../../constants/dummydata';
+import { stationsDataList, statsData } from '../../../constants/dummydata';
 import Sizer from '../../../helpers/Sizer';
 
 const CompleteRoundScreen = ({ navigation }) => {
-  const totalHits = stationsData?.reduce(
+  const totalHits = stationsDataList?.reduce(
     (sum, station) => sum + station.hits,
     0,
   );
 
-  const totalMissed = stationsData?.reduce(
+  const totalMissed = stationsDataList?.reduce(
     (sum, station) => sum + station.missed,
     0,
   );
-  const totalShots = stationsData?.reduce(
+  const totalShots = stationsDataList?.reduce(
     (sum, station) => sum + station.totalShots,
     0,
   );
@@ -74,7 +74,7 @@ const CompleteRoundScreen = ({ navigation }) => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: Sizer.hSize(50) }}
         >
-          <StationsList data={stationsData} />
+          <StationsList data={stationsDataList} />
           <View style={styles.tableCont}>
             {statsData.map((item, index) => (
               <TableRow

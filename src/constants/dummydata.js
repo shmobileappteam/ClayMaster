@@ -1,4 +1,4 @@
-import { COLORS } from "../globalStyle/Theme";
+import { COLORS } from '../globalStyle/Theme';
 
 export const stationsData = [
   {
@@ -7,27 +7,27 @@ export const stationsData = [
     hits: 6,
     missed: 4,
     totalShots: 10,
-    isPairSelected: true,
+    isPairSelected: false,
     shots: [
       { id: 1, status: 'hit' }, // orange
-      { id: 2, status: 'hit' }, // orange
-      { id: 3, status: 'missed' }, // grey
-      { id: 4, status: 'hit' }, // orange
-      { id: 5, status: 'missed' }, // grey
-      { id: 6, status: 'missed' }, // grey
-      { id: 7, status: 'hit' }, // orange
-      { id: 8, status: 'missed' }, // grey
-      { id: 9, status: 'hit' }, // orange
-      { id: 10, status: 'hit' }, // orange
+      { id: 2, status: 'empty' }, // white
+      { id: 3, status: 'empty' }, // white
+      { id: 4, status: 'empty' }, // white
+      { id: 5, status: 'empty' }, // white
+      { id: 6, status: 'empty' }, // white
+      { id: 7, status: 'empty' }, // white
+      { id: 8, status: 'empty' }, // white
+      { id: 9, status: 'empty' }, // white
+      { id: 10, status: 'empty' }, // white
     ],
     reportPair: 'TP', // TP or RF
     traps: {
-      chandelle: 'Crosser',
-      incomer: 'Knuckleball/Off-Speed',
-      overhead: 'Quartering',
-      rabbit: 'Tee',
-      tower: 'Rabbit',
-      trapTee: 'Trap Shot',
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
     },
   },
   {
@@ -36,7 +36,7 @@ export const stationsData = [
     hits: 1,
     missed: 0,
     totalShots: 10,
-    isPairSelected: true,
+    isPairSelected: false,
 
     shots: [
       { id: 1, status: 'hit' }, // orange
@@ -52,12 +52,12 @@ export const stationsData = [
     ],
     reportPair: 'RP',
     traps: {
-      chandelle: 'Crosser',
-      incomer: 'Knuckleball/Off-Speed',
-      overhead: 'Quartering',
-      rabbit: 'Tee',
-      tower: 'Rabbit',
-      trapTee: 'Trap Shot',
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
     },
   },
   {
@@ -66,7 +66,7 @@ export const stationsData = [
     hits: 6,
     missed: 4,
     totalShots: 10,
-    isPairSelected: true,
+    isPairSelected: false,
 
     shots: [
       { id: 1, status: 'hit' },
@@ -82,12 +82,12 @@ export const stationsData = [
     ],
     reportPair: 'TP',
     traps: {
-      chandelle: 'Crosser',
-      incomer: 'Knuckleball/Off-Speed',
-      overhead: 'Quartering',
-      rabbit: 'Tee',
-      tower: 'Rabbit',
-      trapTee: 'Trap Shot',
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
     },
   },
   {
@@ -96,7 +96,7 @@ export const stationsData = [
     hits: 6,
     missed: 4,
     totalShots: 10,
-    isPairSelected: true,
+    isPairSelected: false,
 
     shots: [
       { id: 1, status: 'hit' },
@@ -112,12 +112,12 @@ export const stationsData = [
     ],
     reportPair: 'TP',
     traps: {
-      chandelle: 'Crosser',
-      incomer: 'Knuckleball/Off-Speed',
-      overhead: 'Quartering',
-      rabbit: 'Tee',
-      tower: 'Rabbit',
-      trapTee: 'Trap Shot',
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
     },
   },
   {
@@ -126,7 +126,7 @@ export const stationsData = [
     hits: 0,
     missed: 1,
     totalShots: 10,
-  isPairSelected:true,
+    isPairSelected: false,
     shots: [
       { id: 1, status: 'missed' },
       { id: 2, status: 'empty' },
@@ -141,12 +141,12 @@ export const stationsData = [
     ],
     reportPair: 'TP',
     traps: {
-      chandelle: 'Crosser',
-      incomer: 'Knuckleball/Off-Speed',
-      overhead: 'Quartering',
-      rabbit: 'Tee',
-      tower: 'Rabbit',
-      trapTee: 'Trap Shot',
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
     },
   },
 ];
@@ -248,7 +248,6 @@ export const subscriptionPlans = [
   },
 ];
 
-
 export const statsData = [
   {
     id: 1,
@@ -260,7 +259,7 @@ export const statsData = [
     id: 2,
     label: 'Total Lost',
     value: '30',
-    labelColor: "#656565", // Grey color
+    labelColor: '#656565', // Grey color
   },
   {
     id: 3,
@@ -269,7 +268,6 @@ export const statsData = [
     labelColor: COLORS.black100, // Black color
   },
 ];
-
 
 export const scorecardData = [
   {
@@ -301,5 +299,200 @@ export const scorecardData = [
     actionLabel: 'Saved',
     statusLabel: 'Completed',
     hasNotification: false,
+  },
+];
+
+export const expandedStationCardsObject = {
+  1: true,
+  2: true,
+  3: true,
+  4: true,
+  5: true,
+  6: true,
+  7: true,
+  8: true,
+};
+
+export const pairOfTargets = {
+  3: [
+    { id: 1, status: 'hit' },
+    { id: 2, status: 'hit' },
+    { id: 3, status: 'missed' },
+    { id: 4, status: 'hit' },
+    { id: 5, status: 'missed' },
+    { id: 6, status: 'missed' },
+  ],
+  4: [
+    { id: 1, status: 'hit' },
+    { id: 2, status: 'hit' },
+    { id: 3, status: 'missed' },
+    { id: 4, status: 'hit' },
+    { id: 5, status: 'missed' },
+    { id: 6, status: 'missed' },
+    { id: 7, status: 'hit' },
+    { id: 8, status: 'missed' },
+  ],
+  5: [
+    { id: 1, status: 'hit' },
+    { id: 2, status: 'hit' },
+    { id: 3, status: 'missed' },
+    { id: 4, status: 'hit' },
+    { id: 5, status: 'missed' },
+    { id: 6, status: 'missed' },
+    { id: 7, status: 'hit' },
+    { id: 8, status: 'missed' },
+    { id: 9, status: 'hit' },
+    { id: 10, status: 'hit' },
+  ],
+};
+
+export const stationsDataList = [
+  {
+    id: 1,
+    name: 'Station 01',
+    hits: 6,
+    missed: 4,
+    totalShots: 10,
+    isPairSelected: true,
+    shots: [
+      { id: 1, status: 'hit' }, // orange
+      { id: 2, status: 'empty' }, // white
+      { id: 3, status: 'empty' }, // white
+      { id: 4, status: 'empty' }, // white
+      { id: 5, status: 'empty' }, // white
+      { id: 6, status: 'empty' }, // white
+      { id: 7, status: 'empty' }, // white
+      { id: 8, status: 'empty' }, // white
+      { id: 9, status: 'empty' }, // white
+      { id: 10, status: 'empty' }, // white
+    ],
+    reportPair: 'TP', // TP or RF
+    traps: {
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
+    },
+  },
+  {
+    id: 2,
+    name: 'Station 02',
+    hits: 1,
+    missed: 0,
+    totalShots: 10,
+    isPairSelected: true,
+
+    shots: [
+      { id: 1, status: 'hit' }, // orange
+      { id: 2, status: 'empty' }, // white
+      { id: 3, status: 'empty' }, // white
+      { id: 4, status: 'empty' }, // white
+      { id: 5, status: 'empty' }, // white
+      { id: 6, status: 'empty' }, // white
+      { id: 7, status: 'empty' }, // white
+      { id: 8, status: 'empty' }, // white
+      { id: 9, status: 'empty' }, // white
+      { id: 10, status: 'empty' }, // white
+    ],
+    reportPair: 'RP',
+    traps: {
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
+    },
+  },
+  {
+    id: 3,
+    name: 'Station 03',
+    hits: 6,
+    missed: 4,
+    totalShots: 10,
+    isPairSelected: true,
+
+    shots: [
+      { id: 1, status: 'hit' },
+      { id: 2, status: 'hit' },
+      { id: 3, status: 'missed' },
+      { id: 4, status: 'hit' },
+      { id: 5, status: 'missed' },
+      { id: 6, status: 'missed' },
+      { id: 7, status: 'hit' },
+      { id: 8, status: 'missed' },
+      { id: 9, status: 'hit' },
+      { id: 10, status: 'hit' },
+    ],
+    reportPair: 'TP',
+    traps: {
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
+    },
+  },
+  {
+    id: 4,
+    name: 'Station 04',
+    hits: 6,
+    missed: 4,
+    totalShots: 10,
+    isPairSelected: true,
+
+    shots: [
+      { id: 1, status: 'hit' },
+      { id: 2, status: 'hit' },
+      { id: 3, status: 'missed' },
+      { id: 4, status: 'hit' },
+      { id: 5, status: 'missed' },
+      { id: 6, status: 'missed' },
+      { id: 7, status: 'hit' },
+      { id: 8, status: 'missed' },
+      { id: 9, status: 'hit' },
+      { id: 10, status: 'hit' },
+    ],
+    reportPair: 'TP',
+    traps: {
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
+    },
+  },
+  {
+    id: 5,
+    name: 'Station 05',
+    hits: 0,
+    missed: 1,
+    totalShots: 10,
+    isPairSelected: true,
+    shots: [
+      { id: 1, status: 'missed' },
+      { id: 2, status: 'empty' },
+      { id: 3, status: 'empty' },
+      { id: 4, status: 'empty' },
+      { id: 5, status: 'empty' },
+      { id: 6, status: 'empty' },
+      { id: 7, status: 'empty' },
+      { id: 8, status: 'empty' },
+      { id: 9, status: 'empty' },
+      { id: 10, status: 'empty' },
+    ],
+    reportPair: 'TP',
+    traps: {
+      chandelle: 'Rabbit',
+      Crosser: 'Rabbue',
+      Incomer: 'Teal',
+      Knuckleball: 'Tower',
+      Overhead: 'Trap Shot',
+      Quartering: 'Trap-Teal',
+    },
   },
 ];

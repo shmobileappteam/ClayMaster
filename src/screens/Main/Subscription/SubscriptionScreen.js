@@ -142,7 +142,6 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef(null);
 
-  // Card width + margin
   const cardWidth = WINDOW.width - 48 + Sizer.hSize(10);
   const paddingHorizontal = Sizer.hSize(12);
 

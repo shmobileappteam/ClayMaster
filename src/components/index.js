@@ -9,6 +9,7 @@ import Header from './header/Header';
 import ImagePicker from './imagePicker/ImagePicker';
 
 import Accordion from './accordion/Accordion';
+import TrapDropdownon from './customFields/TrapDropdown';
 
 export {
   Button,
@@ -20,4 +21,5 @@ export {
   ImagePicker,
   Accordion,
   Label,
+  TrapDropdownon
 };
