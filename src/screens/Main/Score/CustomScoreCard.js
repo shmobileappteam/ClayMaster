@@ -19,7 +19,7 @@ const CustomScoreCard = ({ navigation }) => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        // style={{ marginTop: Sizer.hSize(30) }}
+        style={{ marginTop: Sizer.hSize(30) }}
         contentContainerStyle={{
           paddingBottom: Sizer.vSize(20),
           // ...GLOBALSTYLE.paddingHor,
@@ -94,7 +94,6 @@ const styles = StyleSheet.create({
   },
   banneerimg: {
     height: Sizer.hSize(173),
-    marginTop: Sizer.hSize(60),
     width: '100%',
     borderRadius: Sizer.hSize(10),
   },
