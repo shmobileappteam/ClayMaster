@@ -31,8 +31,10 @@ const Header = ({
   isBackGreen,
   centerType = null,
   onPressRight = null,
+  bgColor = COLORS.primary,
   defaultHeaderStyles,
   logoTextColor = COLORS.black100,
+  left = Sizer.hSize(24),
   ...titleStyles
 }) => {
   const navigation = useNavigation();
@@ -124,9 +126,30 @@ const Header = ({
           style={{
             marginTop: Sizer.hSize(24),
             alignItems: 'center',
+            width: '100%',
             ...defaultHeaderStyles,
           }}
         >
+          {isBackVisible && (
+            <TouchableOpacity
+              activeOpacity={BASEOPACITY}
+              onPress={onPresBack ?? (() => navigation.goBack())}
+              style={{
+                backgroundColor: bgColor,
+                borderRadius: 100,
+                position: 'absolute',
+                left: left,
+                bottom: Sizer.hSize(30),
+              }}
+            >
+              <Icon
+                color={iconColor}
+                iconFamily={'Ionicons'}
+                size={Sizer.vSize(20)}
+                name={'arrow-back'}
+              />
+            </TouchableOpacity>
+          )}
           <SlideInView slide="left" slideDuration={800}>
             <AppIconSvg width={Sizer.hSize(151)} height={Sizer.hSize(59)} />
           </SlideInView>

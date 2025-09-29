@@ -3,7 +3,7 @@ import { COLORS } from '../globalStyle/Theme';
 export const stationsData = [
   {
     id: 1,
-    name: 'Station 01',
+    name: 'Station 1',
     hits: 6,
     missed: 4,
     totalShots: 10,
@@ -32,7 +32,7 @@ export const stationsData = [
   },
   {
     id: 2,
-    name: 'Station 02',
+    name: 'Station 2',
     hits: 1,
     missed: 0,
     totalShots: 10,
@@ -62,7 +62,7 @@ export const stationsData = [
   },
   {
     id: 3,
-    name: 'Station 03',
+    name: 'Station 3',
     hits: 6,
     missed: 4,
     totalShots: 10,
@@ -92,7 +92,7 @@ export const stationsData = [
   },
   {
     id: 4,
-    name: 'Station 04',
+    name: 'Station 4',
     hits: 6,
     missed: 4,
     totalShots: 10,
@@ -122,7 +122,7 @@ export const stationsData = [
   },
   {
     id: 5,
-    name: 'Station 05',
+    name: 'Station 5',
     hits: 0,
     missed: 1,
     totalShots: 10,
@@ -177,7 +177,7 @@ export const moreMenus = [
     stack: null,
   },
 
-  { label: 'Our Reviews', icon: 'star-outline', family: 'Ionicons' },
+  // { label: 'Our Reviews', icon: 'star-outline', family: 'Ionicons' },
 ];
 
 export const settingData = [

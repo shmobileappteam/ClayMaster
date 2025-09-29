@@ -38,7 +38,7 @@ const BottomNavigator = () => {
         component={CustomScoreCard}
       />
       <Tab.Screen
-        name="Settings"
+        name="Setting"
         options={{
           title: 'Setting',
           tabBarButton: props => (

@@ -27,7 +27,7 @@ import {
 } from '../../../constants/dummydata';
 
 const nscaClasses = [
-  { name: 'A', selected: false },
+  { name: 'M', selected: false },
   { name: 'AA', selected: false },
   { name: 'A', selected: false },
   { name: 'B', selected: false },
@@ -153,12 +153,12 @@ const NewRoundScreen = ({ navigation }) => {
                       activeOpacity={BASEOPACITY}
                       style={[
                         styles.actionBxo,
-                        { backgroundColor: COLORS.grey900, flex: 0.6 },
+                        { backgroundColor: COLORS.grey100, flex: 0.6 },
                       ]}
                     >
-                      <UndoSvg />
+                      <UndoSvg color={COLORS.black100} />
                       <Typography
-                        color={COLORS.white100}
+                        color={COLORS.black100}
                         fFamily="barlowSemiBold600"
                         mT={5}
                         size={18}

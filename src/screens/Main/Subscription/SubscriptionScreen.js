@@ -238,6 +238,8 @@ const SubscriptionScreen = ({ navigation }) => {
       <Header
         logoTextColor={COLORS.white100}
         defaultHeaderStyles={{ marginTop: Sizer.hSize(60) }}
+        isBackVisible
+        bgColor={COLORS.white100}
       />
       <ScrollView
         style={{ flex: 1 }}

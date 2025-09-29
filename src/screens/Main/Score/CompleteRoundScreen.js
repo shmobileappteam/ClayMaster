@@ -95,7 +95,7 @@ const CompleteRoundScreen = ({ navigation }) => {
             }
           />
           <Button
-            label="Save & Download"
+            label="Save and Download (DAT)"
             mt={15}
             onPress={() =>
               navigation.navigate('SavedScoredcardSuccessScreen', {
