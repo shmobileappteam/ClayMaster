@@ -44,12 +44,13 @@ const LoginScreen = ({ navigation }) => {
   };
   return (
     <SafeAreaWrapper>
-      <Header iconColor={COLORS.white100} left={Sizer.hSize(0)} />
+      <Header iconColor={COLORS.white100} left={Sizer.hSize(0)} isBackVisible={false}/>
       <Typography
         size={40}
         textAlign="center"
         mT={52}
         fFamily="barlowBoldItalic700"
+        
       >
         Welcome Back!{' '}
       </Typography>

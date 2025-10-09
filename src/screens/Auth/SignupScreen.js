@@ -39,7 +39,7 @@ const SignupScreen = ({ navigation }) => {
 
   return (
     <SafeAreaWrapper keyboardAvoid>
-      <Header iconColor={COLORS.white100} left={Sizer.hSize(0)} />
+      <Header iconColor={COLORS.white100} left={Sizer.hSize(0)} isBackVisible={false}/>
       <Typography
         size={42}
         textAlign="center"

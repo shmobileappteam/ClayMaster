@@ -20,63 +20,65 @@ const CustomScoreCard = ({ navigation }) => {
     <Container isPadding={false}>
       <Header type="home" />
 
-      {comeFromScoreCardSucceed ? (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ marginTop: Sizer.hSize(30) }}
-          contentContainerStyle={{
-            paddingBottom: Sizer.vSize(20),
-            ...GLOBALSTYLE.paddingHor,
-          }}
-        >
-          <ScorecardList
-            onItemPress={item =>
-              navigation.navigate('ScorecardDetailsScreen', {
-                cardDetails: item,
-              })
-            }
-            // onActionPress={handleActionPress}
-          />
-        </ScrollView>
-      ) : (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 32 }}
-        >
-          <View style={GLOBALSTYLE.paddingHor}>
-            <Image
-              source={homebanner}
-              style={styles.banneerimg}
-              resizeMode="cover"
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ marginTop: Sizer.hSize(30) }}
+        contentContainerStyle={{
+          paddingBottom: Sizer.vSize(20),
+          // ...GLOBALSTYLE.paddingHor,
+        }}
+      >
+        {comeFromScoreCardSucceed ? (
+          <View
+            style={{
+              ...GLOBALSTYLE.paddingHor,
+            }}
+          >
+            <ScorecardList
+              onItemPress={item =>
+                navigation.navigate('ScorecardDetailsScreen', {
+                  cardDetails: item,
+                })
+              }
             />
-            <Typography
-              size={28}
-              textAlign="center"
-              mT={20}
-              fFamily="barlowBoldItalic700"
-            >
-              Ready To Shoot?{' '}
-            </Typography>
-            <Typography
-              size={16}
-              textAlign="center"
-              mT={6}
-              mB={2}
-              fFamily="barlowMedium500"
-            >
-              Master your sporting clays skills and start your analytics process
-              by using our custom ClayMaster scorecard.{' '}
-            </Typography>
           </View>
-          <Image
-            source={downarrow}
-            style={styles.downArrow}
-            resizeMode="contain"
-          />
-          <View style={{ marginTop: Sizer.hSize(12) }} />
-          <IconButton onPress={() => navigation.navigate('NewRoundScreen')} />
-        </ScrollView>
-      )}
+        ) : (
+          <>
+            <View style={GLOBALSTYLE.paddingHor}>
+              <Image
+                source={homebanner}
+                style={styles.banneerimg}
+                resizeMode="cover"
+              />
+              <Typography
+                size={28}
+                textAlign="center"
+                mT={20}
+                fFamily="barlowBoldItalic700"
+              >
+                Ready To Shoot?{' '}
+              </Typography>
+              <Typography
+                size={16}
+                textAlign="center"
+                mT={6}
+                mB={2}
+                fFamily="barlowMedium500"
+              >
+                Master your sporting clays skills and start your analytics
+                process by using our custom ClayMaster scorecard.{' '}
+              </Typography>
+            </View>
+          </>
+        )}
+        <Image
+          source={downarrow}
+          style={styles.downArrow}
+          resizeMode="contain"
+        />
+        <View style={{ marginTop: Sizer.hSize(12) }} />
+        <IconButton onPress={() => navigation.navigate('NewRoundScreen')} />
+      </ScrollView>
     </Container>
   );
 };
@@ -95,7 +97,6 @@ const styles = StyleSheet.create({
   },
   banneerimg: {
     height: Sizer.hSize(173),
-    marginTop: Sizer.hSize(60),
     width: '100%',
     borderRadius: Sizer.hSize(10),
   },
