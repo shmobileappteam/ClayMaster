@@ -4,6 +4,8 @@ import {
   NavigationContainer,
   useNavigationContainerRef,
 } from '@react-navigation/native';
+import FlashMessage from 'react-native-flash-message';
+
 //----
 import StackNavigator from './StackNavigator';
 import { COLORS } from '../globalStyle/Theme';
@@ -69,8 +71,8 @@ const RootStack = () => {
       ref={navigationRef}
       onReady={handleStatusBar}
       onStateChange={handleStatusBar}
-    >
-      {/* <FlashMessage position="top" onHide={handleStatusBar} /> */}
+  >
+      <FlashMessage position="top" onHide={handleStatusBar} />
       <StatusBar
         animated={true}
         backgroundColor={appBarStyle.bgColor}

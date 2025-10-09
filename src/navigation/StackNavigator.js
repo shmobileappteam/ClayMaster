@@ -57,8 +57,14 @@ const StackNavigator = () => {
       />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
       <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
-      <Stack.Screen name="SavedScoredcardSuccessScreen" component={SavedScoredcardSuccessScreen} />
-      <Stack.Screen name="ScorecardDetailsScreen" component={ScorecardDetailsScreen} />
+      <Stack.Screen
+        name="SavedScoredcardSuccessScreen"
+        component={SavedScoredcardSuccessScreen}
+      />
+      <Stack.Screen
+        name="ScorecardDetailsScreen"
+        component={ScorecardDetailsScreen}
+      />
 
       {/* Main */}
 

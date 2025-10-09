@@ -1,12 +1,42 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 //------------------
-import { Flex, SafeAreaWrapper, Typography } from '../../atomComponents';
+import {
+  Flex,
+  FormController,
+  SafeAreaWrapper,
+  Typography,
+} from '../../atomComponents';
 import { Button, Header, TextField } from '../../components';
 import { COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
+import { useCustomMutation } from '../../query/useCustomMutation';
+import { onRegisterSuccess } from '../../query/partials/responseManager';
+import validatoinSchema from '../../validations';
+import { formatBackendErrors, maskPhoneNumber } from '../../utils';
+import { register } from '../../api/userService';
 
 const SignupScreen = ({ navigation }) => {
+  // Register Mutation Hook:
+  const { mutateAsync: requestRegister, isPending } = useCustomMutation({
+    mutationFn: register,
+    onSuccess: (response, { resetForm }) => {
+      resetForm();
+      onRegisterSuccess(response, response?.user?.email, navigation);
+    },
+  });
+
+  // Handle Register:
+  const handleRegister = async (values, { setErrors, resetForm }) => {
+    console.log('🚀 ~ handleRegister ~ values:', values);
+    requestRegister({ ...values, navigation, resetForm }).catch(err => {
+      const response = err?.response;
+      console.log('🚀 ~ handleRegister ~ response:', response);
+      const parsedErrors = formatBackendErrors(response.data.errors);
+      setErrors(parsedErrors);
+    });
+  };
+
   return (
     <SafeAreaWrapper keyboardAvoid>
       <Header iconColor={COLORS.white100} left={Sizer.hSize(0)} />
@@ -25,42 +55,98 @@ const SignupScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        <TextField
-          placeholder="Username"
-          leftIcon
-          mT={29}
-          leftIconFamily="Ionicons"
-          leftIconName="person-outline"
-        />
-        <TextField
-          placeholder="Email address"
-          mT={29}
-          leftIcon
-          leftIconFamily="Ionicons"
-          leftIconName="mail-outline"
-        />
-        <TextField
-          placeholder="Password"
-          password
-          mT={29}
-          leftIconFamily="Feather"
-          leftIconName="lock"
-          leftIcon
-        />
-        <TextField
-          placeholder="Confirm Password"
-          password
-          mT={29}
-          leftIconFamily="Feather"
-          leftIconName="lock"
-          leftIcon
-        />
+        <FormController
+          initialValues={{
+            first_name: __DEV__ ? 'Mark' : '',
+            last_name: __DEV__ ? 'Doeson' : '',
+            email: __DEV__ ? 'mark1@mailinator.com' : '',
+            password: __DEV__ ? 'Admin@1234' : '',
+            password_confirmation: __DEV__ ? 'Admin@1234' : '',
+            phone: __DEV__ ? '1234567890' : '',
+          }}
+          validationSchema={validatoinSchema.authValidations.SignUpSchema}
+          onSubmit={handleRegister}
+        >
+          {props => {
+            const { handleSubmit, handleChange, values, errors, handleBlur } =
+              props;
 
-        <Button
-          label="Sign Up"
-          mt={30}
-          onPress={() => navigation.navigate('SubscriptionScreen')}
-        />
+            return (
+              <>
+                <TextField
+                  placeholder="First Name"
+                  leftIcon
+                  handleChange={handleChange('first_name')}
+                  value={values.first_name}
+                  error={errors.first_name}
+                  onBlur={handleBlur('first_name')}
+                  mT={23}
+                />
+                <TextField
+                  placeholder="Last Name"
+                  leftIcon
+                  handleChange={handleChange('last_name')}
+                  value={values.last_name}
+                  error={errors.last_name}
+                  onBlur={handleBlur('last_name')}
+                  mT={23}
+                />
+                <TextField
+                  placeholder="Email"
+                  leftIcon
+                  handleChange={handleChange('email')}
+                  value={values.email}
+                  error={errors.email}
+                  onBlur={handleBlur('email')}
+                  mT={23}
+                />
+                <TextField
+                  placeholder="Password"
+                  leftIcon
+                  leftIconName="key"
+                  rightIcon
+                  password
+                  handleChange={handleChange('password')}
+                  value={values.password}
+                  error={errors.password}
+                  onBlur={handleBlur('password')}
+                  mT={23}
+                />
+                <TextField
+                  placeholder="Confirm Password"
+                  leftIcon
+                  leftIconName="key"
+                  rightIcon
+                  password
+                  handleChange={handleChange('password_confirmation')}
+                  value={values.password_confirmation}
+                  error={errors.password_confirmation}
+                  onBlur={handleBlur('password_confirmation')}
+                  mT={23}
+                />
+                <TextField
+                  placeholder="+1234567890"
+                  leftIcon
+                  leftIconName="phone"
+                  handleChange={number =>
+                    handleChange('phone')(number?.replace(/\D/g, ''))
+                  }
+                  value={maskPhoneNumber(values?.phone)}
+                  error={errors.phone}
+                  onBlur={handleBlur('phone')}
+                  maxLength={12}
+                  mT={23}
+                />
+                <Button
+                  label={'Sign Up'}
+                  mt={26}
+                  onPress={handleSubmit}
+                  loader={isPending}
+                />
+              </>
+            );
+          }}
+        </FormController>
         <Flex jusContent={'center'} mT={28} algItems={'center'}>
           <Typography color={COLORS.black100}>
             Already have an account?{' '}

@@ -1,27 +1,35 @@
 import { DefaultTheme, PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-//----------------
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Provider as ReduxProvider } from 'react-redux';
+//------
 import RootStack from './src/navigation/RootStack';
 import { COLORS } from './src/globalStyle/Theme';
+import store from './src/redux/store/store';
+import { queryClient, storage } from './src/api/api';
+import { useEffect } from 'react';
 
 export default function App() {
   const Theme = {
     ...DefaultTheme,
-    myOwnProperty: true, // For Custom Keys
+    myOwnProperty: true,
     colors: {
       ...DefaultTheme.colors,
       ...COLORS,
     },
   };
-
+  useEffect(() => {
+    // storage.clearAll();
+  }, []);
   return (
-    <PaperProvider theme={Theme}>
-      <SafeAreaProvider>
-        <GestureHandlerRootView>
-          <RootStack />
-        </GestureHandlerRootView>
-      </SafeAreaProvider>
-    </PaperProvider>
+    <ReduxProvider store={store}>
+      <PaperProvider theme={Theme}>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <RootStack />
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </PaperProvider>
+    </ReduxProvider>
   );
 }

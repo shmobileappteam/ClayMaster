@@ -1,5 +1,6 @@
-import { View,  StyleSheet, Image, ScrollView } from 'react-native';
+import { View, StyleSheet, Image, ScrollView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 import React from 'react';
 //--------------
 import { Container, Typography } from '../../../atomComponents';
@@ -8,11 +9,12 @@ import Sizer from '../../../helpers/Sizer';
 import { GLOBALSTYLE } from '../../../globalStyle/Theme';
 import { downarrow, homebanner } from '../../../assets/images';
 import ScorecardList from '../../../components/Round/ScorecardList';
+import { storage } from '../../../api/api';
+import { KEYS } from '../../../constants';
 
 const CustomScoreCard = ({ navigation }) => {
   const route = useRoute();
   const comeFromScoreCardSucceed = route.params?.isSucceed;
-
 
   return (
     <Container isPadding={false}>
@@ -28,7 +30,11 @@ const CustomScoreCard = ({ navigation }) => {
           }}
         >
           <ScorecardList
-            onItemPress={(item) => navigation.navigate('ScorecardDetailsScreen',{cardDetails:item})}
+            onItemPress={item =>
+              navigation.navigate('ScorecardDetailsScreen', {
+                cardDetails: item,
+              })
+            }
             // onActionPress={handleActionPress}
           />
         </ScrollView>

@@ -25,6 +25,8 @@ import {
   expandedStationCardsObject,
   stationsData,
 } from '../../../constants/dummydata';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { getCourses } from '../../../api/roundService';
 
 const nscaClasses = [
   { name: 'M', selected: false },
@@ -39,6 +41,11 @@ const nscaClasses = [
 const NewRoundScreen = ({ navigation }) => {
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([stationsData[0]]);
+  const { data } = useCustomQuery({
+    queryKey: ['courses'],
+    queryFn: getCourses,
+  });
+  console.log("🚀 ~ NewRoundScreen ~ data:", data)
 
   const [expandedStations, setExpandedStations] = useState(
     expandedStationCardsObject,

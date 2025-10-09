@@ -7,11 +7,13 @@ import {
 } from 'react-native';
 import React from 'react';
 import { Avatar } from 'react-native-paper';
+import { useDispatch } from 'react-redux';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
 import { Header } from '../../../components';
 import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { useCustomQuery } from '../../../query/useCustomQuery';
 import SlideInView from '../../../animations/SlideView';
 import {
   generalMenus,
@@ -19,16 +21,50 @@ import {
   settingData,
 } from '../../../constants/dummydata';
 import Icon from '../../../helpers/Icon';
+import { logout } from '../../../api/userService';
+import { queryClient } from '../../../api/api';
+import { CommonActions } from '@react-navigation/native';
 
 const SettingsScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+
+  function clearApp() {
+    queryClient.clear();
+    navigation.dispatch(
+      CommonActions.reset({
+        index: 0,
+        routes: [{ name: 'LoginScreen' }],
+      }),
+    );
+  }
+
+  //Custom Logout Query Hook
+  const { refetch: triggerLogout } = useCustomQuery({
+    queryKey: ['logout'],
+    queryFn: logout,
+    enabled: false,
+  });
+
+  // Request Logout:
+  const logoutHandler = () => {
+    clearApp();
+    triggerLogout().then(() => {
+      dispatch(handleLogout());
+    });
+  };
+
   const MenuItem = ({ icon, family, label, navLink, stack }) => (
     <TouchableOpacity
       style={styles.menuContainer}
       activeOpacity={BASEOPACITY}
       onPress={() => {
-        stack
-          ? navigation.navigate(stack, { screen: navLink })
-          : navLink && navigation.navigate(navLink);
+        if (label == 'Log out') {
+          logoutHandler();
+        } else {
+          stack
+            ? navigation.navigate(stack, { screen: navLink })
+            : navLink && navigation.navigate(navLink);
+        }
       }}
     >
       <Flex gap={16} algItems={'center'}>

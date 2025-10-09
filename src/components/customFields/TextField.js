@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   errorContainer: {
-    borderWidth: 1,
-    borderColor: COLORS.error,
+    borderWidth: Sizer.fS(1),
+    borderColor: COLORS.red,
   },
   errorText: {
     marginLeft: Sizer.hSize(6),

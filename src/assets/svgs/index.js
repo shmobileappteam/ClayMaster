@@ -14,6 +14,7 @@ import SeperatorSvg from './SeperatorSvg';
 import CircleSvg from './CircleSvg';
 import SlashSvg from './SlashSvg';
 import UndoSvg from './UndoSvg';
+import VerifiedSvg from './VerifiedSvg';
 
 export {
   AppIconSvg,
@@ -31,5 +32,6 @@ export {
   SeperatorSvg,
   CircleSvg,
   SlashSvg,
-  UndoSvg
+  UndoSvg,
+  VerifiedSvg
 };
