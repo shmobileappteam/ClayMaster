@@ -111,3 +111,15 @@ export const maskPhoneNumber = input => {
 
   return formattedPhoneNumber;
 };
+
+export const formatDate = isoDate => {
+  const date = new Date(isoDate);
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // months are 0-indexed
+  const year = String(date.getFullYear()).slice(-2);
+  return `${day}/${month}/${year}`;
+};
+
+// Example:
+console.log(formatDate('2025-10-09T19:04:16+00:00'));
+// Output: "9/10/25"

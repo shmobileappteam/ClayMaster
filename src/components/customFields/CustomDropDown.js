@@ -1,28 +1,29 @@
-import React, {memo, useState} from 'react';
-import {StyleSheet} from 'react-native';
-// import {Dropdown} from 'react-native-element-dropdown';
+import React, { memo, useState } from 'react';
+import { StyleSheet } from 'react-native';
+//-----
+import { Dropdown } from 'react-native-element-dropdown';
 
-import {COLORS, FONTS} from '../../globalStyle/Theme';
+import { COLORS, FONTS } from '../../globalStyle/Theme';
 
 import Sizer from '../../helpers/Sizer';
 
 const data = [
-  {label: '1', value: '1'},
-  {label: '2', value: '2'},
-  {label: '3', value: '3'},
-  {label: '4', value: '4'},
+  { label: '1', value: '1' },
+  { label: '2', value: '2' },
+  { label: '3', value: '3' },
+  { label: '4', value: '4' },
 ];
 
-function CustomDropdown({onChange = () => {}, ...props}) {
-  const [value, setValue] = useState(null);
+function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
+  const [value, setValue] = useState(defaultValue);
   const [isFocus, setIsFocus] = useState(false);
 
   return (
     <>
-      {/* <Dropdown
+      <Dropdown
         style={[
           styles.dropdown,
-          isFocus && {borderColor: COLORS.primary},
+          isFocus && { borderColor: COLORS.primary },
           props?.dropdownStyle,
         ]}
         placeholderStyle={styles.placeholderStyle}
@@ -35,19 +36,19 @@ function CustomDropdown({onChange = () => {}, ...props}) {
         iconStyle={styles.iconStyle}
         iconColor={isFocus ? COLORS.primary : COLORS.greyV2}
         data={props?.data || data}
-        // maxHeight={300}
         labelField="label"
         valueField="value"
-        placeholder={!isFocus ? props?.placeholder : '...'}
+        mode="modal"
+        placeholder={props?.placeholder}
         value={value}
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
         onChange={item => {
           setValue(item.value);
           setIsFocus(false);
-          onChange(item.value);
+          onChange(item);
         }}
-      /> */}
+      />
     </>
   );
 }
@@ -56,25 +57,25 @@ export default memo(CustomDropdown);
 
 const styles = StyleSheet.create({
   dropdown: {
-    paddingLeft: Sizer.hSize(16),
-    paddingRight: Sizer.hSize(10),
-    borderRadius: Sizer.fS(12),
-    borderWidth: 1,
-    borderColor: COLORS.greyV1,
-    height: 50,
+    paddingHorizontal: Sizer.hSize(16),
+    borderRadius: Sizer.fS(10),
+    borderWidth: Sizer.fS(1.3),
+    borderColor: COLORS.grey100,
+    height: Sizer.vSize(48),
+    backgroundColor: COLORS.white100,
   },
   placeholderStyle: {
     color: COLORS.greyV2,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.barlowRegular400,
     fontSize: Sizer.fS(13),
   },
   selectedTextStyle: {
     color: COLORS.greyV2,
-    fontFamily: FONTS.regular,
+    fontFamily: FONTS.barlowRegular400,
     fontSize: Sizer.fS(13),
   },
   listContainer: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.white100,
     borderWidth: 0,
     borderRadius: 6,
   },

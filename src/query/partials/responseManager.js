@@ -4,6 +4,27 @@ import { CommonActions } from '@react-navigation/native';
 //-------
 import { queryClient, storage } from '../../api/api';
 import { KEYS } from '../../constants';
+import { getClasses, getCourses, getRounds } from '../../api/roundService';
+import { getTraps } from '../../api/stationService';
+
+async function Prefetching() {
+  await queryClient.prefetchQuery({
+    queryKey: ['courses'],
+    queryFn: getCourses,
+  });
+  await queryClient.prefetchQuery({
+    queryKey: ['classes'],
+    queryFn: getClasses,
+  });
+  await queryClient.prefetchQuery({
+    queryKey: ['rounds'],
+    queryFn: getRounds,
+  });
+  await queryClient.prefetchQuery({
+    queryKey: ['traps'],
+    queryFn: getTraps,
+  });
+}
 
 export const onLoginSuccess = async (
   response,
@@ -17,9 +38,10 @@ export const onLoginSuccess = async (
     //   KEYS.CREDENTIALS,
     //   JSON.stringify({ email, password }),
     // );
+
     storage.set(KEYS.ACCESS_TOKEN, response?.token);
     storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
-
+    await Prefetching();
     dispatch(setUser(response?.user));
 
     navigation.dispatch(

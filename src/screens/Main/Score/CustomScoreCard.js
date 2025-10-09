@@ -9,12 +9,25 @@ import Sizer from '../../../helpers/Sizer';
 import { GLOBALSTYLE } from '../../../globalStyle/Theme';
 import { downarrow, homebanner } from '../../../assets/images';
 import ScorecardList from '../../../components/Round/ScorecardList';
+import { useCustomQuery } from '../../../query/useCustomQuery';
 import { storage } from '../../../api/api';
 import { KEYS } from '../../../constants';
+import { getRounds } from '../../../api/roundService';
+import { getTraps } from '../../../api/stationService';
 
 const CustomScoreCard = ({ navigation }) => {
   const route = useRoute();
-  const comeFromScoreCardSucceed = route.params?.isSucceed;
+
+  const { data: roundsData } = useCustomQuery({
+    queryKey: ['rounds'],
+    queryFn: getRounds,
+  });
+  const { data: trapsData } = useCustomQuery({
+    queryKey: ['traps'],
+    queryFn: getTraps,
+  });
+  console.log("🚀 ~ CustomScoreCard ~ trapsData:", trapsData)
+
 
   return (
     <Container isPadding={false}>
@@ -28,18 +41,24 @@ const CustomScoreCard = ({ navigation }) => {
           // ...GLOBALSTYLE.paddingHor,
         }}
       >
-        {comeFromScoreCardSucceed ? (
+        {true ? (
           <View
             style={{
               ...GLOBALSTYLE.paddingHor,
             }}
           >
             <ScorecardList
-              onItemPress={item =>
-                navigation.navigate('ScorecardDetailsScreen', {
-                  cardDetails: item,
-                })
-              }
+              data={roundsData || []}
+              onItemPress={item => {
+                console.log('🚀 ~ item:', item?.id);
+                item?.complete_status
+                  ? navigation.navigate('ScorecardDetailsScreen', {
+                      roundId: item?.id,
+                    })
+                  : navigation.navigate('NewRoundScreen', {
+                      roundDetails: item,
+                    });
+              }}
             />
           </View>
         ) : (

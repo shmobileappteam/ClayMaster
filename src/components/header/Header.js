@@ -13,6 +13,8 @@ import {
 import Sizer from '../../helpers/Sizer';
 import { AppIconSvg, AppLogoSvg, BellSvg } from '../../assets/svgs';
 import SlideInView from '../../animations/SlideView';
+import { useSelector } from 'react-redux';
+import { API_DOMAIN } from '../../api/endpoints';
 // import { MainLogoSvg } from '../../assets/svgs';
 // import HamBurgerSvg from '../../assets/svgs/HamBurgerSvg';
 // import BellSvg from '../../assets/svgs/BellSvg';
@@ -38,8 +40,9 @@ const Header = ({
   ...titleStyles
 }) => {
   const navigation = useNavigation();
+  const { user } = useSelector(state => state.app);
 
-  return (
+return (
     <View style={styles.container}>
       {type == 'home' ? (
         <SlideInView slide="up" slideDuration={800}>
@@ -50,7 +53,9 @@ const Header = ({
           >
             <Flex gap={12}>
               <Avatar.Image
-                source={GLOBALSTYLE.dynamicAvatar}
+                source={{
+                  uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
+                }}
                 size={Sizer.hSize(48)}
               />
               <View>
@@ -61,8 +66,9 @@ const Header = ({
                   color={COLORS.white100}
                   size={20}
                   fFamily="barlowSemiBold600"
+                  textTransform={'capitalize'}
                 >
-                  Andrew Ainsley
+                  {user?.first_name + ' ' + user?.last_name}
                 </Typography>
               </View>
             </Flex>

@@ -1,4 +1,11 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React from 'react';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
@@ -7,15 +14,27 @@ import Sizer from '../../../helpers/Sizer';
 import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import StationsList from '../../../components/Round/StationsList';
 import { stationsDataList } from '../../../constants/dummydata';
-import { ScrollView } from 'react-native-gesture-handler';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { getRound } from '../../../api/roundService';
+import AppLoader from '../../../atomComponents/AppLoader';
+import { downloadFile } from '../../../utils/downloadFile';
 
-const nscaClasses = [{ name: 'D', selected: true }];
-const ScorecardDetailsScreen = ({ route, navigation }) => {
-  const cardDetails = route.params?.cardDetails;
-  console.log('🚀 ~ ScorecardDetailsScreen ~ cardDetails:', cardDetails);
-  const cardType = cardDetails?.status == 'sent' ? 'Card Sent' : 'Saved Card';
+const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
+  const roundId = route.params?.roundId;
+
+  //Fetching Round by id query:
+  const { data: scoreCardDetails, isLoading } = useCustomQuery({
+    queryKey: ['round', roundId],
+    queryFn: ({ queryKey }) => getRound(queryKey[1]),
+  });
+  console.log(
+    '🚀 ~ ScorescoreCardDetailsScreen ~ scoreCardDetails:',
+    scoreCardDetails,
+  );
+
+  const cardType = scoreCardDetails?.download_url ? 'Card Sent' : 'Saved Card';
   const cardStatus =
-    cardDetails?.status == 'sent' ? (
+    scoreCardDetails?.status == 'sent' ? (
       <Typography fFamily="barlowMedium500">
         Analytics file is ready to{' '}
         <Typography fFamily="barlowBold700">download</Typography>
@@ -28,79 +47,78 @@ const ScorecardDetailsScreen = ({ route, navigation }) => {
 
   return (
     <Container isPadding={false}>
-      <Header type="app" title={cardType} />
-      <ScrollView
-        style={GLOBALSTYLE.paddingHor}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-      >
-        <Flex
-          jusContent={'space-between'}
-          mT={35}
-          extraStyle={styles.cardStatusContainer}
+      <Header
+        type="app"
+        title={isLoading ? 'Fetching ScoreCard..' : cardType}
+      />
+      {isLoading ? (
+        <AppLoader />
+      ) : (
+        <ScrollView
+          style={GLOBALSTYLE.paddingHor}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
-          <View style={styles.horLine} />
-          {cardStatus}
-          <View />
-        </Flex>
-        <View>
-          <Label title="Squad Sequence" />
-          <TextField
-            placeholder="Enter sequence"
-            defaultValue="2"
-            disable={false}
-          />
-          <Label title="Course Name" />
-          <TextField
-            placeholder="Enter course name"
-            defaultValue={cardDetails.title}
-            disable={false}
-          />
-          <Label title="Selected NSCA Class" />
-          <View style={styles.nscaClassContainer}>
-            {nscaClasses.map((item, index) => (
-              <Box item={item} key={index} />
-            ))}
-          </View>
-          <Label title="Round Summary" size={20} fFamily="barlowBold700" />
-          <StationsList data={stationsDataList} />
-          <Button
-            label={
-              cardDetails?.status == 'sent'
-                ? 'Download File'
-                : 'Send to ClayMaster'
-            }
-            onPress={() => {
-              if (cardDetails?.status === 'sent') {
-                navigation.goBack();
-              } else {
-                navigation.navigate('SavedScoredcardSuccessScreen', {
-                  status: 'Scorecard Sent!',
-                  desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
-                });
+          <Flex
+            jusContent={'space-between'}
+            mT={35}
+            extraStyle={styles.cardStatusContainer}
+          >
+            <View style={styles.horLine} />
+            {cardStatus}
+            <View />
+          </Flex>
+          <View>
+            <Label title="Squad Sequence" />
+            <TextField
+              placeholder="Enter sequence"
+              value={String(scoreCardDetails?.squad_sequence)}
+              disable={false}
+            />
+            <Label title="Course Name" />
+            <TextField
+              placeholder="Enter course name"
+              value={scoreCardDetails?.course_name || '- -'}
+              disable={false}
+            />
+            <Label title="Selected NSCA Class" />
+            <View style={styles.nscaClassContainer}>
+              <Box name={scoreCardDetails?.ncsca_class} />
+            </View>
+            <Label title="Round Summary" size={20} fFamily="barlowBold700" />
+            <StationsList data={stationsDataList} />
+            <Button
+              label={
+                scoreCardDetails?.download_url
+                  ? 'Download File'
+                  : 'Send to ClayMaster'
               }
-            }}
-            mt={24}
-          />
-        </View>
-      </ScrollView>
+              onPress={() => {
+                if (scoreCardDetails?.download_url) {
+                  downloadFile(scoreCardDetails.download_url, 'Scoresheet');
+                } else {
+                  navigation.navigate('SavedScoredcardSuccessScreen', {
+                    status: 'Scorecard Sent!',
+                    desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                  });
+                }
+              }}
+              mt={24}
+            />
+          </View>
+        </ScrollView>
+      )}
     </Container>
   );
 };
 
-const Box = ({ item }) => {
+const Box = ({ name }) => {
   return (
-    <TouchableOpacity
-      activeOpacity={BASEOPACITY}
-      style={[styles.box, item.selected && { backgroundColor: COLORS.primary }]}
-    >
-      <Typography
-        fFamily="barlowMedium500"
-        color={item.selected ? COLORS.white100 : COLORS.black100}
-      >
-        {item.name}
+    <View style={styles.box}>
+      <Typography fFamily="barlowMedium500" color={COLORS.white100}>
+        {name}
       </Typography>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -124,7 +142,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: Sizer.hSize(5),
+    backgroundColor: COLORS.primary,
   },
 });
 
-export default ScorecardDetailsScreen;
+export default ScorescoreCardDetailsScreen;

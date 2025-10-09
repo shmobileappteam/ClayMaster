@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import React from 'react';
 import { Avatar } from 'react-native-paper';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
 import { Header } from '../../../components';
@@ -24,9 +24,12 @@ import Icon from '../../../helpers/Icon';
 import { logout } from '../../../api/userService';
 import { queryClient } from '../../../api/api';
 import { CommonActions } from '@react-navigation/native';
+import { handleLogout } from '../../../redux/slices/appSlice';
 
 const SettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+
+  const { user } = useSelector(state => state.app);
 
   function clearApp() {
     queryClient.clear();
@@ -96,11 +99,17 @@ const SettingsScreen = ({ navigation }) => {
         <SlideInView slide="down">
           <Flex extraStyle={styles.nameContainer} gap={13} algItems={'center'}>
             <Avatar.Image
-              source={GLOBALSTYLE.dynamicAvatar}
+              source={{
+                uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
+              }}
               size={Sizer.hSize(55)}
             />
-            <Typography size={18} fFamily={'barlowSemiBold600'}>
-              William Anderson
+            <Typography
+              size={18}
+              fFamily={'barlowSemiBold600'}
+              textTransform={'capitalize'}
+            >
+              {user?.first_name + ' ' + user?.last_name}
             </Typography>
           </Flex>
           <Title title="General" />

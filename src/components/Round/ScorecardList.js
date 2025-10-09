@@ -9,41 +9,6 @@ import Icon from '../../helpers/Icon';
 import { scorecardData } from '../../constants/dummydata';
 
 const ScorecardItem = ({ item, onPress, onActionPress }) => {
-  const getStatusColor = status => {
-    switch (status) {
-      case 'sent':
-        return 'rgba(47, 237, 0, .1)'; // Green
-      case 'completed':
-        return COLORS.primary; // Orange
-      case 'saved':
-        return COLORS.primary; // Blue
-      default:
-        return COLORS.grey200;
-    }
-  };
-
-  const getActionButtonColor = action => {
-    switch (action) {
-      case 'download':
-        return COLORS.primary;
-      case 'saved':
-        return 'rgba(0, 39, 237, .1)';
-      default:
-        return COLORS.grey200;
-    }
-  };
-
-  const getActionButtonTextColor = action => {
-    switch (action) {
-      case 'download':
-        return COLORS.white100;
-      case 'saved':
-        return '#0027ED';
-      default:
-        return COLORS.white100;
-    }
-  };
-
   return (
     <TouchableOpacity
       activeOpacity={BASEOPACITY}
@@ -56,7 +21,7 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
         position: 'relative',
       }}
     >
-      {item.hasNotification && (
+      {item?.download_url && (
         <View
           style={{
             width: Sizer.hSize(9),
@@ -91,7 +56,7 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
               numberOfLines={1}
               style={{ flex: 1 }}
             >
-              {item.title}
+              {item?.course_name}
             </Typography>
           </Flex>
 
@@ -106,7 +71,7 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
               color={COLORS.grey200}
               fFamily="barlowRegular400"
             >
-              {item.date}
+              {new Date(item.created_at).toISOString().split('T')[0]}
             </Typography>
           </Flex>
         </Flex>
@@ -115,8 +80,11 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
           {/* Action Button */}
           <TouchableOpacity
             onPress={() => onActionPress?.(item)}
+            disabled={!item?.download_url}
             style={{
-              backgroundColor: getActionButtonColor(item.action),
+              backgroundColor: item?.download_url
+                ? 'rgba(235, 108, 15, 1)'
+                : 'rgba(235, 108, 15, .1)',
               paddingHorizontal: Sizer.hSize(12),
               paddingVertical: Sizer.vSize(6),
               borderRadius: Sizer.hSize(5),
@@ -126,29 +94,36 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
           >
             <Typography
               size={12}
-              color={getActionButtonTextColor(item.action)}
+              color={
+                item?.download_url ? COLORS.white100 : 'rgba(235, 108, 15, 1)'
+              }
               fFamily="barlowSemiBold600"
             >
-              {item.actionLabel}
+              {item?.download_url ? 'Download' : 'Completed'}
             </Typography>
           </TouchableOpacity>
 
           <View
             style={{
-              backgroundColor: getStatusColor(item.status),
+              backgroundColor: item?.sent_status
+                ? 'rgba(9, 190, 48, .1)'
+                : 'rgba(0, 39, 237, .1)',
               paddingHorizontal: Sizer.hSize(12),
               paddingVertical: Sizer.vSize(4),
-              borderRadius: Sizer.hSize(5),
+              borderRadius: Sizer.hSize(6),
               minWidth: Sizer.hSize(70),
               alignItems: 'center',
             }}
           >
             <Typography
               size={12}
-              color={item.status == 'sent' ? '#09BE30' : COLORS.orange200}
+              color={
+                item.sent_status ? 'rgba(9, 190, 48, 1)' : 'rgba(0, 39, 237, 1)'
+              }
               fFamily="barlowSemiBold600"
             >
-              {item.statusLabel}
+              {/* {item.statusLabel} */}
+              {item?.sent_status ? 'Sent' : 'Saved'}
             </Typography>
           </View>
         </Flex>
@@ -169,7 +144,6 @@ const ScorecardList = ({
   };
 
   const handleActionPress = item => {
-    console.log(`${item.action} pressed for:`, item.title);
     onActionPress?.(item);
   };
 

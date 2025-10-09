@@ -19,4 +19,10 @@ export const ENDPOINTS = {
   //Round End Points:
   GET_COURSES: '/courses',
   GET_CLASSES: '/classes',
+  CREATE_ROUND: '/rounds',
+  GET_ROUNDS: '/rounds',
+  GET_ROUND: round_id => `/rounds/${round_id}`,
+
+  //Station End Points:
+  GET_TRAPS: '/trap-presentations',
 };

@@ -1,15 +1,11 @@
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
+import { useQueries } from '@tanstack/react-query';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
 import {
   Button,
+  CustomDropdown,
   Header,
   IconButton,
   Label,
@@ -26,26 +22,48 @@ import {
   stationsData,
 } from '../../../constants/dummydata';
 import { useCustomQuery } from '../../../query/useCustomQuery';
-import { getCourses } from '../../../api/roundService';
+import { getClasses, getCourses, postRound } from '../../../api/roundService';
+import { useCustomMutation } from '../../../query/useCustomMutation';
+import { queryClient } from '../../../api/api';
+import { formatDate } from '../../../utils';
 
-const nscaClasses = [
-  { name: 'M', selected: false },
-  { name: 'AA', selected: false },
-  { name: 'A', selected: false },
-  { name: 'B', selected: false },
-  { name: 'C', selected: false },
-  { name: 'D', selected: true },
-  { name: 'N/A', selected: false },
-];
+const NewRoundScreen = ({ navigation, route }) => {
+  const roundDetails = route.params?.roundDetails;
+  console.log('🚀 ~ NewRoundScreen ~ roundDetails:', roundDetails);
 
-const NewRoundScreen = ({ navigation }) => {
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([stationsData[0]]);
-  const { data } = useCustomQuery({
-    queryKey: ['courses'],
-    queryFn: getCourses,
+
+  // Feetching Queries for Courses and Classes:
+  const responses = useQueries({
+    queries: [
+      {
+        queryKey: ['courses'],
+        queryFn: getCourses,
+      },
+      {
+        queryKey: ['classes'],
+        queryFn: getClasses,
+      },
+    ],
   });
-  console.log("🚀 ~ NewRoundScreen ~ data:", data)
+
+  const [courses, classes] = responses;
+  const coursesData = courses?.data
+    ? courses?.data.map(item => ({ label: item, value: item }))
+    : [];
+
+  const [selectedClass, setSelectedClass] = useState(classes?.data?.[0]);
+  const [selectedCourse, setSelectedCourse] = useState(coursesData?.[0]);
+  const [squadSequence, setSquadSequence] = useState('1');
+
+  // Post Round Mutation:
+  const { mutateAsync: createRound, isPending } = useCustomMutation({
+    mutationFn: postRound,
+    onSuccess: res => {
+      console.log('🚀 ~ NewRoundScreen ~ res:', res);
+    },
+  });
 
   const [expandedStations, setExpandedStations] = useState(
     expandedStationCardsObject,
@@ -70,6 +88,18 @@ const NewRoundScreen = ({ navigation }) => {
     });
   };
 
+  //Request Create Round:
+  const HandleContinue = () => {
+    createRound({
+      course_name: selectedCourse?.label,
+      squad_sequence: selectedClass,
+      squad_sequence: squadSequence,
+    }).then(() => {
+      setSectionNumber(2);
+      queryClient.invalidateQueries({ queryKey: ['rounds'] });
+    });
+  };
+
   return (
     <Container isPadding={false}>
       <Header
@@ -80,30 +110,52 @@ const NewRoundScreen = ({ navigation }) => {
         }}
       />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
-        {sectionNumber == 1 ? (
+        {!roundDetails && sectionNumber == 1 ? (
           <View style={styles.container}>
             <View>
               <Label title="Squad Sequence" />
-              <TextField placeholder="Enter sequence" defaultValue="2" />
-              <Label title="Course Name" />
               <TextField
-                placeholder="Enter course name"
-                defaultValue="Saltwaters Black Course"
+                placeholder="Enter sequence"
+                defaultValue="2"
+                handleChange={text => {
+                  setSquadSequence(text);
+                }}
+                value={squadSequence}
+              />
+              <Label title="Course Name" />
+
+              <CustomDropdown
+                data={coursesData}
+                placeholder="Course Name"
+                defaultValue={selectedCourse}
+                onChange={item => {
+                  console.log('🚀 ~ item:', item);
+                  setSelectedCourse(item);
+                }}
               />
               <Label title="Your Current NSCA Class" />
               <View style={styles.nscaClassContainer}>
-                {nscaClasses.map((item, index) => (
-                  <Box item={item} key={index} />
-                ))}
+                {classes?.data &&
+                  classes?.data.map((item, index) => (
+                    <Box
+                      item={item}
+                      key={index}
+                      onSelectClass={setSelectedClass}
+                      selectedClass={selectedClass}
+                    />
+                  ))}
               </View>
             </View>
             <Button
               mb={54}
               label="Continue"
-              onPress={() => setSectionNumber(2)}
+              onPress={HandleContinue}
+              disabled={isPending}
+              loader={isPending}
+              // onPress={() => setSectionNumber(2)}
             />
           </View>
-        ) : sectionNumber == 2 ? (
+        ) : roundDetails || sectionNumber == 2 ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ flexGrow: 1 }}
@@ -116,7 +168,9 @@ const NewRoundScreen = ({ navigation }) => {
             >
               <View style={{}}>
                 <Label
-                  title="Saltwaters Black Course - 9/4/25 Scorecard"
+                  title={`${
+                    roundDetails?.course_name || 'Course'
+                  } - ${formatDate(roundDetails?.created_at)} Scorecard`}
                   fFamily={'barlowBold700'}
                   size={18}
                 />
@@ -215,17 +269,24 @@ const NewRoundScreen = ({ navigation }) => {
   );
 };
 
-const Box = ({ item }) => {
+const Box = ({ item, selectedClass, onSelectClass }) => {
+  console.log('🚀 ~ Box ~ selectedClass:', selectedClass);
   return (
     <TouchableOpacity
       activeOpacity={BASEOPACITY}
-      style={[styles.box, item.selected && { backgroundColor: COLORS.primary }]}
+      style={[
+        styles.box,
+        item == selectedClass && { backgroundColor: COLORS.primary },
+      ]}
+      onPress={() => {
+        onSelectClass(item);
+      }}
     >
       <Typography
         fFamily="barlowMedium500"
-        color={item.selected ? COLORS.white100 : COLORS.black100}
+        color={item == selectedClass ? COLORS.white100 : COLORS.black100}
       >
-        {item.name}
+        {item}
       </Typography>
     </TouchableOpacity>
   );
@@ -237,8 +298,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   box: {
-    width: Sizer.hSize(27),
+    // width: Sizer.hSize(27),
     height: Sizer.hSize(27),
+    paddingHorizontal: Sizer.hSize(8),
     backgroundColor: COLORS.white100,
     justifyContent: 'center',
     alignItems: 'center',
