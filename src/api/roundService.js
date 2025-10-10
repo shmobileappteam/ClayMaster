@@ -27,3 +27,9 @@ export const getRound = async round_id => {
   const response = await api.get(ENDPOINTS.GET_ROUND(round_id));
   return response.data;
 };
+
+export const sendToCLayMaster = async round_id => {
+  const response = await api.post(ENDPOINTS.SEND_TO_CLAYMASTER(round_id));
+  console.log('🚀 ~ sendTolCayyMaster ~ response:', response);
+  return response.data;
+};

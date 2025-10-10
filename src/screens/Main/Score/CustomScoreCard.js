@@ -26,7 +26,6 @@ const CustomScoreCard = ({ navigation }) => {
     queryKey: ['traps'],
     queryFn: getTraps,
   });
-  console.log('🚀 ~ CustomScoreCard ~ trapsData:', trapsData);
 
   return (
     <Container isPadding={false}>
@@ -50,6 +49,7 @@ const CustomScoreCard = ({ navigation }) => {
               data={roundsData || []}
               onItemPress={item => {
                 item?.complete_status
+                // item?.complete_status
                   ? navigation.navigate('ScorecardDetailsScreen', {
                       roundId: item?.id,
                     })

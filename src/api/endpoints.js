@@ -22,6 +22,7 @@ export const ENDPOINTS = {
   CREATE_ROUND: '/rounds',
   GET_ROUNDS: '/rounds',
   GET_ROUND: round_id => `/rounds/${round_id}`,
+  SEND_TO_CLAYMASTER: round_id => `rounds/${round_id}/send-to-claymaster`,
 
   //Station End Points:
   GET_TRAPS: '/trap-presentations',

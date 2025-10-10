@@ -98,9 +98,7 @@ const NewRoundScreen = ({ navigation, route }) => {
       queryClient.invalidateQueries({ queryKey: ['rounds'] });
     });
   };
-  const handlePressDead = () => {
-    
-  };
+  const handlePressDead = () => {};
 
   return (
     <Container isPadding={false}>
@@ -131,7 +129,6 @@ const NewRoundScreen = ({ navigation, route }) => {
                 placeholder="Course Name"
                 defaultValue={selectedCourse}
                 onChange={item => {
-                  console.log('🚀 ~ item:', item);
                   setSelectedCourse(item);
                 }}
               />

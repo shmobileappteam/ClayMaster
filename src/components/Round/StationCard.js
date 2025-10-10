@@ -415,6 +415,8 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
 
   const filteredTrapData =
     selectedTrapsData?.find(trapData => trapData?.trap_id == trapId) || {};
+  // console.log('🚀 ~ StationCard ~ filteredTrapData:', filteredTrapData);
+
 
   const [isTargetPairSelected, setIsTargetPairSelected] = useState(
     false,
@@ -426,7 +428,7 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
     pairOfTargets[selectedTargetPairs],
   );
 
-  console.log('🚀 ~ StationCard ~ shotsData:', shotsData);
+  // console.log('🚀 ~ StationCard ~ station:', station);
 
   useEffect(() => {
     setShotsData(pairOfTargets[selectedTargetPairs]);
