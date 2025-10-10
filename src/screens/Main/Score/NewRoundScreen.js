@@ -19,6 +19,7 @@ import StationCard from '../../../components/Round/StationCard';
 import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 import {
   expandedStationCardsObject,
+  initialStationData,
   stationsData,
 } from '../../../constants/dummydata';
 import { useCustomQuery } from '../../../query/useCustomQuery';
@@ -29,10 +30,11 @@ import { formatDate } from '../../../utils';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
-  console.log('🚀 ~ NewRoundScreen ~ roundDetails:', roundDetails);
+  // console.log('🚀 ~ NewRoundScreen ~ roundDetails:', roundDetails);
 
   const [sectionNumber, setSectionNumber] = useState(1);
-  const [addStation, setAddStation] = useState([stationsData[0]]);
+  const [addStation, setAddStation] = useState([initialStationData]);
+  // const [addStation, setAddStation] = useState([stationsData[0]]);
 
   // Feetching Queries for Courses and Classes:
   const responses = useQueries({
@@ -60,9 +62,6 @@ const NewRoundScreen = ({ navigation, route }) => {
   // Post Round Mutation:
   const { mutateAsync: createRound, isPending } = useCustomMutation({
     mutationFn: postRound,
-    onSuccess: res => {
-      console.log('🚀 ~ NewRoundScreen ~ res:', res);
-    },
   });
 
   const [expandedStations, setExpandedStations] = useState(
@@ -98,6 +97,9 @@ const NewRoundScreen = ({ navigation, route }) => {
       setSectionNumber(2);
       queryClient.invalidateQueries({ queryKey: ['rounds'] });
     });
+  };
+  const handlePressDead = () => {
+    
   };
 
   return (
@@ -230,6 +232,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     <TouchableOpacity
                       activeOpacity={BASEOPACITY}
                       style={styles.actionBxo}
+                      onPress={handlePressDead}
                     >
                       <SlashSvg />
                       <Typography
@@ -270,7 +273,6 @@ const NewRoundScreen = ({ navigation, route }) => {
 };
 
 const Box = ({ item, selectedClass, onSelectClass }) => {
-  console.log('🚀 ~ Box ~ selectedClass:', selectedClass);
   return (
     <TouchableOpacity
       activeOpacity={BASEOPACITY}

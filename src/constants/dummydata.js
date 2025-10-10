@@ -1,5 +1,10 @@
 import { COLORS } from '../globalStyle/Theme';
 
+export const initialStationData = {
+  id: 1,
+  name: 'Station 1',
+};
+
 export const stationsData = [
   {
     id: 1,
@@ -311,38 +316,42 @@ export const expandedStationCardsObject = {
   6: true,
   7: true,
   8: true,
+  9: true,
+  10: true,
+  11: true,
+  12: true,
 };
 
 export const pairOfTargets = {
   3: [
-    { id: 1, status: 'hit' },
-    { id: 2, status: 'hit' },
-    { id: 3, status: 'missed' },
-    { id: 4, status: 'hit' },
-    { id: 5, status: 'missed' },
-    { id: 6, status: 'missed' },
+    { sequence: 1, result: 'empty' },
+    { sequence: 2, result: 'empty' },
+    { sequence: 3, result: 'empty' },
+    { sequence: 4, result: 'empty' },
+    { sequence: 5, result: 'empty' },
+    { sequence: 6, result: 'empty' },
   ],
   4: [
-    { id: 1, status: 'hit' },
-    { id: 2, status: 'hit' },
-    { id: 3, status: 'missed' },
-    { id: 4, status: 'hit' },
-    { id: 5, status: 'missed' },
-    { id: 6, status: 'missed' },
-    { id: 7, status: 'hit' },
-    { id: 8, status: 'missed' },
+    { sequence: 1, result: 'empty' },
+    { sequence: 2, result: 'empty' },
+    { sequence: 3, result: 'empty' },
+    { sequence: 4, result: 'empty' },
+    { sequence: 5, result: 'empty' },
+    { sequence: 6, result: 'empty' },
+    { sequence: 7, result: 'empty' },
+    { sequence: 8, result: 'empty' },
   ],
   5: [
-    { id: 1, status: 'hit' },
-    { id: 2, status: 'hit' },
-    { id: 3, status: 'missed' },
-    { id: 4, status: 'hit' },
-    { id: 5, status: 'missed' },
-    { id: 6, status: 'missed' },
-    { id: 7, status: 'hit' },
-    { id: 8, status: 'missed' },
-    { id: 9, status: 'hit' },
-    { id: 10, status: 'hit' },
+    { sequence: 1, result: 'empty' },
+    { sequence: 2, result: 'empty' },
+    { sequence: 3, result: 'empty' },
+    { sequence: 4, result: 'empty' },
+    { sequence: 5, result: 'empty' },
+    { sequence: 6, result: 'empty' },
+    { sequence: 7, result: 'empty' },
+    { sequence: 8, result: 'empty' },
+    { sequence: 9, result: 'empty' },
+    { sequence: 10, result: 'empty' },
   ],
 };
 

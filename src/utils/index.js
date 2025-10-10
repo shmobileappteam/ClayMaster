@@ -120,6 +120,18 @@ export const formatDate = isoDate => {
   return `${day}/${month}/${year}`;
 };
 
-// Example:
-console.log(formatDate('2025-10-09T19:04:16+00:00'));
-// Output: "9/10/25"
+// ✅ Function to generate pairOfTargets dynamically
+
+export const generatePairOfTargets = idsArray => {
+  const result = {};
+
+  idsArray.forEach(id => {
+    const shots = Array.from({ length: id * 2 }, (_, i) => ({
+      sequence: i + 1,
+      result: 'empty',
+    }));
+    result[id] = shots;
+  });
+
+  return result;
+};

@@ -1,51 +1,92 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import React from 'react';
-
 import Sizer from '../../helpers/Sizer';
 import { Flex, Typography } from '../../atomComponents';
-import { COLORS } from '../../globalStyle/Theme';
+import { BASEOPACITY, COLORS } from '../../globalStyle/Theme';
 
-const TrapsList = () => {
+const TrapsList = ({
+  trapsData = [],
+  selectedPresentation = '',
+  onSelectPresentation = () => {},
+}) => {
+  // Divide array into two halves
+  const mid = Math.ceil(trapsData.length / 2);
+  const leftColumn = trapsData.slice(0, mid);
+  const rightColumn = trapsData.slice(mid);
+
   return (
-    <View style={{ marginTop: Sizer.hSize(15) }}>
-      {Object.entries(station.traps).map(([key, value], index) => (
-        <Flex
-          key={key}
-          direction="row"
-          algItems="center"
-          mB={Object.entries(station.traps).length == index + 1 ? 0 : 10}
-        >
-          <View style={{ flex: 1 }}>
-            <View
-              style={[
-                styles.bottomRectangle,
-                key == 'Quartering' && {
-                  backgroundColor: COLORS.primary,
-                },
-              ]}
+    <View style={styles.trapsContainer}>
+      <View
+        style={{
+          marginRight: Sizer.hSize(8),
+        }}
+      >
+        {leftColumn.map((item, index) => (
+          <View
+            key={`left-${index}`}
+            style={[
+              styles.bottomRectangle,
+              {
+                marginBottom:
+                  index === leftColumn.length - 1 ? 0 : Sizer.hSize(8),
+              },
+              item?.slug == selectedPresentation && {
+                backgroundColor: COLORS.primary,
+              },
+            ]}
+          >
+            <Typography
+              size={14}
+              fFamily="barlowMedium500"
+              textTransform="capitalize"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              onPress={onSelectPresentation.bind(this, item)}
+              color={
+                item?.slug == selectedPresentation
+                  ? COLORS.white100
+                  : COLORS.black100
+              }
             >
-              <Typography
-                size={14}
-                color={key == 'Quartering' ? COLORS.white100 : COLORS.black100}
-                fFamily="barlowMedium500"
-                textTransform="capitalize"
-              >
-                {key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, str => str.toUpperCase())}
-              </Typography>
-            </View>
+              {item?.label}
+            </Typography>
           </View>
+        ))}
+      </View>
 
-          <View style={{ width: '60%' }}>
-            <View style={[styles.bottomRectangle]}>
-              <Typography size={14} fFamily="barlowMedium500">
-                {value}
-              </Typography>
-            </View>
+      <View>
+        {rightColumn.map((item, index) => (
+          <View
+            key={`right-${index}`}
+            style={[
+              styles.bottomRectangle,
+              {
+                marginBottom:
+                  index === rightColumn.length - 1 ? 0 : Sizer.hSize(8),
+              },
+              item?.slug == selectedPresentation && {
+                backgroundColor: COLORS.primary,
+              },
+            ]}
+          >
+            <Typography
+              size={14}
+              fFamily="barlowMedium500"
+              textTransform="capitalize"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              onPress={onSelectPresentation.bind(this, item)}
+              color={
+                item?.slug == selectedPresentation
+                  ? COLORS.white100
+                  : COLORS.black100
+              }
+            >
+              {item?.label}
+            </Typography>
           </View>
-        </Flex>
-      ))}
+        ))}
+      </View>
     </View>
   );
 };
@@ -57,6 +98,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(8),
     borderRadius: Sizer.hSize(5),
     alignSelf: 'flex-start',
+  },
+  trapsContainer: {
+    flexDirection: 'row',
+    marginTop: Sizer.hSize(15),
   },
 });
 

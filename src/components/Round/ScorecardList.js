@@ -139,7 +139,6 @@ const ScorecardList = ({
   containerStyle = {},
 }) => {
   const handleItemPress = item => {
-    console.log('Scorecard pressed:', item);
     onItemPress?.(item);
   };
 

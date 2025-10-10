@@ -41,7 +41,7 @@ export const onLoginSuccess = async (
 
     storage.set(KEYS.ACCESS_TOKEN, response?.token);
     storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
-    await Prefetching();
+     Prefetching();
     dispatch(setUser(response?.user));
 
     navigation.dispatch(

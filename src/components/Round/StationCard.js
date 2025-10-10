@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 //--------
 import { Flex, Typography } from '../../atomComponents';
@@ -8,9 +8,34 @@ import Icon from '../../helpers/Icon';
 import SlideInView from '../../animations/SlideView';
 import { CircleSvg, SlashSvg } from '../../assets/svgs';
 import { pairOfTargets } from '../../constants/dummydata';
+import TrapsList from './TrapsList';
+import { useCustomQuery } from '../../query/useCustomQuery';
+import { getTraps } from '../../api/stationService';
 
-const TrapSelector = ({ traps = [], selectedTrap, onSelect }) => {
+const trapsData = [
+  {
+    trap_id: 1,
+    presentation: '',
+  },
+  {
+    trap_id: 2,
+    presentation: '',
+  },
+];
+
+const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleSelectTrap = trapData => {
+    onSetTrapId(trapData?.trap_id);
+    onSelect(prev => {
+      // console.log('🚀 ~ prev:', prev);
+      const exists = prev.some(trap => trap.trap_id === trapData.trap_id);
+      if (exists) return prev;
+      return [...prev, trapData];
+    });
+    setIsOpen(false);
+  };
 
   return (
     <View>
@@ -29,7 +54,7 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect }) => {
         onPress={() => setIsOpen(!isOpen)}
       >
         <Typography fFamily="barlowMedium500" size={14}>
-          {selectedTrap}
+          {selectedTrap?.trap_id == 1 ? 'Trap 1' : 'Trap 2'}
         </Typography>
         <Icon
           name="play-arrow"
@@ -56,18 +81,17 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect }) => {
             paddingVertical: Sizer.hSize(4),
           }}
         >
-          {traps.map((trap, index) => (
+          {traps.map((trapData, index) => (
             <TouchableOpacity
               key={index}
               style={{
                 paddingVertical: Sizer.hSize(5),
               }}
-              onPress={() => {
-                onSelect(trap);
-                setIsOpen(false);
-              }}
+              onPress={handleSelectTrap.bind(this, trapData)}
             >
-              <Typography fFamily="barlowMedium500">{trap}</Typography>
+              <Typography fFamily="barlowMedium500">
+                {trapData?.trap_id == 1 ? 'Trap 1' : 'Trap 2'}
+              </Typography>
             </TouchableOpacity>
           ))}
         </View>
@@ -83,8 +107,10 @@ const Header = ({
   onToggle,
   isTargetPairSelected,
   isDropDown = false,
+  selectedTrapsData,
+  onSetSelectedTrapsData,
+  onSetTrapId,
 }) => {
-  const [selectedTrap, setSelectedTrap] = useState('Trap 1');
   return (
     <TouchableOpacity
       onPress={isTargetPairSelected ? onToggle : () => {}}
@@ -107,9 +133,11 @@ const Header = ({
 
         {isDropDown ? (
           <TrapSelector
-            traps={['Trap 1', 'Trap 2']}
-            selectedTrap={selectedTrap}
-            onSelect={setSelectedTrap}
+            traps={trapsData}
+            // traps={['Trap 1', 'Trap 2']}
+            selectedTrap={selectedTrapsData}
+            onSelect={onSetSelectedTrapsData}
+            onSetTrapId={onSetTrapId}
           />
         ) : (
           <Flex
@@ -150,12 +178,12 @@ const Header = ({
   );
 };
 
-const ShotCircle = ({ status, shotNumber }) => {
+const ShotCircle = ({ result, shotNumber }) => {
   const getCircleColor = () => {
-    switch (status) {
-      case 'hit':
+    switch (result) {
+      case 'dead':
         return COLORS.primary;
-      case 'missed':
+      case 'lost':
         return COLORS.grey900;
       case 'empty':
         return COLORS.white100;
@@ -165,7 +193,7 @@ const ShotCircle = ({ status, shotNumber }) => {
   };
 
   const getBorderColor = () => {
-    return status === 'empty' ? COLORS.grey300 : 'transparent';
+    return result === 'empty' ? COLORS.grey300 : 'transparent';
   };
 
   return (
@@ -179,16 +207,16 @@ const ShotCircle = ({ status, shotNumber }) => {
           styles.shotBox,
           {
             backgroundColor: getCircleColor(),
-            borderWidth: status === 'empty' ? Sizer.fS(1) : 0,
+            borderWidth: result === 'empty' ? Sizer.fS(1) : 0,
             borderColor: getBorderColor(),
           },
         ]}
       >
-        {status !== 'empty' &&
-          (status == 'hit' ? (
-            <CircleSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
-          ) : (
+        {result !== 'empty' &&
+          (result == 'dead' ? (
             <SlashSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
+          ) : (
+            <CircleSvg height={Sizer.hSize(15)} width={Sizer.hSize(15)} />
           ))}
       </View>
     </View>
@@ -318,7 +346,7 @@ const ShotsPresentation = ({
         {shotsData.map((shot, index) => (
           <ShotCircle
             key={shot.id}
-            status={shot.status}
+            result={shot.result}
             shotNumber={index + 1}
           />
         ))}
@@ -343,7 +371,7 @@ const ShotsPresentation = ({
             color={hitCount ? COLORS.primary : COLORS.grey500}
             Family="barlowMedium500"
           >
-            Dead {station.hits}
+            Dead 6{/* Dead {station.hits} */}
           </Typography>
         </View>
 
@@ -360,7 +388,7 @@ const ShotsPresentation = ({
             fFamily="barlowMedium500"
             color={missedCount ? COLORS.primary : COLORS.grey500}
           >
-            Lost {station.missed}
+            Lost 4{/* Lost {station.missed} */}
           </Typography>
         </View>
       </Flex>
@@ -368,18 +396,61 @@ const ShotsPresentation = ({
   );
 };
 
+///Main Card:
 const StationCard = ({ station, isExpanded, onToggle }) => {
-  const [reportPair, setReportPair] = useState(station.reportPair);
-  const [isTargetPairSelected, setIsTargetPairSelected] = useState(
-    station?.isPairSelected || false,
-  );
+  const { data: trapsData } = useCustomQuery({
+    queryKey: ['traps'],
+    queryFn: getTraps,
+  });
 
+  const [pairType, setPairType] = useState('report_pair');
+
+  const [trapId, setTrapId] = useState(1);
+  const [selectedTrapsData, setSelectedTrapsData] = useState([
+    {
+      trap_id: 1,
+      presentation: '',
+    },
+  ]);
+
+  const filteredTrapData =
+    selectedTrapsData?.find(trapData => trapData?.trap_id == trapId) || {};
+
+  const [isTargetPairSelected, setIsTargetPairSelected] = useState(
+    false,
+    // station?.isPairSelected || false,
+  );
   const [selectedTargetPairs, setSelectedTargetPairs] = useState(4);
 
-  const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
-  const missedCount = station.shots.filter(
-    item => item.status == 'missed',
-  )?.length;
+  const [shotsData, setShotsData] = useState(
+    pairOfTargets[selectedTargetPairs],
+  );
+
+  console.log('🚀 ~ StationCard ~ shotsData:', shotsData);
+
+  useEffect(() => {
+    setShotsData(pairOfTargets[selectedTargetPairs]);
+  }, [selectedTargetPairs]);
+
+  // const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
+  // const missedCount = station.shots.filter(
+  //   item => item.status == 'missed',
+  // )?.length;
+
+  const handleSelectPresentation = presentation => {
+    // console.log('🚀 ~ handleSelectPresentation ~ presentation:', presentation);
+    setSelectedTrapsData(prevsTrapsData => {
+      return prevsTrapsData.map(trap =>
+        trap.trap_id === trapId
+          ? { ...trap, presentation: presentation?.slug }
+          : trap,
+      );
+    });
+  };
+
+  // console.log('🚀 ~ StationCard ~ selectedTrapsData:', selectedTrapsData);
+  // console.log('🚀 ~ StationCard ~ trapId:', trapId);
+  // console.log('🚀 ~ StationCard ~ filteredTrapData:', selectedTrapsData);
 
   return (
     <SlideInView>
@@ -418,89 +489,50 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
         {/* Expanded Content */}
         {isExpanded && (
           <View style={styles.expandedContainer}>
-            {/* Report Pair Selection */}
+            {/* PairType Selection */}
             <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
               <RadioButton
-                selected={reportPair === 'TP'}
-                onPress={() => setReportPair('TP')}
+                selected={pairType === 'report_pair'}
+                onPress={() => setPairType('report_pair')}
                 label="Report Pair"
               />
               <RadioButton
-                selected={reportPair === 'RP'}
-                onPress={() => setReportPair('RP')}
+                selected={pairType === 'true_pair'}
+                onPress={() => setPairType('true_pair')}
                 label="True Pair"
               />
             </Flex>
 
             {/* Traps Section */}
-
             <Header
               titleLeft="Traps / Target Presentations"
-              titleRight="Trap 01"
+              // titleRight="Trap 01"
               isExpanded={isExpanded}
               isTargetPairSelected={isTargetPairSelected}
               isDropDown
+              selectedTrapsData={filteredTrapData}
+              onSetSelectedTrapsData={setSelectedTrapsData}
+              onSetTrapId={setTrapId}
             />
 
-            {/* Trap Details */}
-            <View style={{ marginTop: Sizer.hSize(15) }}>
-              {Object.entries(station.traps).map(([key, value], index) => (
-                <Flex
-                  key={key}
-                  direction="row"
-                  algItems="center"
-                  mB={
-                    Object.entries(station.traps).length == index + 1 ? 0 : 10
-                  }
-                >
-                  <View style={{ flex: 1 }}>
-                    <View
-                      style={[
-                        styles.bottomRectangle,
-                        key == 'Quartering' && {
-                          backgroundColor: COLORS.primary,
-                        },
-                      ]}
-                    >
-                      <Typography
-                        size={14}
-                        color={
-                          key == 'Quartering'
-                            ? COLORS.white100
-                            : COLORS.black100
-                        }
-                        fFamily="barlowMedium500"
-                        textTransform="capitalize"
-                      >
-                        {key
-                          .replace(/([A-Z])/g, ' $1')
-                          .replace(/^./, str => str.toUpperCase())}
-                      </Typography>
-                    </View>
-                  </View>
-
-                  <View style={{ width: '60%' }}>
-                    <View style={[styles.bottomRectangle]}>
-                      <Typography size={14} fFamily="barlowMedium500">
-                        {value}
-                      </Typography>
-                    </View>
-                  </View>
-                </Flex>
-              ))}
-            </View>
+            {/* Traps Presentation */}
+            <TrapsList
+              trapsData={trapsData}
+              onSelectPresentation={handleSelectPresentation}
+              selectedPresentation={filteredTrapData?.presentation}
+            />
           </View>
         )}
 
         {/* Shots Grid */}
-
         {isTargetPairSelected && (
           <ShotsPresentation
-            station={station}
-            hitCount={hitCount}
-            missedCount={missedCount}
-            isExpanded={isExpanded}
-            shotsData={pairOfTargets[selectedTargetPairs]}
+            hitCount={6}
+            missedCount={4}
+            shotsData={shotsData}
+            // station={station}
+            // hitCount={hitCount}
+            // missedCount={missedCount}
           />
         )}
       </View>
