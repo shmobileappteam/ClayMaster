@@ -28,12 +28,13 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
 
   const handleSelectTrap = trapData => {
     onSetTrapId(trapData?.trap_id);
-    onSelect(prev => {
-      // console.log('🚀 ~ prev:', prev);
-      const exists = prev.some(trap => trap.trap_id === trapData.trap_id);
-      if (exists) return prev;
-      return [...prev, trapData];
-    });
+    // onSelect(prev => {
+    //   // console.log('🚀 ~ prev:', prev);
+    //   const exists = prev.some(trap => trap.trap_id === trapData.trap_id);
+    //   if (exists) return prev;
+    //   return [...prev];
+    // });
+    onSelect(trapData, 'id');
     setIsOpen(false);
   };
 
@@ -127,14 +128,15 @@ const Header = ({
             ellipsizeMode="tail"
             flexShrink={1}
           >
-            {titleLeft}
+            {`${titleLeft}`}
+            {/* {`Station ${titleLeft}`} */}
           </Typography>
         </Flex>
 
         {isDropDown ? (
           <TrapSelector
             traps={trapsData}
-            // traps={['Trap 1', 'Trap 2']}
+            // traps={['Trap 1', 'T rap 2']}
             selectedTrap={selectedTrapsData}
             onSelect={onSetSelectedTrapsData}
             onSetTrapId={onSetTrapId}
@@ -397,26 +399,23 @@ const ShotsPresentation = ({
 };
 
 ///Main Card:
-const StationCard = ({ station, isExpanded, onToggle }) => {
+const StationCard = ({
+  station,
+  isExpanded,
+  onToggle,
+  onSetPairType,
+  onSetTrapsData,
+  onSetShotsData,
+}) => {
   const { data: trapsData } = useCustomQuery({
     queryKey: ['traps'],
     queryFn: getTraps,
   });
 
-  const [pairType, setPairType] = useState('report_pair');
-
   const [trapId, setTrapId] = useState(1);
-  const [selectedTrapsData, setSelectedTrapsData] = useState([
-    {
-      trap_id: 1,
-      presentation: '',
-    },
-  ]);
 
   const filteredTrapData =
-    selectedTrapsData?.find(trapData => trapData?.trap_id == trapId) || {};
-  // console.log('🚀 ~ StationCard ~ filteredTrapData:', filteredTrapData);
-
+    station?.traps.find(trapData => trapData?.trap_id == trapId) || {};
 
   const [isTargetPairSelected, setIsTargetPairSelected] = useState(
     false,
@@ -428,10 +427,11 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
     pairOfTargets[selectedTargetPairs],
   );
 
-  // console.log('🚀 ~ StationCard ~ station:', station);
+  console.log('🚀 ~ StationCard ~ station:', station);
 
   useEffect(() => {
-    setShotsData(pairOfTargets[selectedTargetPairs]);
+    // setShotsData(pairOfTargets[selectedTargetPairs]);
+    onSetShotsData(pairOfTargets[selectedTargetPairs])
   }, [selectedTargetPairs]);
 
   // const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
@@ -440,26 +440,15 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
   // )?.length;
 
   const handleSelectPresentation = presentation => {
-    // console.log('🚀 ~ handleSelectPresentation ~ presentation:', presentation);
-    setSelectedTrapsData(prevsTrapsData => {
-      return prevsTrapsData.map(trap =>
-        trap.trap_id === trapId
-          ? { ...trap, presentation: presentation?.slug }
-          : trap,
-      );
-    });
+    onSetTrapsData(presentation, trapId, 'presentation');
   };
-
-  // console.log('🚀 ~ StationCard ~ selectedTrapsData:', selectedTrapsData);
-  // console.log('🚀 ~ StationCard ~ trapId:', trapId);
-  // console.log('🚀 ~ StationCard ~ filteredTrapData:', selectedTrapsData);
 
   return (
     <SlideInView>
       <View style={styles.stationCard}>
         {/* Header */}
         <Header
-          titleLeft={station.name}
+          titleLeft={station.station_number}
           isExpanded={isExpanded}
           onToggle={onToggle}
           isTargetPairSelected={isTargetPairSelected}
@@ -494,13 +483,13 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
             {/* PairType Selection */}
             <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
               <RadioButton
-                selected={pairType === 'report_pair'}
-                onPress={() => setPairType('report_pair')}
+                selected={station?.pair_type === 'report_pair'}
+                onPress={() => onSetPairType('report_pair')}
                 label="Report Pair"
               />
               <RadioButton
-                selected={pairType === 'true_pair'}
-                onPress={() => setPairType('true_pair')}
+                selected={station?.pair_type === 'true_pair'}
+                onPress={() => onSetPairType('true_pair')}
                 label="True Pair"
               />
             </Flex>
@@ -513,7 +502,7 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
               isTargetPairSelected={isTargetPairSelected}
               isDropDown
               selectedTrapsData={filteredTrapData}
-              onSetSelectedTrapsData={setSelectedTrapsData}
+              onSetSelectedTrapsData={onSetTrapsData}
               onSetTrapId={setTrapId}
             />
 
@@ -531,7 +520,7 @@ const StationCard = ({ station, isExpanded, onToggle }) => {
           <ShotsPresentation
             hitCount={6}
             missedCount={4}
-            shotsData={shotsData}
+            shotsData={station?.shots}
             // station={station}
             // hitCount={hitCount}
             // missedCount={missedCount}

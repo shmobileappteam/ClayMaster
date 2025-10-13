@@ -20,6 +20,7 @@ import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 import {
   expandedStationCardsObject,
   initialStationData,
+  pairOfTargets,
   stationsData,
 } from '../../../constants/dummydata';
 import { useCustomQuery } from '../../../query/useCustomQuery';
@@ -30,11 +31,18 @@ import { formatDate } from '../../../utils';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
-  // console.log('🚀 ~ NewRoundScreen ~ roundDetails:', roundDetails);
-
   const [sectionNumber, setSectionNumber] = useState(1);
-  const [addStation, setAddStation] = useState([initialStationData]);
-  // const [addStation, setAddStation] = useState([stationsData[0]]);
+
+  const [addStation, setAddStation] = useState([
+    {
+      station_number: 1,
+      pair_type: 'true_pair',
+      traps: [{ trap_id: 1, presentation: '' }],
+      shots: pairOfTargets[4],
+    },
+  ]);
+
+  console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation);
 
   // Feetching Queries for Courses and Classes:
   const responses = useQueries({
@@ -76,11 +84,42 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const HandleAddStation = () => {
+    const lastStation = addStation[addStation.length - 1];
+
+    if (!lastStation?.pair_type) {
+      alert('Please select Pair Type');
+      return;
+    }
+
+    if (!lastStation.traps || lastStation.traps.length !== 2) {
+      alert('Please add both trap presentations');
+      return;
+    }
+
+    const hasEmptyPresentation = lastStation.traps.some(
+      trap => !trap.presentation.trim(),
+    );
+    if (hasEmptyPresentation) {
+      alert('Please fill both trap presentations');
+      return;
+    }
+
+    const hasEmptyShots = lastStation.shots.some(
+      shot => shot.result === '' || shot.result === 'empty',
+    );
+    if (hasEmptyShots) {
+      alert('Please complete all shots before proceeding');
+      return;
+    }
+
+    // ✅ All good
+    console.log('Proceeding with:', lastStation);
+
     setAddStation(prev => {
       const lastStation = prev[prev.length - 1];
       const newStation = {
         ...lastStation,
-        id: prev.length + 1,
+        station_number: prev.length + 1,
         name: `Station 0${prev.length + 1}`,
       };
       return [...prev, newStation];
@@ -98,7 +137,113 @@ const NewRoundScreen = ({ navigation, route }) => {
       queryClient.invalidateQueries({ queryKey: ['rounds'] });
     });
   };
-  const handlePressDead = () => {};
+
+  const handleSetPairType = pairType => {
+    setAddStation(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      updated[lastIndex] = { ...updated[lastIndex], pair_type: pairType };
+      return updated;
+    });
+  };
+
+  const HandleSelectedTrapsData = (data, trapId, type = 'id') => {
+    setAddStation(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      const lastStation = updated[lastIndex];
+      const traps = [...lastStation.traps];
+
+      if (type === 'id') {
+        const exists = traps.some(trap => trap.trap_id === data.trap_id);
+        if (!exists) {
+          traps.push(data);
+        }
+      } else if (type === 'presentation') {
+        const updatedTraps = traps.map(trap =>
+          trap.trap_id === trapId ? { ...trap, presentation: data.slug } : trap,
+        );
+        updated.splice(lastIndex, 1, { ...lastStation, traps: updatedTraps });
+        return updated;
+      }
+
+      updated[lastIndex] = {
+        ...lastStation,
+        traps,
+      };
+
+      return updated;
+    });
+  };
+
+  const HandleSetShotsData = shotsData => {
+    setAddStation(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      updated[lastIndex] = {
+        ...updated[lastIndex],
+        shots: shotsData,
+      };
+
+      return updated;
+    });
+  };
+
+  const handlePressDead = () => {
+    setAddStation(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      const lastStation = updated[lastIndex];
+      const shots = [...lastStation.shots]; // ⬅️ first take out
+      console.log('🚀 ~ handlePressDead ~ shots:', shots);
+
+      const nextIndex = shots.findIndex(item => item.result === 'empty');
+      if (nextIndex !== -1) {
+        shots[nextIndex].result = 'dead';
+      }
+
+      updated[lastIndex] = { ...lastStation, shots };
+      return updated;
+    });
+  };
+
+  const handlePressLost = () => {
+    setAddStation(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      const lastStation = updated[lastIndex];
+      const shots = [...lastStation.shots];
+
+      const nextIndex = shots.findIndex(item => item.result === 'empty');
+      if (nextIndex !== -1) {
+        shots[nextIndex].result = 'lost';
+      }
+
+      updated[lastIndex] = { ...lastStation, shots };
+      return updated;
+    });
+  };
+
+  const handleUndo = () => {
+    setAddStation(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+      const lastStation = updated[lastIndex];
+      const shots = [...lastStation.shots];
+
+      const lastFilledIndex = [...shots]
+        .reverse()
+        .findIndex(item => item.result !== 'empty');
+
+      if (lastFilledIndex !== -1) {
+        const realIndex = shots.length - 1 - lastFilledIndex;
+        shots[realIndex].result = 'empty';
+      }
+
+      updated[lastIndex] = { ...lastStation, shots };
+      return updated;
+    });
+  };
 
   return (
     <Container isPadding={false}>
@@ -174,12 +319,16 @@ const NewRoundScreen = ({ navigation, route }) => {
                   size={18}
                 />
 
-                {addStation.map(station => (
+                {addStation.map((station, index) => (
                   <StationCard
-                    key={station.id}
+                    key={index}
                     station={station}
-                    isExpanded={expandedStations[station.id]}
-                    onToggle={() => toggleStation(station.id)}
+                    isExpanded={expandedStations[station?.station_number]}
+                    onToggle={() => toggleStation(station?.station_number)}
+                    onSetPairType={handleSetPairType}
+                    onSetTrapsData={HandleSelectedTrapsData}
+                    traps={station?.traps}
+                    onSetShotsData={HandleSetShotsData}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>
@@ -211,6 +360,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                   <Flex gap={10} mB={34}>
                     <TouchableOpacity
                       activeOpacity={BASEOPACITY}
+                      onPress={handleUndo}
                       style={[
                         styles.actionBxo,
                         { backgroundColor: COLORS.grey100, flex: 0.6 },
@@ -243,6 +393,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       activeOpacity={BASEOPACITY}
+                      onPress={handlePressLost}
                       style={[
                         styles.actionBxo,
                         { backgroundColor: COLORS.black500 },
