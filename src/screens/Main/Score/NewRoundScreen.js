@@ -44,7 +44,7 @@ const NewRoundScreen = ({ navigation, route }) => {
 
   const [addStation, setAddStation] = useState([initialStation]);
 
-  console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation);
+  // console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation);
 
   // Feetching Queries for Courses and Classes:
   const responses = useQueries({
@@ -192,18 +192,21 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const handleSelectedTargetPairs = targetPair => {
-    console.log('🚀 ~ HandleSetShotsData ~ targetPair:', targetPair);
+    console.log('🚀 ~ HandleSetShotsData ~ targetPair:', pairOfTargets[3]);
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
 
       console.log('🚀lastIndex', lastIndex);
       console.log('🚀updated ', updated[lastIndex]);
+      // Deep copy pairOfTargets[targetPair] to avoid reference sharing
+      const newShots = pairOfTargets[targetPair].map(shot => ({ ...shot }));
 
       updated[lastIndex] = {
         ...updated[lastIndex],
         selectedTargetPairs: targetPair,
-        shots: pairOfTargets[targetPair],
+        // shots: pairOfTargets[targetPair],
+        shots: newShots,
       };
 
       return updated;
@@ -249,14 +252,6 @@ const NewRoundScreen = ({ navigation, route }) => {
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
-      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
       const lastStation = updated[lastIndex];
       const shots = [...lastStation.shots];
 
