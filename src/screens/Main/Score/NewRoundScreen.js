@@ -14,37 +14,30 @@ import {
 import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
-import Icon from '../../../helpers/Icon';
 import StationCard from '../../../components/Round/StationCard';
 import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 import {
   expandedStationCardsObject,
-  initialStationData,
+  initialStation,
   pairOfTargets,
-  stationsData,
+  validateLastStation,
 } from '../../../constants/dummydata';
-import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getClasses, getCourses, postRound } from '../../../api/roundService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { queryClient } from '../../../api/api';
-import { formatDate } from '../../../utils';
+import {
+  formatBackendErrors,
+  formatDate,
+  showMessage,
+} from '../../../utils';
+import { postStations } from '../../../api/stationService';
 
-const initialStation = {
-  station_number: 1,
-  name: `Station 1`,
-  pair_type: '',
-  traps: [{ trap_id: 1, presentation: '' }],
-  shots: [],
-  selectedTargetPairs: '',
-};
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
+  console.log('🚀 ~ NewRoundScreen ~ roundDetails:', roundDetails);
 
   const [sectionNumber, setSectionNumber] = useState(1);
-
   const [addStation, setAddStation] = useState([initialStation]);
-
-  // console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation);
 
   // Feetching Queries for Courses and Classes:
   const responses = useQueries({
@@ -68,11 +61,18 @@ const NewRoundScreen = ({ navigation, route }) => {
   const [selectedClass, setSelectedClass] = useState(classes?.data?.[0]);
   const [selectedCourse, setSelectedCourse] = useState(coursesData?.[0]);
   const [squadSequence, setSquadSequence] = useState('1');
+  const [roundId, setRoundId] = useState('1');
 
   // Post Round Mutation:
   const { mutateAsync: createRound, isPending } = useCustomMutation({
     mutationFn: postRound,
   });
+
+  // Post Station Mutation:
+  const { mutateAsync: postStationtoDb, isPending: isPendingPostStation } =
+    useCustomMutation({
+      mutationFn: postStations,
+    });
 
   const [expandedStations, setExpandedStations] = useState(
     expandedStationCardsObject,
@@ -87,35 +87,19 @@ const NewRoundScreen = ({ navigation, route }) => {
 
   const HandleAddStation = () => {
     const lastStation = addStation[addStation.length - 1];
+    const message = validateLastStation(lastStation);
 
-    if (!lastStation?.pair_type) {
-      alert('Please select Pair Type');
+    if (message) {
+      showMessage({
+        type: 'danger',
+        message,
+        bgColor: COLORS.primary,
+      });
       return;
     }
 
-    if (!lastStation.traps || lastStation.traps.length !== 2) {
-      alert('Please add both trap presentations');
-      return;
-    }
-
-    const hasEmptyPresentation = lastStation.traps.some(
-      trap => !trap.presentation.trim(),
-    );
-    if (hasEmptyPresentation) {
-      alert('Please fill both trap presentations');
-      return;
-    }
-
-    const hasEmptyShots = lastStation.shots.some(
-      shot => shot.result === '' || shot.result === 'empty',
-    );
-    if (hasEmptyShots) {
-      alert('Please complete all shots before proceeding');
-      return;
-    }
-
-    // ✅ All good
-    console.log('Proceeding with:', lastStation);
+    // All good
+    toggleStation(lastStation?.station_number);
 
     setAddStation(prev => {
       const newStation = {
@@ -131,12 +115,22 @@ const NewRoundScreen = ({ navigation, route }) => {
   const HandleContinue = () => {
     createRound({
       course_name: selectedCourse?.label,
-      squad_sequence: selectedClass,
+      ncsca_class: selectedClass,
       squad_sequence: squadSequence,
-    }).then(() => {
-      setSectionNumber(2);
-      queryClient.invalidateQueries({ queryKey: ['rounds'] });
-    });
+    })
+      .then(res => {
+        setSectionNumber(2);
+        setRoundId(res?.round?.id);
+        queryClient.invalidateQueries({ queryKey: ['rounds'] });
+      })
+      .catch(err => {
+        const response = err?.response;
+        const parsedErrors = formatBackendErrors(response?.data?.errors);
+        showMessage({
+          message: parsedErrors?.squad_sequence,
+          bgColor: COLORS.primary,
+        });
+      });
   };
 
   const handleSetPairType = pairType => {
@@ -178,7 +172,6 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const HandleSetShotsData = shotsData => {
-    console.log('🚀 ~ HandleSetShotsData ~ shotsData:', shotsData);
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
@@ -192,20 +185,14 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const handleSelectedTargetPairs = targetPair => {
-    console.log('🚀 ~ HandleSetShotsData ~ targetPair:', pairOfTargets[3]);
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
-
-      console.log('🚀lastIndex', lastIndex);
-      console.log('🚀updated ', updated[lastIndex]);
       // Deep copy pairOfTargets[targetPair] to avoid reference sharing
       const newShots = pairOfTargets[targetPair].map(shot => ({ ...shot }));
-
       updated[lastIndex] = {
         ...updated[lastIndex],
         selectedTargetPairs: targetPair,
-        // shots: pairOfTargets[targetPair],
         shots: newShots,
       };
 
@@ -218,8 +205,7 @@ const NewRoundScreen = ({ navigation, route }) => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
       const lastStation = updated[lastIndex];
-      const shots = [...lastStation.shots]; // ⬅️ first take out
-      console.log('🚀 ~ handlePressDead ~ shots:', shots);
+      const shots = [...lastStation.shots];
 
       const nextIndex = shots.findIndex(item => item.result === 'empty');
       if (nextIndex !== -1) {
@@ -269,13 +255,37 @@ const NewRoundScreen = ({ navigation, route }) => {
     });
   };
 
+  //Handle Complete Round Post:
+  const handleCompleteRound = () => {
+    const lastStation = addStation[addStation.length - 1];
+    const message = validateLastStation(lastStation);
+    if (message) {
+      showMessage({
+        type: 'danger',
+        message,
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
+
+    postStationtoDb({
+      roundId: roundDetails?.id || roundId,
+      payload: addStation,
+    }).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['rounds'] });
+      navigation.replace('CompleteRoundScreen', {
+        roundId: roundDetails?.id || roundId,
+      });
+    });
+  };
   return (
     <Container isPadding={false}>
       <Header
         type="app"
         title="New Round"
         onPresBack={() => {
-          sectionNumber == 2 ? setSectionNumber(1) : navigation.goBack('');
+          // sectionNumber == 2 ? setSectionNumber(1) :
+          navigation.goBack();
         }}
       />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
@@ -351,10 +361,9 @@ const NewRoundScreen = ({ navigation, route }) => {
                     onToggle={() => toggleStation(station?.station_number)}
                     onSetPairType={handleSetPairType}
                     onSetTrapsData={HandleSelectedTrapsData}
-                    traps={station?.traps}
                     onSetShotsData={HandleSetShotsData}
                     onSetSelectedTargetPairs={handleSelectedTargetPairs}
-                    pairOfTargets={pairOfTargets}
+                    isDisabled={station?.station_number !== addStation?.length}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>
@@ -376,9 +385,11 @@ const NewRoundScreen = ({ navigation, route }) => {
                   mb={13}
                   label="Complete Record"
                   mt={100}
+                  disabled={isPendingPostStation}
+                  loader={isPendingPostStation}
                   onPress={() => {
                     sectionNumber == 2
-                      ? navigation.navigate('CompleteRoundScreen')
+                      ? handleCompleteRound()
                       : setSectionNumber(2);
                   }}
                 />

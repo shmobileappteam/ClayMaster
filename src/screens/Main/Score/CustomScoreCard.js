@@ -39,7 +39,7 @@ const CustomScoreCard = ({ navigation }) => {
           // ...GLOBALSTYLE.paddingHor,
         }}
       >
-        {true ? (
+        {roundsData?.length ? (
           <View
             style={{
               ...GLOBALSTYLE.paddingHor,
@@ -49,8 +49,8 @@ const CustomScoreCard = ({ navigation }) => {
               data={roundsData || []}
               onItemPress={item => {
                 item?.complete_status
-                // item?.complete_status
-                  ? navigation.navigate('ScorecardDetailsScreen', {
+                  ? // item?.complete_status
+                    navigation.navigate('ScorecardDetailsScreen', {
                       roundId: item?.id,
                     })
                   : navigation.navigate('NewRoundScreen', {

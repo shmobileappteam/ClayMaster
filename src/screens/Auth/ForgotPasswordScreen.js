@@ -55,7 +55,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
       </Typography>
 
       <FormController
-        initialValues={{ email: __DEV__ ? 'mark1@mailinator.com' : '' }}
+        initialValues={{ email: __DEV__ ? 'david@mailinator.com' : '' }}
         validationSchema={validatoinSchema.authValidations.ForgotPasswordSchema}
         onSubmit={handleForgotPassword}
       >

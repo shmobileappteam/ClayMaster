@@ -1,32 +1,34 @@
-import {
-  ActivityIndicator,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import React from 'react';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
 import { Button, Header, Label, TextField } from '../../../components';
 import Sizer from '../../../helpers/Sizer';
-import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
+import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import StationsList from '../../../components/Round/StationsList';
-import { stationsDataList } from '../../../constants/dummydata';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getRound } from '../../../api/roundService';
 import AppLoader from '../../../atomComponents/AppLoader';
 import { downloadFile } from '../../../utils/downloadFile';
+import { useCustomMutation } from '../../../query/useCustomMutation';
+import { sendToClayMaster } from '../../../api/stationService';
+import { queryClient } from '../../../api/api';
 
 const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
   const roundId = route.params?.roundId;
+  console.log('🚀 ~ ScorescoreCardDetailsScreen ~ roundId:', roundId);
 
   //Fetching Round by id query:
   const { data: scoreCardDetails, isLoading } = useCustomQuery({
     queryKey: ['round', roundId],
     queryFn: ({ queryKey }) => getRound(queryKey[1]),
   });
+
+  //Send to ClayMaster:
+  const { mutateAsync: requestSend, isPending } = useCustomMutation({
+    mutationFn: sendToClayMaster,
+  });
+
   console.log(
     '🚀 ~ ScorescoreCardDetailsScreen ~ scoreCardDetails:',
     scoreCardDetails,
@@ -44,6 +46,9 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
         Card is ready to send to ClayMaster{' '}
       </Typography>
     );
+
+  const isFileDownloadable =
+    scoreCardDetails?.sent_status && scoreCardDetails?.download_url;
 
   return (
     <Container isPadding={false}>
@@ -86,20 +91,23 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
               <Box name={scoreCardDetails?.ncsca_class} />
             </View>
             <Label title="Round Summary" size={20} fFamily="barlowBold700" />
-            <StationsList data={stationsDataList} />
+            <StationsList data={scoreCardDetails?.stations} />
             <Button
               label={
-                scoreCardDetails?.download_url
-                  ? 'Download File'
-                  : 'Send to ClayMaster'
+                isFileDownloadable ? 'Download File' : 'Send to ClayMaster'
               }
+              loader={isPending}
+              disabled={isPending}
               onPress={() => {
-                if (scoreCardDetails?.download_url) {
-                  downloadFile(scoreCardDetails.download_url, 'Scoresheet');
+                if (isFileDownloadable) {
+                  downloadFile(scoreCardDetails?.download_url, 'Scoresheet');
                 } else {
-                  navigation.navigate('SavedScoredcardSuccessScreen', {
-                    status: 'Scorecard Sent!',
-                    desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                  requestSend(roundId).then(() => {
+                    queryClient.invalidateQueries({ queryKey: ['rounds'] });
+                    navigation.navigate('SavedScoredcardSuccessScreen', {
+                      status: 'Scorecard Sent!',
+                      desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                    });
                   });
                 }
               }}
@@ -136,13 +144,12 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   box: {
-    width: Sizer.hSize(27),
     height: Sizer.hSize(27),
-    backgroundColor: COLORS.white100,
+    paddingHorizontal: Sizer.hSize(8),
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: Sizer.hSize(5),
-    backgroundColor: COLORS.primary,
   },
 });
 

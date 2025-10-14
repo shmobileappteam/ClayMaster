@@ -355,6 +355,60 @@ export const pairOfTargets = {
   ],
 };
 
+export const initialStation = {
+  station_number: 1,
+  name: `Station 1`,
+  pair_type: '',
+  traps: [{ trap_id: 1, presentation: '' }],
+  shots: [],
+  selectedTargetPairs: '',
+};
+
+export const validateLastStation = (lastStation = []) => {
+  if (!lastStation?.pair_type) {
+    return 'Please select Pair Type';
+  }
+
+  if (!lastStation.traps || lastStation.traps.length !== 2) {
+    return 'Please add both trap presentations';
+  }
+
+  const hasEmptyPresentation = lastStation.traps.some(
+    trap => !trap.presentation.trim(),
+  );
+  if (hasEmptyPresentation) {
+    return 'Please fill both trap presentations';
+  }
+
+  const hasEmptyShots =
+    !lastStation.shots.length ||
+    lastStation.shots.some(
+      shot => shot.result === '' || shot.result === 'empty',
+    );
+
+  if (hasEmptyShots) {
+    return 'Please Select Target Pairs and complete all shots before proceeding';
+  }
+
+  return null; // ✅ all good
+};
+
+export const formatApiStations = (stations = []) => {
+  if (!Array.isArray(stations) || stations.length === 0) return [];
+
+  return stations.map((station, index) => ({
+    name: `Station ${index + 1}`,
+    station_number: station.station_number ?? null,
+    pair_type: station.pair_type ?? '',
+    dead: station?.hits ?? null,
+    lost: station?.missed ?? null,
+    traps: station?.traps || [],
+    shots: station?.shots || [],
+    isPairSelected: true,
+    selectedTargetPairs: station?.shots?.length / 2,
+  }));
+};
+
 export const stationsDataList = [
   {
     id: 1,

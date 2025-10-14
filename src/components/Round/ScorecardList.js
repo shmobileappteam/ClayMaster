@@ -8,7 +8,9 @@ import { ScorecardSvg } from '../../assets/svgs';
 import Icon from '../../helpers/Icon';
 import { scorecardData } from '../../constants/dummydata';
 
-const ScorecardItem = ({ item, onPress, onActionPress }) => {
+const ScorecardItem = ({ item, onPress }) => {
+  console.log('🚀 ~ ScorecardItem ~ item:', item);
+  const isFileDownloadable = item?.sent_status && item?.download_url;
   return (
     <TouchableOpacity
       activeOpacity={BASEOPACITY}
@@ -78,8 +80,7 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
 
         <Flex direction="column" algItems="flex-end" gap={8}>
           {/* Action Button */}
-          <TouchableOpacity
-            onPress={() => onActionPress?.(item)}
+          <View
             disabled={!item?.download_url}
             style={{
               backgroundColor: item?.download_url
@@ -95,13 +96,17 @@ const ScorecardItem = ({ item, onPress, onActionPress }) => {
             <Typography
               size={12}
               color={
-                item?.download_url ? COLORS.white100 : 'rgba(235, 108, 15, 1)'
+                isFileDownloadable ? COLORS.white100 : 'rgba(235, 108, 15, 1)'
               }
               fFamily="barlowSemiBold600"
             >
-              {item?.download_url ? 'Download' : 'Completed'}
+              {isFileDownloadable
+                ? 'Download'
+                : item?.complete_status
+                ? 'Completed'
+                : 'Not Completed'}
             </Typography>
-          </TouchableOpacity>
+          </View>
 
           <View
             style={{

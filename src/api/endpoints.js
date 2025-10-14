@@ -26,4 +26,6 @@ export const ENDPOINTS = {
 
   //Station End Points:
   GET_TRAPS: '/trap-presentations',
+  POST_STATION: round_id => `rounds/${round_id}/stations`,
+  SEND_TO_CLAYMASTER: round_id => `rounds/${round_id}/send-to-claymaster`,
 };

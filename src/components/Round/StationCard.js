@@ -116,65 +116,68 @@ const Header = ({
       onPress={isTargetPairSelected ? onToggle : () => {}}
       activeOpacity={BASEOPACITY}
     >
-      <Flex direction="row" jusContent="space-between" algItems="center">
-        <Flex gap={8}>
-          <View style={styles.stationLine} />
-          <Typography
-            size={14}
-            fFamily="barlowMedium500"
-            color={COLORS.black100}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            flexShrink={1}
-          >
-            {`${titleLeft}`}
-            {/* {`Station ${titleLeft}`} */}
-          </Typography>
-        </Flex>
-
-        {isDropDown ? (
-          <TrapSelector
-            traps={trapsData}
-            // traps={['Trap 1', 'T rap 2']}
-            selectedTrap={selectedTrapsData}
-            onSelect={onSetSelectedTrapsData}
-            onSetTrapId={onSetTrapId}
-          />
-        ) : (
-          <Flex
-            gap={12}
-            {...(titleRight && {
-              extraStyle: {
-                paddingVertical: Sizer.hSize(4),
-                paddingHorizontal: Sizer.hSize(5),
-                backgroundColor: COLORS.grey700,
-                borderRadius: Sizer.fS(5),
-              },
-            })}
-          >
-            {titleRight && (
-              <Typography fFamily="barlowMedium500" size={13}>
-                {titleRight}
-              </Typography>
-            )}
-            {isTargetPairSelected && (
-              <Icon
-                name={isExpanded ? 'play-arrow' : 'play-arrow'}
-                size={Sizer.hSize(18)}
-                color={COLORS.black100}
-                iconFamily={'MaterialIcons'}
-                {...(!titleRight
-                  ? {
-                      style: {
-                        transform: [{ rotate: isExpanded ? '90deg' : '0deg' }],
-                      },
-                    }
-                  : {})}
-              />
-            )}
+      <View pointerEvents="">
+        <Flex direction="row" jusContent="space-between" algItems="center">
+          <Flex gap={8}>
+            <View style={styles.stationLine} />
+            <Typography
+              size={14}
+              fFamily="barlowMedium500"
+              color={COLORS.black100}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              flexShrink={1}
+            >
+              {`${titleLeft}`}
+            </Typography>
           </Flex>
-        )}
-      </Flex>
+
+          {isDropDown ? (
+            <TrapSelector
+              traps={trapsData}
+              // traps={['Trap 1', 'T rap 2']}
+              selectedTrap={selectedTrapsData}
+              onSelect={onSetSelectedTrapsData}
+              onSetTrapId={onSetTrapId}
+            />
+          ) : (
+            <Flex
+              gap={12}
+              {...(titleRight && {
+                extraStyle: {
+                  paddingVertical: Sizer.hSize(4),
+                  paddingHorizontal: Sizer.hSize(5),
+                  backgroundColor: COLORS.grey700,
+                  borderRadius: Sizer.fS(5),
+                },
+              })}
+            >
+              {titleRight && (
+                <Typography fFamily="barlowMedium500" size={13}>
+                  {titleRight}
+                </Typography>
+              )}
+              {isTargetPairSelected && (
+                <Icon
+                  name={isExpanded ? 'play-arrow' : 'play-arrow'}
+                  size={Sizer.hSize(18)}
+                  color={COLORS.black100}
+                  iconFamily={'MaterialIcons'}
+                  {...(!titleRight
+                    ? {
+                        style: {
+                          transform: [
+                            { rotate: isExpanded ? '90deg' : '0deg' },
+                          ],
+                        },
+                      }
+                    : {})}
+                />
+              )}
+            </Flex>
+          )}
+        </Flex>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -252,7 +255,6 @@ const TargetPairSelection = ({
   onSelectTargetPair,
 }) => {
   const handleTarhetPairSelection = pair => {
-    // console.log('🚀 ~ handleTarhetPairSelection ~ pair:', pair);
     onSelectTargetPair(pair);
     onSetIsTargetPairSelected(true);
   };
@@ -325,7 +327,7 @@ const TargetPairSelection = ({
   );
 };
 
-const ShotsPresentation = ({ shotsData = [], hitCount, missedCount }) => {
+const ShotsPresentation = ({ shotsData = [], deadCount, lostCount }) => {
   return (
     <SlideInView slide="right" slideDuration={500}>
       <Flex
@@ -355,16 +357,16 @@ const ShotsPresentation = ({ shotsData = [], hitCount, missedCount }) => {
           style={[
             styles.shotsInfoBox,
             {
-              backgroundColor: hitCount ? COLORS.orange300 : COLORS.grey400,
+              backgroundColor: deadCount ? COLORS.orange300 : COLORS.grey400,
             },
           ]}
         >
           <Typography
             size={14}
-            color={hitCount ? COLORS.primary : COLORS.grey500}
+            color={deadCount ? COLORS.primary : COLORS.grey500}
             Family="barlowMedium500"
           >
-            Dead 6{/* Dead {station.hits} */}
+            Dead {deadCount}
           </Typography>
         </View>
 
@@ -372,16 +374,16 @@ const ShotsPresentation = ({ shotsData = [], hitCount, missedCount }) => {
           style={[
             styles.shotsInfoBox,
             {
-              backgroundColor: missedCount ? COLORS.red100 : COLORS.grey400,
+              backgroundColor: lostCount ? COLORS.red100 : COLORS.grey400,
             },
           ]}
         >
           <Typography
             size={14}
             fFamily="barlowMedium500"
-            color={missedCount ? COLORS.primary : COLORS.grey500}
+            color={lostCount ? COLORS.primary : COLORS.grey500}
           >
-            Lost 4{/* Lost {station.missed} */}
+            Lost {lostCount}
           </Typography>
         </View>
       </Flex>
@@ -394,12 +396,13 @@ const StationCard = ({
   station,
   isExpanded,
   onToggle,
-  onSetPairType,
-  onSetTrapsData,
-  onSetShotsData,
-  onSetSelectedTargetPairs,
-  pairOfTargets,
+  onSetPairType = () => {},
+  onSetTrapsData = () => {},
+  onSetSelectedTargetPairs = () => {},
+  isDisabled = false,
 }) => {
+  // console.log('🚀 ~ StationCard ~ station:', station);
+  // console.log('🚀 ~ StationCard ~ station:', station);
   const { data: trapsData } = useCustomQuery({
     queryKey: ['traps'],
     queryFn: getTraps,
@@ -408,33 +411,16 @@ const StationCard = ({
   const [trapId, setTrapId] = useState(1);
 
   const filteredTrapData =
-    station?.traps.find(trapData => trapData?.trap_id == trapId) || {};
-  // console.log('🚀 ~ StationCard ~ filteredTrapData:', filteredTrapData);
+    (station?.traps &&
+      station?.traps?.find(trapData => trapData?.trap_id == trapId)) ||
+    {};
 
   const [isTargetPairSelected, setIsTargetPairSelected] = useState(
-    false,
-    // station?.isPairSelected || false,
+    station?.isPairSelected || false,
   );
 
-  // console.log('🚀 ~ StationCard ~ station:', station);
-
-  // useEffect(() => {
-  //   if (!station?.selectedTargetPairs) {
-  //     return;
-  //   }
-  //   console.log(
-  //     '🚀 ~ selectedTargetPairs:',
-  //     pairOfTargets[station?.selectedTargetPairs],
-  //     station?.selectedTargetPairs,
-  //     // pairOfTargets[selectedTargetPairs],
-  //   );
-  //   onSetShotsData(pairOfTargets[station?.selectedTargetPairs]);
-  // }, [station?.selectedTargetPairs]);
-
-  const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
-  const missedCount = station.shots.filter(
-    item => item.status == 'missed',
-  )?.length;
+  const deadCount = station?.shots.filter(item => item.result == 'dead')?.length;
+  const lostCount = station?.shots.filter(item => item.result == 'lost')?.length;
 
   const handleSelectPresentation = presentation => {
     onSetTrapsData(presentation, trapId, 'presentation');
@@ -445,81 +431,83 @@ const StationCard = ({
       <View style={styles.stationCard}>
         {/* Header */}
         <Header
-          titleLeft={station.station_number}
+          titleLeft={station.name}
           isExpanded={isExpanded}
           onToggle={onToggle}
           isTargetPairSelected={isTargetPairSelected}
         />
 
-        {/* {!isTargetPairSelected && ( */}
-        <TargetPairSelection
-          onSetIsTargetPairSelected={setIsTargetPairSelected}
-          onSelectTargetPair={onSetSelectedTargetPairs}
-        />
-        {/* )} */}
+        <View pointerEvents={isDisabled ? 'none' : 'auto'}>
+          {!isTargetPairSelected && (
+            <TargetPairSelection
+              onSetIsTargetPairSelected={setIsTargetPairSelected}
+              onSelectTargetPair={onSetSelectedTargetPairs}
+            />
+          )}
 
-        {isTargetPairSelected && (
-          <Flex
-            jusContent={'space-between'}
-            extraStyle={{
-              backgroundColor: COLORS.orange300,
-            }}
-            mT={15}
-          >
-            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-            <Typography fFamily="barlowMedium500">
-              Selected Pair of {station?.selectedTargetPairs} Targets{' '}
-            </Typography>
-            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-          </Flex>
-        )}
-
-        {/* Expanded Content */}
-        {isExpanded && (
-          <View style={styles.expandedContainer}>
-            {/* PairType Selection */}
-            <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
-              <RadioButton
-                selected={station?.pair_type === 'report_pair'}
-                onPress={() => onSetPairType('report_pair')}
-                label="Report Pair"
-              />
-              <RadioButton
-                selected={station?.pair_type === 'true_pair'}
-                onPress={() => onSetPairType('true_pair')}
-                label="True Pair"
-              />
+          {isTargetPairSelected && (
+            <Flex
+              jusContent={'space-between'}
+              extraStyle={{
+                backgroundColor: COLORS.orange300,
+              }}
+              mT={15}
+            >
+              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+              <Typography fFamily="barlowMedium500">
+                Selected Pair of {station?.selectedTargetPairs} Targets{' '}
+              </Typography>
+              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
             </Flex>
+          )}
 
-            {/* Traps Section */}
-            <Header
-              titleLeft="Traps / Target Presentations"
-              // titleRight="Trap 01"
-              isExpanded={isExpanded}
-              isTargetPairSelected={isTargetPairSelected}
-              isDropDown
-              selectedTrapsData={filteredTrapData}
-              onSetSelectedTrapsData={onSetTrapsData}
-              onSetTrapId={setTrapId}
+          {/* Expanded Content */}
+          {isExpanded && (
+            <View style={styles.expandedContainer}>
+              {/* PairType Selection */}
+              <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
+                <RadioButton
+                  selected={station?.pair_type === 'report_pair'}
+                  onPress={() => onSetPairType('report_pair')}
+                  label="Report Pair"
+                />
+                <RadioButton
+                  selected={station?.pair_type === 'true_pair'}
+                  onPress={() => onSetPairType('true_pair')}
+                  label="True Pair"
+                />
+              </Flex>
+
+              {/* Traps Section */}
+              <Header
+                titleLeft="Traps / Target Presentations"
+                // titleRight="Trap 01"
+                isExpanded={isExpanded}
+                isTargetPairSelected={isTargetPairSelected}
+                isDropDown
+                selectedTrapsData={filteredTrapData}
+                onSetSelectedTrapsData={onSetTrapsData}
+                onSetTrapId={setTrapId}
+              />
+
+              {/* Traps Presentation */}
+              <TrapsList
+                trapsData={trapsData}
+                onSelectPresentation={handleSelectPresentation}
+                selectedPresentation={filteredTrapData?.presentation}
+              />
+            </View>
+          )}
+
+          {/* Shots Grid */}
+          {isTargetPairSelected && (
+            <ShotsPresentation
+              shotsData={station?.shots}
+              deadCount={deadCount}
+              lostCount={lostCount}
             />
-
-            {/* Traps Presentation */}
-            <TrapsList
-              trapsData={trapsData}
-              onSelectPresentation={handleSelectPresentation}
-              selectedPresentation={filteredTrapData?.presentation}
-            />
-          </View>
-        )}
-
-        {/* Shots Grid */}
-        {isTargetPairSelected && (
-          <ShotsPresentation
-            shotsData={station?.shots}
-            hitCount={hitCount}
-            missedCount={missedCount}
-          />
-        )}
+          )}
+        </View>
       </View>
     </SlideInView>
   );

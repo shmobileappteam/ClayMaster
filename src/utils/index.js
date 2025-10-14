@@ -21,6 +21,7 @@ export function showMessage({
     backgroundColor: backgroundColor,
     statusBarHeight: StatusBar.currentHeight,
     position: position || 'center',
+    duration: 3000,
   });
 
   if (Platform.OS == 'android') {

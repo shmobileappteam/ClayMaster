@@ -5,106 +5,91 @@ import { Container, Flex, Typography } from '../../../atomComponents';
 import { Button, Header, Label } from '../../../components';
 import StationsList from '../../../components/Round/StationsList';
 import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
-import { stationsDataList, statsData } from '../../../constants/dummydata';
 import Sizer from '../../../helpers/Sizer';
+import TableRow from '../../_partials/Round/TableRow';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { getRound } from '../../../api/roundService';
+import AppLoader from '../../../atomComponents/AppLoader';
+import { sendToClayMaster } from '../../../api/stationService';
+import { useCustomMutation } from '../../../query/useCustomMutation';
+import { queryClient } from '../../../api/api';
 
-const CompleteRoundScreen = ({ navigation }) => {
-  const totalHits = stationsDataList?.reduce(
-    (sum, station) => sum + station.hits,
-    0,
-  );
+const CompleteRoundScreen = ({ navigation, route }) => {
+  const roundId = route.params?.roundId;
+  // console.log('🚀 ~ CompleteRoundScreen ~ roundId:', roundId);
+  // console.log('🚀 ~ CompleteRoundScreen ~ stationsDetails:', stationsDetails);
 
-  const totalMissed = stationsDataList?.reduce(
-    (sum, station) => sum + station.missed,
-    0,
-  );
-  const totalShots = stationsDataList?.reduce(
-    (sum, station) => sum + station.totalShots,
-    0,
-  );
+  //Fetching Round Details by id query:
+  const { data: stationsDetails, isLoading } = useCustomQuery({
+    queryKey: ['round', roundId],
+    queryFn: ({ queryKey }) => getRound(queryKey[1]),
+  });
 
-  const TableRow = ({ item, isLast = false }) => {
-    return (
-      <View>
-        <Flex
-          direction="row"
-          jusContent="space-between"
-          algItems="center"
-          extraStyle={{
-            paddingVertical: Sizer.vSize(10),
-            paddingHorizontal: Sizer.hSize(20),
-          }}
-        >
-          <Typography
-            size={16}
-            color={item.labelColor}
-            fFamily="barlowSemiBold600"
-          >
-            {item.label}
-          </Typography>
+  //Send to ClayMaster:
+  const { mutateAsync: requestSend, isPending } = useCustomMutation({
+    mutationFn: sendToClayMaster,
+  });
 
-          <Typography
-            size={16}
-            color={item.labelColor}
-            fFamily="barlowSemiBold600"
-          >
-            {item.value}
-          </Typography>
-        </Flex>
-
-        {!isLast && (
-          <View
-            style={{
-              height: Sizer.vSize(1),
-              backgroundColor: COLORS.primary,
-              marginHorizontal: Sizer.hSize(1),
-            }}
-          />
-        )}
-      </View>
-    );
-  };
+  const isFileDownloadable =
+    stationsDetails?.sent_status && stationsDetails?.download_url;
 
   return (
     <Container isPadding={false}>
       <Header type="app" title="Round Completed" />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
-        <Label title="Custom Score Card" fFamily={'barlowBold700'} size={20} />
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: Sizer.hSize(50) }}
-        >
-          <StationsList data={stationsDataList} />
-          <View style={styles.tableCont}>
-            {statsData.map((item, index) => (
+        <Label title="Round Summary" fFamily={'barlowBold700'} size={20} />
+        {isLoading ? (
+          <AppLoader />
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: Sizer.hSize(50) }}
+          >
+            <StationsList data={stationsDetails?.stations} />
+            <View style={styles.tableCont}>
+              {/* {statsData.map((item, index) => ( */}
               <TableRow
-                key={item.id}
-                item={item}
-                isLast={index === statsData.length - 1}
+                label={'Total Dead'}
+                value={stationsDetails?.stats?.hits}
               />
-            ))}
-          </View>
-          <Button
-            label="Send to ClayMaster"
-            mt={24}
-            onPress={() =>
-              navigation.navigate('SavedScoredcardSuccessScreen', {
-                status: 'Scorecard Sent!',
-                desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
-              })
-            }
-          />
-          <Button
-            label="Save and Download (DAT)"
-            mt={15}
-            onPress={() =>
-              navigation.navigate('SavedScoredcardSuccessScreen', {
-                status: 'Scorecard Saved!!',
-                desc: 'Your new scorecard has been saved and is ready to be downloaded into the ClayMaster Detailed Analytics Tool',
-              })
-            }
-          />
-        </ScrollView>
+              <TableRow
+                label={'Total Lost'}
+                value={stationsDetails?.stats?.missed}
+              />
+              <TableRow
+                label={'Total Shots'}
+                value={stationsDetails?.stats?.total}
+                isLast={true}
+              />
+              {/* ))} */}
+            </View>
+            <Button
+              label="Send to ClayMaster"
+              mt={24}
+              disabled={isPending}
+              loader={isPending}
+              onPress={() => {
+                requestSend(roundId).then(() => {
+                  queryClient.invalidateQueries({ queryKey: ['rounds'] });
+                  navigation.navigate('SavedScoredcardSuccessScreen', {
+                    status: 'Scorecard Sent!',
+                    desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                  });
+                });
+              }}
+            />
+            {/* <Button
+              label="Save and Download (DAT)"
+              mt={15}
+              onPress={() =>
+                navigation.navigate('SavedScoredcardSuccessScreen', {
+                  status: 'Scorecard Saved!!',
+                  desc: 'Your new scorecard has been saved and is ready to be downloaded into the ClayMaster Detailed Analytics Tool',
+                })
+              }
+            /> */}
+          </ScrollView>
+        )}
       </View>
     </Container>
   );

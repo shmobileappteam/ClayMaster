@@ -44,13 +44,16 @@ const LoginScreen = ({ navigation }) => {
   };
   return (
     <SafeAreaWrapper>
-      <Header iconColor={COLORS.white100} left={Sizer.hSize(0)} isBackVisible={false}/>
+      <Header
+        iconColor={COLORS.white100}
+        left={Sizer.hSize(0)}
+        isBackVisible={false}
+      />
       <Typography
         size={40}
         textAlign="center"
         mT={52}
         fFamily="barlowBoldItalic700"
-        
       >
         Welcome Back!{' '}
       </Typography>
@@ -61,8 +64,8 @@ const LoginScreen = ({ navigation }) => {
 
       <FormController
         initialValues={{
-          email: __DEV__ ? 'sammy.check@yopmail.com' : '',
-          password: __DEV__ ? '123456789' : '',
+          email: __DEV__ ? 'david@mailinator.com' : '',
+          password: __DEV__ ? 'Admin@1234' : '',
         }}
         validationSchema={validatoinSchema.authValidations.SignInSchema}
         onSubmit={handleLogin}
@@ -99,7 +102,7 @@ const LoginScreen = ({ navigation }) => {
                 textAlign="right"
                 mT={15}
                 color={COLORS.primary}
-                onPress={()=>navigation.navigate("ForgotPasswordScreen")}
+                onPress={() => navigation.navigate('ForgotPasswordScreen')}
               >
                 Forgot password?
               </Typography>
