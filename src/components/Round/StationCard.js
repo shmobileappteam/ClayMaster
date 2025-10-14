@@ -7,7 +7,6 @@ import Sizer from '../../helpers/Sizer';
 import Icon from '../../helpers/Icon';
 import SlideInView from '../../animations/SlideView';
 import { CircleSvg, SlashSvg } from '../../assets/svgs';
-import { pairOfTargets } from '../../constants/dummydata';
 import TrapsList from './TrapsList';
 import { useCustomQuery } from '../../query/useCustomQuery';
 import { getTraps } from '../../api/stationService';
@@ -253,6 +252,7 @@ const TargetPairSelection = ({
   onSelectTargetPair,
 }) => {
   const handleTarhetPairSelection = pair => {
+    // console.log('🚀 ~ handleTarhetPairSelection ~ pair:', pair);
     onSelectTargetPair(pair);
     onSetIsTargetPairSelected(true);
   };
@@ -325,13 +325,7 @@ const TargetPairSelection = ({
   );
 };
 
-const ShotsPresentation = ({
-  station,
-  hitCount,
-  missedCount,
-  shotsData = [],
-  isExpanded,
-}) => {
+const ShotsPresentation = ({ shotsData = [], hitCount, missedCount }) => {
   return (
     <SlideInView slide="right" slideDuration={500}>
       <Flex
@@ -342,12 +336,9 @@ const ShotsPresentation = ({
         gap={4}
         mT={16}
       >
-        {/* {station.shots.map(shot => (
-          <ShotCircle key={shot.id} status={shot.status} />
-        ))} */}
         {shotsData.map((shot, index) => (
           <ShotCircle
-            key={shot.id}
+            key={shot.sequence}
             result={shot.result}
             shotNumber={index + 1}
           />
@@ -406,6 +397,8 @@ const StationCard = ({
   onSetPairType,
   onSetTrapsData,
   onSetShotsData,
+  onSetSelectedTargetPairs,
+  pairOfTargets,
 }) => {
   const { data: trapsData } = useCustomQuery({
     queryKey: ['traps'],
@@ -416,28 +409,32 @@ const StationCard = ({
 
   const filteredTrapData =
     station?.traps.find(trapData => trapData?.trap_id == trapId) || {};
+  // console.log('🚀 ~ StationCard ~ filteredTrapData:', filteredTrapData);
 
   const [isTargetPairSelected, setIsTargetPairSelected] = useState(
     false,
     // station?.isPairSelected || false,
   );
-  const [selectedTargetPairs, setSelectedTargetPairs] = useState(4);
 
-  const [shotsData, setShotsData] = useState(
-    pairOfTargets[selectedTargetPairs],
-  );
+  // console.log('🚀 ~ StationCard ~ station:', station);
 
-  console.log('🚀 ~ StationCard ~ station:', station);
+  // useEffect(() => {
+  //   if (!station?.selectedTargetPairs) {
+  //     return;
+  //   }
+  //   console.log(
+  //     '🚀 ~ selectedTargetPairs:',
+  //     pairOfTargets[station?.selectedTargetPairs],
+  //     station?.selectedTargetPairs,
+  //     // pairOfTargets[selectedTargetPairs],
+  //   );
+  //   onSetShotsData(pairOfTargets[station?.selectedTargetPairs]);
+  // }, [station?.selectedTargetPairs]);
 
-  useEffect(() => {
-    // setShotsData(pairOfTargets[selectedTargetPairs]);
-    onSetShotsData(pairOfTargets[selectedTargetPairs])
-  }, [selectedTargetPairs]);
-
-  // const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
-  // const missedCount = station.shots.filter(
-  //   item => item.status == 'missed',
-  // )?.length;
+  const hitCount = station.shots.filter(item => item.status == 'hit')?.length;
+  const missedCount = station.shots.filter(
+    item => item.status == 'missed',
+  )?.length;
 
   const handleSelectPresentation = presentation => {
     onSetTrapsData(presentation, trapId, 'presentation');
@@ -454,12 +451,12 @@ const StationCard = ({
           isTargetPairSelected={isTargetPairSelected}
         />
 
-        {!isTargetPairSelected && (
-          <TargetPairSelection
-            onSetIsTargetPairSelected={setIsTargetPairSelected}
-            onSelectTargetPair={setSelectedTargetPairs}
-          />
-        )}
+        {/* {!isTargetPairSelected && ( */}
+        <TargetPairSelection
+          onSetIsTargetPairSelected={setIsTargetPairSelected}
+          onSelectTargetPair={onSetSelectedTargetPairs}
+        />
+        {/* )} */}
 
         {isTargetPairSelected && (
           <Flex
@@ -471,7 +468,7 @@ const StationCard = ({
           >
             <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
             <Typography fFamily="barlowMedium500">
-              Selected Pair of {selectedTargetPairs} Targets{' '}
+              Selected Pair of {station?.selectedTargetPairs} Targets{' '}
             </Typography>
             <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
           </Flex>
@@ -518,12 +515,9 @@ const StationCard = ({
         {/* Shots Grid */}
         {isTargetPairSelected && (
           <ShotsPresentation
-            hitCount={6}
-            missedCount={4}
             shotsData={station?.shots}
-            // station={station}
-            // hitCount={hitCount}
-            // missedCount={missedCount}
+            hitCount={hitCount}
+            missedCount={missedCount}
           />
         )}
       </View>

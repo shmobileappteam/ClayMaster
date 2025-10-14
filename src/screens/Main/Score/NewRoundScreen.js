@@ -29,18 +29,20 @@ import { useCustomMutation } from '../../../query/useCustomMutation';
 import { queryClient } from '../../../api/api';
 import { formatDate } from '../../../utils';
 
+const initialStation = {
+  station_number: 1,
+  name: `Station 1`,
+  pair_type: '',
+  traps: [{ trap_id: 1, presentation: '' }],
+  shots: [],
+  selectedTargetPairs: '',
+};
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
+
   const [sectionNumber, setSectionNumber] = useState(1);
 
-  const [addStation, setAddStation] = useState([
-    {
-      station_number: 1,
-      pair_type: 'true_pair',
-      traps: [{ trap_id: 1, presentation: '' }],
-      shots: pairOfTargets[4],
-    },
-  ]);
+  const [addStation, setAddStation] = useState([initialStation]);
 
   console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation);
 
@@ -116,11 +118,10 @@ const NewRoundScreen = ({ navigation, route }) => {
     console.log('Proceeding with:', lastStation);
 
     setAddStation(prev => {
-      const lastStation = prev[prev.length - 1];
       const newStation = {
-        ...lastStation,
+        ...initialStation,
         station_number: prev.length + 1,
-        name: `Station 0${prev.length + 1}`,
+        name: `Station ${prev.length + 1}`,
       };
       return [...prev, newStation];
     });
@@ -177,12 +178,32 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const HandleSetShotsData = shotsData => {
+    console.log('🚀 ~ HandleSetShotsData ~ shotsData:', shotsData);
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
       updated[lastIndex] = {
         ...updated[lastIndex],
         shots: shotsData,
+      };
+
+      return updated;
+    });
+  };
+
+  const handleSelectedTargetPairs = targetPair => {
+    console.log('🚀 ~ HandleSetShotsData ~ targetPair:', targetPair);
+    setAddStation(prev => {
+      const updated = [...prev];
+      const lastIndex = updated.length - 1;
+
+      console.log('🚀lastIndex', lastIndex);
+      console.log('🚀updated ', updated[lastIndex]);
+
+      updated[lastIndex] = {
+        ...updated[lastIndex],
+        selectedTargetPairs: targetPair,
+        shots: pairOfTargets[targetPair],
       };
 
       return updated;
@@ -228,6 +249,14 @@ const NewRoundScreen = ({ navigation, route }) => {
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
+      console.log('🚀 ~ handleSelectedTargetPairs ~ lastIndex:', lastIndex);
       const lastStation = updated[lastIndex];
       const shots = [...lastStation.shots];
 
@@ -329,6 +358,8 @@ const NewRoundScreen = ({ navigation, route }) => {
                     onSetTrapsData={HandleSelectedTrapsData}
                     traps={station?.traps}
                     onSetShotsData={HandleSetShotsData}
+                    onSetSelectedTargetPairs={handleSelectedTargetPairs}
+                    pairOfTargets={pairOfTargets}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>
