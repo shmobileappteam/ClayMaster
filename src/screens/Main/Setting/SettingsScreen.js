@@ -100,9 +100,11 @@ const SettingsScreen = ({ navigation }) => {
           <Flex extraStyle={styles.nameContainer} gap={13} algItems={'center'}>
             <Avatar.Image
               source={{
-                uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
+                uri: user?.profile_image,
+                // uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
               }}
               size={Sizer.hSize(55)}
+              style={{ backgroundColor: COLORS.orange400 }}
             />
             <Typography
               size={18}
@@ -124,7 +126,7 @@ const SettingsScreen = ({ navigation }) => {
               <MenuItem key={idx} {...item} />
             ))}
           </View>
-          <Title title="Aettings" />
+          <Title title="Settings" />
           <View style={styles.menuCard}>
             {settingData.map((item, idx) => (
               <MenuItem key={idx} {...item} />

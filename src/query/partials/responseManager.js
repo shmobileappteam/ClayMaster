@@ -32,31 +32,58 @@ export const onLoginSuccess = async (
   dispatch,
   { email, password },
 ) => {
-  if (response?.status) {
-    // await AsyncStorage.setItem(KEYS.ACCESS_TOKEN, response?.token);
-    // await AsyncStorage.setItem(
-    //   KEYS.CREDENTIALS,
-    //   JSON.stringify({ email, password }),
-    // );
+  try {
+    if (response?.status) {
+      // await AsyncStorage.setItem(KEYS.ACCESS_TOKEN, response?.token);
+      // await AsyncStorage.setItem(
+      //   KEYS.CREDENTIALS,
+      //   JSON.stringify({ email, password }),
+      // );
 
-    storage.set(KEYS.ACCESS_TOKEN, response?.token);
-    storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
-     await Prefetching();
-    dispatch(setUser(response?.user));
+      dispatch(setUser(response?.user));
+      storage.set(KEYS.ACCESS_TOKEN, response?.token);
+      storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
+      await Prefetching();
+      console.log(!response?.user?.email_verified_at);
 
-    navigation.dispatch(
-      CommonActions.reset({
-        index: 0,
-        routes: [
-          {
-            name: 'BottomTabs',
-            // params: {
-            //   screen: 'BottomTabs',
-            // },
-          },
-        ],
-      }),
-    );
+      if (!response?.user?.email_verified_at) {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: 'BottomTabs' }],
+          }),
+        );
+      } else {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 1,
+            routes: [
+              {
+                name: 'LoginScreen',
+              },
+              {
+                name: 'VerifyEmailScreen',
+              },
+            ],
+          }),
+        );
+      }
+      // navigation.dispatch(
+      //   CommonActions.reset({
+      //     index: 0,
+      //     routes: [
+      //       {
+      //         name: 'BottomTabs',
+      //         // params: {
+      //         //   screen: 'BottomTabs',
+      //         // },
+      //       },
+      //     ],
+      //   }),
+      // );
+    }
+  } catch (err) {
+    console.log('🚀 ~ onLoginSuccess ~ err:', err);
   }
 };
 

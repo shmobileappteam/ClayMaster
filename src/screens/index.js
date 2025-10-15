@@ -12,6 +12,8 @@ import NotificationScreen from './Main/Notification/NotificationScreen';
 import SubscriptionScreen from './Main/Subscription/SubscriptionScreen';
 import SavedScoredcardSuccessScreen from './Main/Score/SavedScoredcardSuccessScreen';
 import ScorecardDetailsScreen from './Main/Score/ScorecardDetailsScreen';
+import ProfileDetailsScreen from './Main/Setting/ProfileDetailsScreen';
+import ChangePasswordScreen from './Main/Setting/ChangePasswordScreen';
 
 export {
   SplashScreen,
@@ -28,5 +30,7 @@ export {
   NotificationScreen,
   SubscriptionScreen,
   SavedScoredcardSuccessScreen,
-  ScorecardDetailsScreen
+  ScorecardDetailsScreen,
+  ProfileDetailsScreen,
+  ChangePasswordScreen
 };

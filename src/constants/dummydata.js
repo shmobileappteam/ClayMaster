@@ -186,7 +186,12 @@ export const moreMenus = [
 ];
 
 export const settingData = [
-  { label: 'Change Password', icon: 'help-circle-outline', family: 'Ionicons' },
+  {
+    label: 'Change Password',
+    icon: 'help-circle-outline',
+    family: 'Ionicons',
+    navLink: 'ChangePasswordScreen',
+  },
   { label: 'Help & Support', icon: 'help-circle-outline', family: 'Ionicons' },
   {
     label: 'Terms & Conditions',

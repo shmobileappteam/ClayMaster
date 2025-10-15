@@ -2,11 +2,13 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 //------
 import {
+  ChangePasswordScreen,
   CompleteRoundScreen,
   ForgotPasswordScreen,
   LoginScreen,
   NewRoundScreen,
   NotificationScreen,
+  ProfileDetailsScreen,
   ResetPasswordScreen,
   SavedScoredcardSuccessScreen,
   ScorecardDetailsScreen,
@@ -64,6 +66,14 @@ const StackNavigator = () => {
       <Stack.Screen
         name="ScorecardDetailsScreen"
         component={ScorecardDetailsScreen}
+      />
+      <Stack.Screen
+        name="ProfileDetailsScreen"
+        component={ProfileDetailsScreen}
+      />
+      <Stack.Screen
+        name="ChangePasswordScreen"
+        component={ChangePasswordScreen}
       />
 
       {/* Main */}

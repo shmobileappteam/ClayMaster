@@ -37,7 +37,7 @@ export const forgotPassword = async body => {
 };
 
 export const resendPasswordOtp = async body => {
-  const response = await api.post(ENDPOINTS.RESEND_PASSWORD_OTP, body );
+  const response = await api.post(ENDPOINTS.RESEND_PASSWORD_OTP, body);
   return response.data;
 };
 
@@ -51,10 +51,21 @@ export const logout = async () => {
   return response.data;
 };
 
+//New
 export const editProfile = async body => {
   const formData = objectToFormData(body);
   const response = await api.post(ENDPOINTS.EDIT_PROFILE, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
+  return response.data;
+};
+
+export const deleteUser = async () => {
+  const response = await api.get(ENDPOINTS.DELETE_USER);
+  return response.data;
+};
+
+export const changePassword = async body => {
+  const response = await api.post(ENDPOINTS.UPDATE_PASSWORD, body);
   return response.data;
 };

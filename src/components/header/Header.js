@@ -42,7 +42,7 @@ const Header = ({
   const navigation = useNavigation();
   const { user } = useSelector(state => state.app);
 
-return (
+  return (
     <View style={styles.container}>
       {type == 'home' ? (
         <SlideInView slide="up" slideDuration={800}>
@@ -54,9 +54,11 @@ return (
             <Flex gap={12}>
               <Avatar.Image
                 source={{
-                  uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
+                  uri: user?.profile_image,
+                  // uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
                 }}
                 size={Sizer.hSize(48)}
+                style={{backgroundColor:COLORS.orange400}}
               />
               <View>
                 <Typography size={15} color={COLORS.white100}>

@@ -14,7 +14,9 @@ export const ENDPOINTS = {
   RESET_PASSWORD: '/verify/otp/password',
   LOGOUT: '/logout',
 
-  EDIT_PROFILE: '/user-edit-profile',
+  EDIT_PROFILE: '/edit-profile',
+  DELETE_USER: '/delete/user',
+  UPDATE_PASSWORD: '/user/update-password',
 
   //Round End Points:
   GET_COURSES: '/courses',
