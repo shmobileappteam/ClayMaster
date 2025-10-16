@@ -104,7 +104,7 @@ const ScorecardItem = ({ item, onPress }) => {
                 ? 'Download'
                 : item?.complete_status
                 ? 'Completed'
-                : 'Not Completed'}
+                : 'Pending'}
             </Typography>
           </View>
 

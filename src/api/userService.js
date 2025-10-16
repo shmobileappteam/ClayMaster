@@ -60,7 +60,7 @@ export const editProfile = async body => {
   return response.data;
 };
 
-export const deleteUser = async () => {
+export const deleteAccount = async () => {
   const response = await api.get(ENDPOINTS.DELETE_USER);
   return response.data;
 };

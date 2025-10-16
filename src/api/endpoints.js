@@ -1,33 +1,34 @@
-// ---( Live URL )--- //
-export const API_DOMAIN = __DEV__
-  ? 'https://php82.demo-customlinks.com/claymaster-dev/api'
-  : 'https://php82.demo-customlinks.com/claymaster-dev/api';
+// ✅ Base URLs
+export const BASE_URL = __DEV__
+  ? 'https://php82.demo-customlinks.com/claymaster-dev/'
+  : 'https://php82.demo-customlinks.com/claymaster-dev/';
+
+export const API_DOMAIN = `${BASE_URL}api/`;
 
 export const ENDPOINTS = {
-  //Auth End Points:
-  LOGIN: '/login',
-  REGISTER: '/register',
-  RESEND_OTP: '/resend/otp',
-  VERIFY_OTP: '/verify/otp',
-  RESEND_PASSWORD_OTP: '/resend/forgot/password/otp',
-  FORGOT_PASSWORD: '/forgot/password',
-  RESET_PASSWORD: '/verify/otp/password',
-  LOGOUT: '/logout',
+  // --- Auth ---
+  LOGIN: 'login',
+  REGISTER: 'register',
+  RESEND_OTP: 'resend/otp',
+  VERIFY_OTP: 'verify/otp',
+  RESEND_PASSWORD_OTP: 'resend/forgot/password/otp',
+  FORGOT_PASSWORD: 'forgot/password',
+  RESET_PASSWORD: 'verify/otp/password',
+  LOGOUT: 'logout',
 
-  EDIT_PROFILE: '/edit-profile',
-  DELETE_USER: '/delete/user',
-  UPDATE_PASSWORD: '/user/update-password',
+  EDIT_PROFILE: 'edit-profile',
+  DELETE_USER: 'delete/user',
+  UPDATE_PASSWORD: 'user/update-password',
 
-  //Round End Points:
-  GET_COURSES: '/courses',
-  GET_CLASSES: '/classes',
-  CREATE_ROUND: '/rounds',
-  GET_ROUNDS: '/rounds',
-  GET_ROUND: round_id => `/rounds/${round_id}`,
+  // --- Rounds ---
+  GET_COURSES: 'courses',
+  GET_CLASSES: 'classes',
+  CREATE_ROUND: 'rounds',
+  GET_ROUNDS: 'rounds',
+  GET_ROUND: round_id => `rounds/${round_id}`,
   SEND_TO_CLAYMASTER: round_id => `rounds/${round_id}/send-to-claymaster`,
 
-  //Station End Points:
-  GET_TRAPS: '/trap-presentations',
+  // --- Stations ---
+  GET_TRAPS: 'trap-presentations',
   POST_STATION: round_id => `rounds/${round_id}/stations`,
-  SEND_TO_CLAYMASTER: round_id => `rounds/${round_id}/send-to-claymaster`,
 };

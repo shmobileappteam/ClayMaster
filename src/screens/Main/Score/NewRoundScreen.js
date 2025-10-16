@@ -19,17 +19,14 @@ import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 import {
   expandedStationCardsObject,
   initialStation,
+  noOfPeopleData,
   pairOfTargets,
   validateLastStation,
 } from '../../../constants/dummydata';
 import { getClasses, getCourses, postRound } from '../../../api/roundService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { queryClient } from '../../../api/api';
-import {
-  formatBackendErrors,
-  formatDate,
-  showMessage,
-} from '../../../utils';
+import { formatBackendErrors, formatDate, showMessage } from '../../../utils';
 import { postStations } from '../../../api/stationService';
 
 const NewRoundScreen = ({ navigation, route }) => {
@@ -38,6 +35,12 @@ const NewRoundScreen = ({ navigation, route }) => {
 
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([initialStation]);
+
+  //Check if Active/Last Staion shots are fullfiled or not:
+  const lastStation = addStation[addStation?.length - 1];
+  const IsAllFilled = lastStation?.shots.every(
+    shot => shot.result !== '' && shot.result !== 'empty',
+  );
 
   // Feetching Queries for Courses and Classes:
   const responses = useQueries({
@@ -60,7 +63,9 @@ const NewRoundScreen = ({ navigation, route }) => {
 
   const [selectedClass, setSelectedClass] = useState(classes?.data?.[0]);
   const [selectedCourse, setSelectedCourse] = useState(coursesData?.[0]);
+  const [noOfPeople, setNoOfPeople] = useState({ label: '1', value: '3' });
   const [squadSequence, setSquadSequence] = useState('1');
+
   const [roundId, setRoundId] = useState('1');
 
   // Post Round Mutation:
@@ -117,6 +122,7 @@ const NewRoundScreen = ({ navigation, route }) => {
       course_name: selectedCourse?.label,
       ncsca_class: selectedClass,
       squad_sequence: squadSequence,
+      people_in_squad: noOfPeople?.value,
     })
       .then(res => {
         setSectionNumber(2);
@@ -308,7 +314,18 @@ const NewRoundScreen = ({ navigation, route }) => {
                 placeholder="Course Name"
                 defaultValue={selectedCourse}
                 onChange={item => {
+                  console.log('🚀 ~ item:', item);
                   setSelectedCourse(item);
+                }}
+              />
+              <Label title="# of People in Squad" />
+
+              <CustomDropdown
+                data={noOfPeopleData}
+                placeholder="# of people in squad"
+                defaultValue={noOfPeople}
+                onChange={item => {
+                  setNoOfPeople(item);
                 }}
               />
               <Label title="Your Current NSCA Class" />
@@ -328,9 +345,7 @@ const NewRoundScreen = ({ navigation, route }) => {
               mb={54}
               label="Continue"
               onPress={HandleContinue}
-              disabled={isPending}
               loader={isPending}
-              // onPress={() => setSectionNumber(2)}
             />
           </View>
         ) : roundDetails || sectionNumber == 2 ? (
@@ -385,7 +400,6 @@ const NewRoundScreen = ({ navigation, route }) => {
                   mb={13}
                   label="Complete Record"
                   mt={100}
-                  disabled={isPendingPostStation}
                   loader={isPendingPostStation}
                   onPress={() => {
                     sectionNumber == 2
@@ -417,6 +431,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                       activeOpacity={BASEOPACITY}
                       style={styles.actionBxo}
                       onPress={handlePressDead}
+                      disabled={IsAllFilled}
                     >
                       <SlashSvg />
                       <Typography
@@ -430,6 +445,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                     <TouchableOpacity
                       activeOpacity={BASEOPACITY}
+                      disabled={IsAllFilled}
                       onPress={handlePressLost}
                       style={[
                         styles.actionBxo,

@@ -11,28 +11,45 @@ import { NotificationSvg } from '../../../assets/svgs';
 const notifications = [
   {
     id: '1',
-    text: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem',
-    time: '20m ago',
+    title: 'Round Completed',
+    text: 'Round 3 has been successfully completed by Squad A.',
+    time: '10m ago',
+    type: 'round',
   },
   {
     id: '2',
-    text: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem',
-    time: '20m ago',
+    title: 'Score Updated',
+    text: 'Your score for Station 5 has been updated. Check results tab.',
+    time: '25m ago',
+    type: 'score',
   },
   {
     id: '3',
-    text: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem',
-    time: '20m ago',
+    title: 'New Round Assigned',
+    text: 'You have been assigned to Round 4 – starting at 2:30 PM.',
+    time: '1h ago',
+    type: 'assignment',
   },
   {
     id: '4',
-    text: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem',
-    time: '20m ago',
+    title: 'Download Ready',
+    text: 'Score report for Squad B is now available for download.',
+    time: '2h ago',
+    type: 'download',
   },
   {
     id: '5',
-    text: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem',
-    time: '20m ago',
+    title: 'Sync Successful',
+    text: 'ClayMaster data synchronized with backend successfully.',
+    time: '3h ago',
+    type: 'sync',
+  },
+  {
+    id: '6',
+    title: 'Admin Update',
+    text: 'Admin panel changes have been applied to your current session.',
+    time: 'Yesterday',
+    type: 'admin',
   },
 ];
 
@@ -51,7 +68,7 @@ const NotificationScreen = () => {
             >
               {item.text}
             </Typography>
-            <Typography size={12} mT={10} color={"#7B7B7B"}>
+            <Typography size={12} mT={10} color={'#7B7B7B'}>
               {item.time}
             </Typography>
           </Flex>

@@ -13,10 +13,11 @@ import { downloadFile } from '../../../utils/downloadFile';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { sendToClayMaster } from '../../../api/stationService';
 import { queryClient } from '../../../api/api';
+import TableRow from '../../_partials/Round/TableRow';
 
 const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
   const roundId = route.params?.roundId;
-  console.log('🚀 ~ ScorescoreCardDetailsScreen ~ roundId:', roundId);
+  // console.log('🚀 ~ ScorescoreCardDetailsScreen ~ roundId:', roundId);
 
   //Fetching Round by id query:
   const { data: scoreCardDetails, isLoading } = useCustomQuery({
@@ -92,12 +93,26 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
             </View>
             <Label title="Round Summary" size={20} fFamily="barlowBold700" />
             <StationsList data={scoreCardDetails?.stations} />
+            <View style={styles.tableCont}>
+              <TableRow
+                label={'Total Dead'}
+                value={scoreCardDetails?.stats?.dead}
+              />
+              <TableRow
+                label={'Total Lost'}
+                value={scoreCardDetails?.stats?.lost}
+              />
+              <TableRow
+                label={'Total Shots'}
+                value={scoreCardDetails?.stats?.total}
+                isLast={true}
+              />
+            </View>
             <Button
               label={
                 isFileDownloadable ? 'Download File' : 'Send to ClayMaster'
               }
               loader={isPending}
-              disabled={isPending}
               onPress={() => {
                 if (isFileDownloadable) {
                   downloadFile(scoreCardDetails?.download_url, 'Scoresheet');
@@ -150,6 +165,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: Sizer.hSize(5),
+  },
+  tableCont: {
+    backgroundColor: COLORS.white100,
+    borderRadius: Sizer.hSize(10),
+    borderWidth: Sizer.hSize(1),
+    borderColor: COLORS.primary,
+    overflow: 'hidden',
   },
 });
 

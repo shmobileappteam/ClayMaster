@@ -1,8 +1,8 @@
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import Sizer from '../../helpers/Sizer';
-import { Flex, Typography } from '../../atomComponents';
-import { BASEOPACITY, COLORS } from '../../globalStyle/Theme';
+import {  Typography } from '../../atomComponents';
+import {  COLORS } from '../../globalStyle/Theme';
 
 const TrapsList = ({
   trapsData = [],
@@ -15,7 +15,7 @@ const TrapsList = ({
   const rightColumn = trapsData.slice(mid);
 
   return (
-    <View style={styles.trapsContainer}>
+    <View style={[styles.trapsContainer, { zIndex: -2 }]}>
       <View
         style={{
           marginRight: Sizer.hSize(8),

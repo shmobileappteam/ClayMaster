@@ -25,11 +25,12 @@ import { editProfile } from '../../../api/userService';
 import { setUser } from '../../../redux/slices/appSlice';
 import { maskPhoneNumber, showMessage } from '../../../utils';
 import useImagePicker from '../../../hooks/useImagePicker';
+import { BASE_URL } from '../../../api/endpoints';
 
 const ProfileDetailsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.app);
-  console.log('🚀 ~ ProfileDetailsScreen ~ user:', user);
+//   console.log('🚀 ~ ProfileDetailsScreen ~ user:', user);
 
   const { openGallery, imageUri, clearImage } = useImagePicker();
 
@@ -57,7 +58,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
   //Handle Edit Profile:
   const handleEditProfile = values => {
     if (imageUri?.uri) {
-      values.image = {
+      values.profile_image = {
         uri: imageUri?.uri,
         fileName: imageUri?.fileName,
         type: imageUri?.type,
@@ -66,11 +67,11 @@ const ProfileDetailsScreen = ({ navigation }) => {
       delete values.image;
     }
 
-    // console.log('🚀 ~ handleEditProfile ~ values:', {
-    //   id: user?.id,
-    //   ...values,
-    // //   imageUri
-    // });
+    console.log('🚀 ~ handleEditProfile ~ values:', {
+      id: user?.id,
+      ...values,
+    //   imageUri
+    });
 
     editProf({ id: user?.id, ...values });
   };
@@ -100,6 +101,9 @@ const ProfileDetailsScreen = ({ navigation }) => {
     return () => backHandler.remove();
   }, [edit]);
 
+console.log(`${BASE_URL}${user?.profile_image}`);
+
+
   return (
     <Container keyboardAvoiding isPadding={false}>
       <Header
@@ -128,7 +132,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
             style={{ position: 'relative' }}
           >
             <Avatar.Image
-              source={{ uri: imageUri?.uri || user?.profile_image }}
+              source={{ uri: imageUri?.uri || `${BASE_URL}${user?.profile_image}` }}
               size={Sizer.hSize(88)}
               style={{ backgroundColor: COLORS.orange400 }}
             />

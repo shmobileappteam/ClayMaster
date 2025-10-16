@@ -50,11 +50,11 @@ const CompleteRoundScreen = ({ navigation, route }) => {
               {/* {statsData.map((item, index) => ( */}
               <TableRow
                 label={'Total Dead'}
-                value={stationsDetails?.stats?.hits}
+                value={stationsDetails?.stats?.dead}
               />
               <TableRow
                 label={'Total Lost'}
-                value={stationsDetails?.stats?.missed}
+                value={stationsDetails?.stats?.lost}
               />
               <TableRow
                 label={'Total Shots'}

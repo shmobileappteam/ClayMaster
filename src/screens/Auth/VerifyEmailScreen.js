@@ -149,7 +149,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
             message="Your email has been successfully verified. You can now log in to your account."
             buttonLabel={comeFromLogin ? 'Goto Home' : 'Login Now'}
             onPress={() =>
-              navigation.replace(comeFromLogin ? 'DrawerTabs' : 'LoginScreen')
+              navigation.replace(comeFromLogin ? 'BottomTabs' : 'LoginScreen')
             }
           />
         </SlideInView>

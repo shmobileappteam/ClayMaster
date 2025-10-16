@@ -39,7 +39,11 @@ const SignupScreen = ({ navigation }) => {
 
   return (
     <SafeAreaWrapper keyboardAvoid>
-      <Header iconColor={COLORS.white100} left={Sizer.hSize(0)} isBackVisible={false}/>
+      <Header
+        iconColor={COLORS.white100}
+        left={Sizer.hSize(0)}
+        isBackVisible={false}
+      />
       <Typography
         size={42}
         textAlign="center"
@@ -57,12 +61,12 @@ const SignupScreen = ({ navigation }) => {
       >
         <FormController
           initialValues={{
-            first_name: __DEV__ ? 'Mark' : '',
-            last_name: __DEV__ ? 'Doeson' : '',
-            email: __DEV__ ? 'mark1@mailinator.com' : '',
+            first_name: __DEV__ ? 'Toliver' : '',
+            last_name: __DEV__ ? 'John' : '',
+            email: __DEV__ ? 'Toliver@mailinator.com' : '',
             password: __DEV__ ? 'Admin@1234' : '',
             password_confirmation: __DEV__ ? 'Admin@1234' : '',
-            phone: __DEV__ ? '1234567890' : '',
+            // phone: __DEV__ ? '1234567890' : '',
           }}
           validationSchema={validatoinSchema.authValidations.SignUpSchema}
           onSubmit={handleRegister}
@@ -124,19 +128,7 @@ const SignupScreen = ({ navigation }) => {
                   onBlur={handleBlur('password_confirmation')}
                   mT={23}
                 />
-                <TextField
-                  placeholder="+1234567890"
-                  leftIcon
-                  leftIconName="phone"
-                  handleChange={number =>
-                    handleChange('phone')(number?.replace(/\D/g, ''))
-                  }
-                  value={maskPhoneNumber(values?.phone)}
-                  error={errors.phone}
-                  onBlur={handleBlur('phone')}
-                  maxLength={12}
-                  mT={23}
-                />
+
                 <Button
                   label={'Sign Up'}
                   mt={26}

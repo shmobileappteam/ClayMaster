@@ -1,16 +1,17 @@
 import {
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { Avatar } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
-import { Header } from '../../../components';
+import { Button, Header } from '../../../components';
 import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useCustomQuery } from '../../../query/useCustomQuery';
@@ -21,13 +22,15 @@ import {
   settingData,
 } from '../../../constants/dummydata';
 import Icon from '../../../helpers/Icon';
-import { logout } from '../../../api/userService';
+import { deleteAccount, logout } from '../../../api/userService';
 import { queryClient } from '../../../api/api';
 import { CommonActions } from '@react-navigation/native';
 import { handleLogout } from '../../../redux/slices/appSlice';
+import { BASE_URL } from '../../../api/endpoints';
 
 const SettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const [modalVisibility, setVisibility] = useState(false);
 
   const { user } = useSelector(state => state.app);
 
@@ -56,6 +59,21 @@ const SettingsScreen = ({ navigation }) => {
     });
   };
 
+  //Custom Delate Query Hook
+  const { refetch: triggerDeleteAccount, isLoading } = useCustomQuery({
+    queryKey: ['delete'],
+    queryFn: deleteAccount,
+    enabled: false,
+  });
+
+  //Request Delete
+  const handleDeleteAcount = () => {
+    triggerDeleteAccount().then(() => {
+      clearApp();
+      dispatch(handleLogout());
+    });
+  };
+
   const MenuItem = ({ icon, family, label, navLink, stack }) => (
     <TouchableOpacity
       style={styles.menuContainer}
@@ -63,6 +81,8 @@ const SettingsScreen = ({ navigation }) => {
       onPress={() => {
         if (label == 'Log out') {
           logoutHandler();
+        } else if (label == 'Delete Acount') {
+          setVisibility(true);
         } else {
           stack
             ? navigation.navigate(stack, { screen: navLink })
@@ -88,6 +108,7 @@ const SettingsScreen = ({ navigation }) => {
       </Flex>
     </TouchableOpacity>
   );
+
   return (
     <Container isPadding={false}>
       <Header type="app" title="Menu" isBackVisible={false} />{' '}
@@ -100,8 +121,7 @@ const SettingsScreen = ({ navigation }) => {
           <Flex extraStyle={styles.nameContainer} gap={13} algItems={'center'}>
             <Avatar.Image
               source={{
-                uri: user?.profile_image,
-                // uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
+                uri: `${BASE_URL}${user?.profile_image}`,
               }}
               size={Sizer.hSize(55)}
               style={{ backgroundColor: COLORS.orange400 }}
@@ -134,6 +154,68 @@ const SettingsScreen = ({ navigation }) => {
           </View>
         </SlideInView>
       </ScrollView>
+      <Modal
+        visible={modalVisibility}
+        statusBarTranslucent
+        transparent
+        animationType="fade"
+        onRequestClose={() => setVisibility(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: COLORS.white100,
+              marginHorizontal: 20,
+              paddingVertical: 30,
+              paddingHorizontal: 20,
+              borderRadius: 12,
+              width: '90%',
+            }}
+          >
+            <Typography
+              textAlign="center"
+              fFamily="barlowSemiBold600"
+              size={20}
+            >
+              Are you sure you want to delete your account?
+            </Typography>
+
+            <Typography
+              size={14}
+              textAlign="center"
+              color={COLORS.grey300}
+              mT={10}
+            >
+              This action is permanent and cannot be undone.
+            </Typography>
+
+            <Flex gap={12} mT={30}>
+              <Button
+                btnStyle={{ flex: 1, backgroundColor: COLORS.grey100 }}
+                label="Delete"
+                type="primary"
+                textColor={COLORS.white100}
+                onPress={handleDeleteAcount}
+                loadColor={COLORS.red}
+                loader={isLoading}
+              />
+              <Button
+                btnStyle={{ flex: 1 }}
+                label="Cancel"
+                onPress={() => setVisibility(false)}
+                disabled={isLoading}
+              />
+            </Flex>
+          </View>
+        </View>
+      </Modal>
     </Container>
   );
 };

@@ -10,6 +10,7 @@ import { CircleSvg, SlashSvg } from '../../assets/svgs';
 import TrapsList from './TrapsList';
 import { useCustomQuery } from '../../query/useCustomQuery';
 import { getTraps } from '../../api/stationService';
+import { queryClient } from '../../api/api';
 
 const trapsData = [
   {
@@ -27,12 +28,7 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
 
   const handleSelectTrap = trapData => {
     onSetTrapId(trapData?.trap_id);
-    // onSelect(prev => {
-    //   // console.log('🚀 ~ prev:', prev);
-    //   const exists = prev.some(trap => trap.trap_id === trapData.trap_id);
-    //   if (exists) return prev;
-    //   return [...prev];
-    // });
+
     onSelect(trapData, 'id');
     setIsOpen(false);
   };
@@ -75,6 +71,7 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
             top: Sizer.hSize(30),
             right: 0,
             left: 0,
+            zIndex: 100,
             backgroundColor: '#F8F8F8',
             borderRadius: Sizer.hSize(5),
             paddingHorizontal: Sizer.hSize(6),
@@ -402,11 +399,12 @@ const StationCard = ({
   isDisabled = false,
 }) => {
   // console.log('🚀 ~ StationCard ~ station:', station);
-  // console.log('🚀 ~ StationCard ~ station:', station);
-  const { data: trapsData } = useCustomQuery({
-    queryKey: ['traps'],
-    queryFn: getTraps,
-  });
+  // const { data: trapsData } = useCustomQuery({
+  //   queryKey: ['traps'],
+  //   queryFn: getTraps,
+  // });
+
+  const trapsData = queryClient.getQueryData(['traps']);
 
   const [trapId, setTrapId] = useState(1);
 
@@ -418,9 +416,6 @@ const StationCard = ({
   const [isTargetPairSelected, setIsTargetPairSelected] = useState(
     station?.isPairSelected || false,
   );
-
-  const deadCount = station?.shots.filter(item => item.result == 'dead')?.length;
-  const lostCount = station?.shots.filter(item => item.result == 'lost')?.length;
 
   const handleSelectPresentation = presentation => {
     onSetTrapsData(presentation, trapId, 'presentation');
@@ -460,10 +455,12 @@ const StationCard = ({
               <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
             </Flex>
           )}
+        </View>
 
-          {/* Expanded Content */}
-          {isExpanded && (
-            <View style={styles.expandedContainer}>
+        {/* Expanded Content */}
+        {isExpanded && (
+          <View style={styles.expandedContainer}>
+            <View pointerEvents={isDisabled ? 'none' : 'auto'}>
               {/* PairType Selection */}
               <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
                 <RadioButton
@@ -477,19 +474,22 @@ const StationCard = ({
                   label="True Pair"
                 />
               </Flex>
+            </View>
 
-              {/* Traps Section */}
-              <Header
-                titleLeft="Traps / Target Presentations"
-                // titleRight="Trap 01"
-                isExpanded={isExpanded}
-                isTargetPairSelected={isTargetPairSelected}
-                isDropDown
-                selectedTrapsData={filteredTrapData}
-                onSetSelectedTrapsData={onSetTrapsData}
-                onSetTrapId={setTrapId}
-              />
-
+            {/* Traps Section */}
+            <Header
+              titleLeft="Traps / Target Presentations"
+              isExpanded={isExpanded}
+              isTargetPairSelected={isTargetPairSelected}
+              isDropDown
+              selectedTrapsData={filteredTrapData}
+              onSetSelectedTrapsData={onSetTrapsData}
+              onSetTrapId={setTrapId}
+            />
+            <View
+              pointerEvents={isDisabled ? 'none' : 'auto'}
+              style={{ zIndex: -1 }}
+            >
               {/* Traps Presentation */}
               <TrapsList
                 trapsData={trapsData}
@@ -497,17 +497,19 @@ const StationCard = ({
                 selectedPresentation={filteredTrapData?.presentation}
               />
             </View>
-          )}
+          </View>
+        )}
 
-          {/* Shots Grid */}
-          {isTargetPairSelected && (
+        {/* Shots Grid */}
+        {isTargetPairSelected && (
+          <View pointerEvents={isDisabled ? 'none' : 'auto'}>
             <ShotsPresentation
               shotsData={station?.shots}
-              deadCount={deadCount}
-              lostCount={lostCount}
+              deadCount={station?.dead}
+              lostCount={station?.lost}
             />
-          )}
-        </View>
+          </View>
+        )}
       </View>
     </SlideInView>
   );

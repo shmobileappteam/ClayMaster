@@ -62,7 +62,7 @@ api.interceptors.response.use(
     if (error?.status === 403) {
       showMessage({
         type: 'danger',
-        message: 'Forbidden!',
+        message: error?.data?.message || 'Forbidden!',
       });
     }
 

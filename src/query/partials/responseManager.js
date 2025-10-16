@@ -44,9 +44,9 @@ export const onLoginSuccess = async (
       storage.set(KEYS.ACCESS_TOKEN, response?.token);
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       await Prefetching();
-      console.log(!response?.user?.email_verified_at);
+      console.log(response?.user?.email_verified_at);
 
-      if (!response?.user?.email_verified_at) {
+      if (response?.user?.email_verified_at) {
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
@@ -56,13 +56,14 @@ export const onLoginSuccess = async (
       } else {
         navigation.dispatch(
           CommonActions.reset({
-            index: 1,
+            index: 0,
             routes: [
               {
-                name: 'LoginScreen',
-              },
-              {
                 name: 'VerifyEmailScreen',
+                params: {
+                  email,
+                  fromLogin: true,
+                },
               },
             ],
           }),

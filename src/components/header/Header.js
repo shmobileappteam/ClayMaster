@@ -14,7 +14,7 @@ import Sizer from '../../helpers/Sizer';
 import { AppIconSvg, AppLogoSvg, BellSvg } from '../../assets/svgs';
 import SlideInView from '../../animations/SlideView';
 import { useSelector } from 'react-redux';
-import { API_DOMAIN } from '../../api/endpoints';
+import { API_DOMAIN, BASE_URL } from '../../api/endpoints';
 // import { MainLogoSvg } from '../../assets/svgs';
 // import HamBurgerSvg from '../../assets/svgs/HamBurgerSvg';
 // import BellSvg from '../../assets/svgs/BellSvg';
@@ -54,11 +54,10 @@ const Header = ({
             <Flex gap={12}>
               <Avatar.Image
                 source={{
-                  uri: user?.profile_image,
-                  // uri: 'https://php82.demo-customlinks.com/claymaster-dev/storage/images/profile/68c9218933bf21758011785.png',
+                  uri: `${BASE_URL}${user?.profile_image}`,
                 }}
                 size={Sizer.hSize(48)}
-                style={{backgroundColor:COLORS.orange400}}
+                style={{ backgroundColor: COLORS.orange400 }}
               />
               <View>
                 <Typography size={15} color={COLORS.white100}>
