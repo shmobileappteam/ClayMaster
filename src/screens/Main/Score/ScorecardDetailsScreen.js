@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import React from 'react';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
@@ -115,7 +115,8 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
               loader={isPending}
               onPress={() => {
                 if (isFileDownloadable) {
-                  downloadFile(scoreCardDetails?.download_url, 'Scoresheet');
+                  // downloadFile(scoreCardDetails?.download_url, 'Scoresheet'); // OLD CODE HIDE.
+                  Linking.openURL(scoreCardDetails?.download_url);
                 } else {
                   requestSend(roundId).then(() => {
                     queryClient.invalidateQueries({ queryKey: ['rounds'] });
