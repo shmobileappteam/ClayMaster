@@ -9,7 +9,6 @@ import StationsList from '../../../components/Round/StationsList';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getRound } from '../../../api/roundService';
 import AppLoader from '../../../atomComponents/AppLoader';
-import { downloadFile } from '../../../utils/downloadFile';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { sendToClayMaster } from '../../../api/stationService';
 import { queryClient } from '../../../api/api';
@@ -110,7 +109,6 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
               loader={isPending}
               onPress={() => {
                 if (isFileDownloadable) {
-                  // downloadFile(scoreCardDetails?.download_url, 'Scoresheet'); // OLD CODE HIDE.
                   Linking.openURL(scoreCardDetails?.download_url);
                   // Linking.openURL('https://demoappprojects.com/Sample.xls');
                 } else {

@@ -101,6 +101,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
     return () => backHandler.remove();
   }, [edit]);
 
+console.log(`${BASE_URL}${user?.profile_image}`);
 
 
   return (
@@ -200,17 +201,16 @@ const ProfileDetailsScreen = ({ navigation }) => {
                 {/* <InputLabel title="Phone Number" /> */}
                 <TextField
                   mT={16}
+                  leftIconName="phone"
                   value={maskPhoneNumber(values?.contact)}
                   error={errors?.contact}
                   handleChange={number =>
                     handleChange('contact')(number?.replace(/\D/g, ''))
                   }
-                  leftIconName="phone"
                   handleBlur={handleBlur('contact')}
                   leftIconFamily="FontAwesome"
-                  leftIconType="icon"
                   leftIcon
-                  placeholder="Phone" 
+                  placeholder="Phone"
                   maxLength={12}
                   disable={edit}
                 />
@@ -227,7 +227,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
                   leftIcon
                   placeholder="Address"
                   disable={edit}
-                  multiline={true}
+                  // multiline={true}
                   numberOfLines={5}
                 />
 
