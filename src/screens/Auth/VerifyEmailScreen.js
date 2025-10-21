@@ -46,8 +46,8 @@ const VerifyEmailScreen = ({ navigation, route }) => {
   };
 
   // Enail Vefity Request:
-  const handleVerifyEmail = ({otp}) => {
-    requestVerifyEmail({email, otp});
+  const handleVerifyEmail = ({ otp }) => {
+    requestVerifyEmail({ email, otp });
   };
 
   return (

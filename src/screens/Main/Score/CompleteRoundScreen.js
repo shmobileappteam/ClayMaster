@@ -64,7 +64,7 @@ const CompleteRoundScreen = ({ navigation, route }) => {
               {/* ))} */}
             </View>
             <Button
-              label="Send to ClayMaster"
+              label="Send to Clay Master"
               mt={24}
               disabled={isPending}
               loader={isPending}

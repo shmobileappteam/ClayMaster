@@ -26,6 +26,7 @@ const LoginScreen = ({ navigation }) => {
   const { mutateAsync: requestLogin, isPending } = useCustomMutation({
     mutationFn: login,
     onSuccess: (response, reqData) => {
+      console.log("🚀 ~ LoginScreen.js:29 ~ LoginScreen ~ response:", response)
       onLoginSuccess(response, navigation, dispatch, reqData);
     },
   });

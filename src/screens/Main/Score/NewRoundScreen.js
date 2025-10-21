@@ -5,6 +5,7 @@ import { useQueries } from '@tanstack/react-query';
 import { Container, Flex, Typography } from '../../../atomComponents';
 import {
   Button,
+  ConfirmModal,
   CustomDropdown,
   Header,
   IconButton,
@@ -31,10 +32,11 @@ import { postStations } from '../../../api/stationService';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
-  console.log('🚀 ~ NewRoundScreen ~ roundDetails:', roundDetails);
 
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([initialStation]);
+
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   //Check if Active/Last Staion shots are fullfiled or not:
   const lastStation = addStation[addStation?.length - 1];
@@ -207,6 +209,18 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const handlePressDead = () => {
+    const lastStation = addStation[addStation.length - 1];
+    const message = validateLastStation(lastStation, false);
+
+    if (message) {
+      showMessage({
+        type: 'danger',
+        message,
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
+
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
@@ -224,6 +238,18 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const handlePressLost = () => {
+    const lastStation = addStation[addStation.length - 1];
+    const message = validateLastStation(lastStation, false);
+
+    if (message) {
+      showMessage({
+        type: 'danger',
+        message,
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
+
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
@@ -274,15 +300,18 @@ const NewRoundScreen = ({ navigation, route }) => {
       return;
     }
 
-    postStationtoDb({
-      roundId: roundDetails?.id || roundId,
-      payload: addStation,
-    }).then(() => {
-      queryClient.invalidateQueries({ queryKey: ['rounds'] });
-      navigation.replace('CompleteRoundScreen', {
-        roundId: roundDetails?.id || roundId,
-      });
-    });
+    setConfirmVisible(true);
+
+    // OLD CODE
+    // postStationtoDb({
+    //   roundId: roundDetails?.id || roundId,
+    //   payload: addStation,
+    // }).then(() => {
+    //   queryClient.invalidateQueries({ queryKey: ['rounds'] });
+    //   navigation.replace('CompleteRoundScreen', {
+    //     roundId: roundDetails?.id || roundId,
+    //   });
+    // });
   };
   return (
     <Container isPadding={false}>
@@ -318,11 +347,14 @@ const NewRoundScreen = ({ navigation, route }) => {
                   setSelectedCourse(item);
                 }}
               />
-              <Label title="# of People in Squad" />
+              {/* OLD CODE */}
+              {/* <Label title="# of People in Squad" /> */}
+
+              <Label title="Squad Size" />
 
               <CustomDropdown
                 data={noOfPeopleData}
-                placeholder="# of people in squad"
+                placeholder="Squad Size"
                 defaultValue={noOfPeople}
                 onChange={item => {
                   setNoOfPeople(item);
@@ -469,6 +501,23 @@ const NewRoundScreen = ({ navigation, route }) => {
           </ScrollView>
         ) : null}
       </View>
+
+      <ConfirmModal
+        visible={confirmVisible}
+        setVisibility={setConfirmVisible}
+        handleComplete={() => {
+          setConfirmVisible(false);
+          postStationtoDb({
+            roundId: roundDetails?.id || roundId,
+            payload: addStation,
+          }).then(() => {
+            queryClient.invalidateQueries({ queryKey: ['rounds'] });
+            navigation.replace('CompleteRoundScreen', {
+              roundId: roundDetails?.id || roundId,
+            });
+          });
+        }}
+      />
     </Container>
   );
 };

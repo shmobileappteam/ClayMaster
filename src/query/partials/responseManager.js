@@ -56,8 +56,11 @@ export const onLoginSuccess = async (
       } else {
         navigation.dispatch(
           CommonActions.reset({
-            index: 0,
+            index: 1,
             routes: [
+              {
+                name: 'LoginScreen',
+              },
               {
                 name: 'VerifyEmailScreen',
                 params: {

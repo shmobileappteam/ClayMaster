@@ -30,11 +30,6 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
     mutationFn: sendToClayMaster,
   });
 
-  console.log(
-    '🚀 ~ ScorescoreCardDetailsScreen ~ scoreCardDetails:',
-    scoreCardDetails,
-  );
-
   const cardType = scoreCardDetails?.download_url ? 'Card Sent' : 'Saved Card';
   const cardStatus =
     scoreCardDetails?.status == 'sent' ? (
@@ -115,8 +110,14 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
               loader={isPending}
               onPress={() => {
                 if (isFileDownloadable) {
-                  // downloadFile(scoreCardDetails?.download_url, 'Scoresheet'); // OLD CODE HIDE.
+                  downloadFile(scoreCardDetails?.download_url, 'Scoresheet'); // OLD CODE HIDE.
+                  // console.log(
+                  //   '🚀 ~ ScorecardDetailsScreen.js:54 ~ ScorescoreCardDetailsScreen ~ scoreCardDetails?.download_url:',
+                  //   scoreCardDetails?.download_url,
+                  // );
+
                   Linking.openURL(scoreCardDetails?.download_url);
+                  // Linking.openURL('https://demoappprojects.com/Sample.xls');
                 } else {
                   requestSend(roundId).then(() => {
                     queryClient.invalidateQueries({ queryKey: ['rounds'] });

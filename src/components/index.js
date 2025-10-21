@@ -10,6 +10,8 @@ import ImagePicker from './imagePicker/ImagePicker';
 
 import Accordion from './accordion/Accordion';
 
+import ConfirmModal from './modal/confirmModal';
+
 export {
   Button,
   IconButton,
@@ -20,4 +22,5 @@ export {
   ImagePicker,
   Accordion,
   Label,
+  ConfirmModal,
 };

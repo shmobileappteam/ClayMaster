@@ -14,7 +14,7 @@ export const getClasses = async () => {
 
 export const postRound = async body => {
   const response = await api.post(ENDPOINTS.CREATE_ROUND, body);
-  console.log('🚀 ~ postRound ~ response:', response);
+  // console.log('🚀 ~ postRound ~ response:', response);
   return response.data;
 };
 
@@ -30,6 +30,6 @@ export const getRound = async round_id => {
 
 export const sendToCLayMaster = async round_id => {
   const response = await api.post(ENDPOINTS.SEND_TO_CLAYMASTER(round_id));
-  console.log('🚀 ~ sendTolCayyMaster ~ response:', response);
+  // console.log('🚀 ~ sendTolCayyMaster ~ response:', response);
   return response.data;
 };

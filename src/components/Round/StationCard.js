@@ -16,14 +16,22 @@ const trapsData = [
   {
     trap_id: 1,
     presentation: '',
+    title: 'Trap 1',
   },
   {
     trap_id: 2,
     presentation: '',
+    title: 'Trap 2',
   },
 ];
 
-const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
+const TrapSelector = ({
+  traps = [],
+  selectedTrap,
+  onSelect,
+  onSetTrapId,
+  trapId = null,
+}) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSelectTrap = trapData => {
@@ -48,6 +56,7 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
           gap: 5,
         }}
         onPress={() => setIsOpen(!isOpen)}
+        hitSlop={10}
       >
         <Typography fFamily="barlowMedium500" size={14}>
           {selectedTrap?.trap_id == 1 ? 'Trap 1' : 'Trap 2'}
@@ -74,8 +83,10 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
             zIndex: 100,
             backgroundColor: '#F8F8F8',
             borderRadius: Sizer.hSize(5),
-            paddingHorizontal: Sizer.hSize(6),
-            paddingVertical: Sizer.hSize(4),
+            // OLD CODE
+            // paddingHorizontal: Sizer.hSize(6),
+            // paddingVertical: Sizer.hSize(4),
+            overflow: 'hidden',
           }}
         >
           {traps.map((trapData, index) => (
@@ -83,11 +94,20 @@ const TrapSelector = ({ traps = [], selectedTrap, onSelect, onSetTrapId }) => {
               key={index}
               style={{
                 paddingVertical: Sizer.hSize(5),
+                paddingHorizontal: Sizer.hSize(6),
+                backgroundColor:
+                  trapId == trapData?.trap_id ? COLORS.primary : undefined,
               }}
               onPress={handleSelectTrap.bind(this, trapData)}
             >
-              <Typography fFamily="barlowMedium500">
-                {trapData?.trap_id == 1 ? 'Trap 1' : 'Trap 2'}
+              <Typography
+                fFamily="barlowMedium500"
+                color={
+                  trapId == trapData?.trap_id ? COLORS.white100 : undefined
+                }
+              >
+                {/* {trapData?.trap_id == 1 ? 'Trap 1' : 'Trap 2'}  OLD CODE*/}
+                {trapData?.title}
               </Typography>
             </TouchableOpacity>
           ))}
@@ -107,6 +127,7 @@ const Header = ({
   selectedTrapsData,
   onSetSelectedTrapsData,
   onSetTrapId,
+  trapId = null,
 }) => {
   return (
     <TouchableOpacity
@@ -136,6 +157,7 @@ const Header = ({
               selectedTrap={selectedTrapsData}
               onSelect={onSetSelectedTrapsData}
               onSetTrapId={onSetTrapId}
+              trapId={trapId}
             />
           ) : (
             <Flex
@@ -371,14 +393,16 @@ const ShotsPresentation = ({ shotsData = [], deadCount, lostCount }) => {
           style={[
             styles.shotsInfoBox,
             {
-              backgroundColor: lostCount ? COLORS.red100 : COLORS.grey400,
+              // backgroundColor: lostCount ? COLORS.red100 : COLORS.grey400, // OLD CODE
+              backgroundColor: COLORS.grey400,
             },
           ]}
         >
           <Typography
             size={14}
             fFamily="barlowMedium500"
-            color={lostCount ? COLORS.primary : COLORS.grey500}
+            // color={lostCount ? COLORS.primary : COLORS.grey500} // OLD CODE
+            color={COLORS.grey500} // OLD CODE
           >
             Lost {lostCount}
           </Typography>
@@ -485,6 +509,7 @@ const StationCard = ({
               selectedTrapsData={filteredTrapData}
               onSetSelectedTrapsData={onSetTrapsData}
               onSetTrapId={setTrapId}
+              trapId={trapId}
             />
             <View
               pointerEvents={isDisabled ? 'none' : 'auto'}

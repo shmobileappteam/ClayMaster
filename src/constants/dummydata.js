@@ -162,7 +162,7 @@ export const initialStation = {
   selectedTargetPairs: '',
 };
 
-export const validateLastStation = (lastStation = []) => {
+export const validateLastStation = (lastStation = [], checkHasEmpty = true) => {
   if (!lastStation?.pair_type) {
     return 'Please select Pair Type';
   }
@@ -178,14 +178,16 @@ export const validateLastStation = (lastStation = []) => {
     return 'Please fill both trap presentations';
   }
 
-  const hasEmptyShots =
-    !lastStation.shots.length ||
-    lastStation.shots.some(
-      shot => shot.result === '' || shot.result === 'empty',
-    );
+  if (checkHasEmpty) {
+    const hasEmptyShots =
+      !lastStation.shots.length ||
+      lastStation.shots.some(
+        shot => shot.result === '' || shot.result === 'empty',
+      );
 
-  if (hasEmptyShots) {
-    return 'Please Select Target Pairs and complete all shots before proceeding';
+    if (hasEmptyShots) {
+      return 'Please Select Target Pairs and complete all shots before proceeding';
+    }
   }
 
   return null; // ✅ all good

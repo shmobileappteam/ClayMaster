@@ -16,7 +16,6 @@ export const useCustomMutation = ({
     onError: error => {
       const response = error.response;
       console.log('Top Level Error:', error);
-      console.log('🚀 ~ error response in custom Mutation Hook:', response);
 
       if (response?.status === 422) {
         const parsedErrors = formatBackendErrors(response.data.errors);

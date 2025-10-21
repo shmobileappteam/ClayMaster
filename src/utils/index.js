@@ -114,7 +114,7 @@ export const maskPhoneNumber = input => {
 };
 
 export const formatDate = isoDate => {
-  const date = new Date(isoDate);
+  const date = isoDate ? new Date(isoDate) : new Date();
   const day = date.getDate();
   const month = date.getMonth() + 1; // months are 0-indexed
   const year = String(date.getFullYear()).slice(-2);

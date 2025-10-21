@@ -6,7 +6,6 @@ import StationCard from './StationCard';
 import Sizer from '../../helpers/Sizer';
 
 const StationsList = ({ data = [], contStyle = {} }) => {
-  console.log('🚀 ~ StationsList ~ data:', data);
   const [expandedStations, setExpandedStations] = useState({});
 
   const stations = formatApiStations(data || []);

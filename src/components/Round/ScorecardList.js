@@ -9,7 +9,6 @@ import Icon from '../../helpers/Icon';
 import { scorecardData } from '../../constants/dummydata';
 
 const ScorecardItem = ({ item, onPress }) => {
-  console.log('🚀 ~ ScorecardItem ~ item:', item);
   const isFileDownloadable = item?.sent_status && item?.download_url;
   return (
     <TouchableOpacity
