@@ -3,10 +3,9 @@ import api, { storage } from './api';
 import { objectToFormData } from '../utils';
 import { KEYS } from '../constants';
 
-export const login = async body => {
-  // const deviceToken = await AsyncStorage.getItem(KEYS.FCM_TOKEN);
+export const login = async (body, setIsLoading) => {
+  setIsLoading(true);
   const deviceToken = storage.getString(KEYS.FCM_TOKEN);
-
   if (deviceToken) {
     body.device_token = deviceToken;
   }

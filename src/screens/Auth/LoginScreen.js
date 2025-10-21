@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 //------------------
 import {
@@ -21,13 +21,16 @@ import { formatBackendErrors } from '../../utils';
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Login Mutation:
   const { mutateAsync: requestLogin, isPending } = useCustomMutation({
-    mutationFn: login,
+    mutationFn: data => login(data, setIsLoading),
     onSuccess: (response, reqData) => {
-      console.log("🚀 ~ LoginScreen.js:29 ~ LoginScreen ~ response:", response)
-      onLoginSuccess(response, navigation, dispatch, reqData);
+      onLoginSuccess(response, navigation, dispatch, reqData, setIsLoading);
+    },
+    onError: () => {
+      setIsLoading(false);
     },
   });
 
@@ -111,7 +114,7 @@ const LoginScreen = ({ navigation }) => {
                 label="Login"
                 mt={30}
                 onPress={handleSubmit}
-                loader={isPending}
+                loader={isLoading}
               />
             </>
           );

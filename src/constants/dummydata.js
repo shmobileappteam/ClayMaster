@@ -193,6 +193,32 @@ export const validateLastStation = (lastStation = [], checkHasEmpty = true) => {
   return null; // ✅ all good
 };
 
+
+export function validateRoundData(data) {
+  if (!data.course_name || data.course_name.trim() === '') {
+    return 'Course name is required';
+  }
+
+  if (!data.ncsca_class || data.ncsca_class.trim() === '') {
+    return 'Class is required';
+  }
+
+  if (!data.squad_sequence || isNaN(data.squad_sequence)) {
+    return 'Valid squad sequence is required';
+  }
+
+  if (
+    !data.people_in_squad ||
+    isNaN(data.people_in_squad) ||
+    Number(data.people_in_squad) <= 0
+  ) {
+    return 'People in squad must be a positive number';
+  }
+
+  return '';
+}
+
+
 export const formatApiStations = (stations = []) => {
   if (!Array.isArray(stations) || stations.length === 0) return [];
 
@@ -209,7 +235,7 @@ export const formatApiStations = (stations = []) => {
   }));
 };
 
-export const noOfPeopleData = [
+export const createRoundDropData = [
   { label: '1', value: '1' },
   { label: '2', value: '2' },
   { label: '3', value: '3' },
@@ -217,3 +243,4 @@ export const noOfPeopleData = [
   { label: '5', value: '5' },
   { label: '6', value: '6' },
 ];
+

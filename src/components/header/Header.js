@@ -73,9 +73,7 @@ const Header = ({
                 </Typography>
               </View>
             </Flex>
-            <BellSvg
-              onPress={() => navigation.navigate('NotificationScreen')}
-            />
+            <View />
           </Flex>
         </SlideInView>
       ) : type == 'app' ? (

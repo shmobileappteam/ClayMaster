@@ -445,6 +445,13 @@ const StationCard = ({
     onSetTrapsData(presentation, trapId, 'presentation');
   };
 
+  const deadCount =
+    station?.dead ||
+    station?.shots.filter(item => item?.result == 'dead')?.length;
+  const lostCount =
+    station?.lost ||
+    station?.shots.filter(item => item?.result == 'lost')?.length;
+
   return (
     <SlideInView>
       <View style={styles.stationCard}>
@@ -530,8 +537,8 @@ const StationCard = ({
           <View pointerEvents={isDisabled ? 'none' : 'auto'}>
             <ShotsPresentation
               shotsData={station?.shots}
-              deadCount={station?.dead}
-              lostCount={station?.lost}
+              deadCount={deadCount}
+              lostCount={lostCount}
             />
           </View>
         )}

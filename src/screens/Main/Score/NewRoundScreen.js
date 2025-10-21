@@ -18,11 +18,12 @@ import SlideInView from '../../../animations/SlideView';
 import StationCard from '../../../components/Round/StationCard';
 import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 import {
+  createRoundDropData,
   expandedStationCardsObject,
   initialStation,
-  noOfPeopleData,
   pairOfTargets,
   validateLastStation,
+  validateRoundData,
 } from '../../../constants/dummydata';
 import { getClasses, getCourses, postRound } from '../../../api/roundService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
@@ -35,6 +36,7 @@ const NewRoundScreen = ({ navigation, route }) => {
 
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([initialStation]);
+  console.log("🚀 ~ NewRoundScreen ~ addStation:", addStation)
 
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -64,9 +66,12 @@ const NewRoundScreen = ({ navigation, route }) => {
     : [];
 
   const [selectedClass, setSelectedClass] = useState(classes?.data?.[0]);
-  const [selectedCourse, setSelectedCourse] = useState(coursesData?.[0]);
+  const [selectedCourse, setSelectedCourse] = useState('');
   const [noOfPeople, setNoOfPeople] = useState({ label: '1', value: '3' });
-  const [squadSequence, setSquadSequence] = useState('1');
+  const [squadSequence, setSquadSequence] = useState({
+    label: '1',
+    value: '1',
+  });
 
   const [roundId, setRoundId] = useState('1');
 
@@ -120,10 +125,24 @@ const NewRoundScreen = ({ navigation, route }) => {
 
   //Request Create Round:
   const HandleContinue = () => {
+    if (!selectedCourse) {
+      showMessage({
+        message: 'Course Name is required!',
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
+    // console.log({
+    //   course_name: selectedCourse,
+    //   ncsca_class: selectedClass,
+    //   squad_sequence: squadSequence?.value,
+    //   people_in_squad: noOfPeople?.value,
+    // });
+
     createRound({
-      course_name: selectedCourse?.label,
+      course_name: selectedCourse,
       ncsca_class: selectedClass,
-      squad_sequence: squadSequence,
+      squad_sequence: squadSequence?.value,
       people_in_squad: noOfPeople?.value,
     })
       .then(res => {
@@ -301,17 +320,6 @@ const NewRoundScreen = ({ navigation, route }) => {
     }
 
     setConfirmVisible(true);
-
-    // OLD CODE
-    // postStationtoDb({
-    //   roundId: roundDetails?.id || roundId,
-    //   payload: addStation,
-    // }).then(() => {
-    //   queryClient.invalidateQueries({ queryKey: ['rounds'] });
-    //   navigation.replace('CompleteRoundScreen', {
-    //     roundId: roundDetails?.id || roundId,
-    //   });
-    // });
   };
   return (
     <Container isPadding={false}>
@@ -328,32 +336,27 @@ const NewRoundScreen = ({ navigation, route }) => {
           <View style={styles.container}>
             <View>
               <Label title="Squad Sequence" />
-              <TextField
-                placeholder="Enter sequence"
-                defaultValue="2"
-                handleChange={text => {
-                  setSquadSequence(text);
-                }}
-                value={squadSequence}
-              />
-              <Label title="Course Name" />
-
               <CustomDropdown
-                data={coursesData}
-                placeholder="Course Name"
-                defaultValue={selectedCourse}
+                data={createRoundDropData}
+                placeholder="Squad Sequence"
+                defaultValue={squadSequence}
                 onChange={item => {
-                  console.log('🚀 ~ item:', item);
-                  setSelectedCourse(item);
+                  setSquadSequence(item);
                 }}
               />
-              {/* OLD CODE */}
-              {/* <Label title="# of People in Squad" /> */}
+
+              <Label title="Course Name" />
+              <TextField
+                placeholder="Course Name"
+                handleChange={text => {
+                  setSelectedCourse(text);
+                }}
+                value={selectedCourse}
+              />
 
               <Label title="Squad Size" />
-
               <CustomDropdown
-                data={noOfPeopleData}
+                data={createRoundDropData}
                 placeholder="Squad Size"
                 defaultValue={noOfPeople}
                 onChange={item => {

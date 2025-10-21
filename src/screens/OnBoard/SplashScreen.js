@@ -20,9 +20,9 @@ const SplashScreen = ({ navigation }) => {
 
   // Custom Mutation Hook:
   const { mutate: requestLogin } = useCustomMutation({
-    mutationFn: login,
+    mutationFn: (data) => login(data, () => {}),
     onSuccess: (response, reqData) => {
-      onLoginSuccess(response, navigation, dispatch, reqData);
+      onLoginSuccess(response, navigation, dispatch, reqData, () => {});
     },
     onError: () => {
       dispatch(handleLogout());
@@ -44,6 +44,7 @@ const SplashScreen = ({ navigation }) => {
       }
       const device_token = storage.getString(KEYS.FCM_TOKEN);
       const credentials = storage.getString(KEYS.CREDENTIALS);
+      console.log('🚀 ~ checkUser ~ credentials:', credentials);
 
       if (credentials) {
         const userData = JSON.parse(credentials);

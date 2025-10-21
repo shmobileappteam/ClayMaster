@@ -8,22 +8,24 @@ import { getClasses, getCourses, getRounds } from '../../api/roundService';
 import { getTraps } from '../../api/stationService';
 
 async function Prefetching() {
-  await queryClient.prefetchQuery({
-    queryKey: ['courses'],
-    queryFn: getCourses,
-  });
-  await queryClient.prefetchQuery({
-    queryKey: ['classes'],
-    queryFn: getClasses,
-  });
-  await queryClient.prefetchQuery({
-    queryKey: ['rounds'],
-    queryFn: getRounds,
-  });
-  await queryClient.prefetchQuery({
-    queryKey: ['traps'],
-    queryFn: getTraps,
-  });
+  await Promise.all([
+    await queryClient.prefetchQuery({
+      queryKey: ['courses'],
+      queryFn: getCourses,
+    }),
+    await queryClient.prefetchQuery({
+      queryKey: ['classes'],
+      queryFn: getClasses,
+    }),
+    await queryClient.prefetchQuery({
+      queryKey: ['rounds'],
+      queryFn: getRounds,
+    }),
+    await queryClient.prefetchQuery({
+      queryKey: ['traps'],
+      queryFn: getTraps,
+    }),
+  ]);
 }
 
 export const onLoginSuccess = async (
@@ -31,20 +33,14 @@ export const onLoginSuccess = async (
   navigation,
   dispatch,
   { email, password },
+  setIsLoading = () => {},
 ) => {
   try {
     if (response?.status) {
-      // await AsyncStorage.setItem(KEYS.ACCESS_TOKEN, response?.token);
-      // await AsyncStorage.setItem(
-      //   KEYS.CREDENTIALS,
-      //   JSON.stringify({ email, password }),
-      // );
-
       dispatch(setUser(response?.user));
       storage.set(KEYS.ACCESS_TOKEN, response?.token);
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       await Prefetching();
-      console.log(response?.user?.email_verified_at);
 
       if (response?.user?.email_verified_at) {
         navigation.dispatch(
@@ -72,6 +68,7 @@ export const onLoginSuccess = async (
           }),
         );
       }
+
       // navigation.dispatch(
       //   CommonActions.reset({
       //     index: 0,
@@ -88,6 +85,8 @@ export const onLoginSuccess = async (
     }
   } catch (err) {
     console.log('🚀 ~ onLoginSuccess ~ err:', err);
+  } finally {
+    setIsLoading(false);
   }
 };
 

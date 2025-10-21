@@ -17,6 +17,7 @@ const ConfirmModal = ({
       transparent={true}
       visible={visible}
       onRequestClose={handleClose}
+      statusBarTranslucent
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalView}>

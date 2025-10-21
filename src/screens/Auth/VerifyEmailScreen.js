@@ -16,6 +16,7 @@ import { useCustomMutation } from '../../query/useCustomMutation';
 import { resendOtp, verifyOtp } from '../../api/userService';
 import validatoinSchema from '../../validations';
 import { showMessage } from '../../utils';
+import { CommonActions } from '@react-navigation/native';
 
 const VerifyEmailScreen = ({ navigation, route }) => {
   const comeFromLogin = route.params?.fromLogin;
@@ -49,6 +50,19 @@ const VerifyEmailScreen = ({ navigation, route }) => {
   const handleVerifyEmail = ({ otp }) => {
     requestVerifyEmail({ email, otp });
   };
+
+  function handleRouting() {
+    if (comeFromLogin) {
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [{ name: 'BottomTabs' }],
+        }),
+      );
+    } else {
+      navigation.replace('LoginScreen');
+    }
+  }
 
   return (
     <SafeAreaWrapper
@@ -148,9 +162,28 @@ const VerifyEmailScreen = ({ navigation, route }) => {
             title="Email Verified Successfully"
             message="Your email has been successfully verified. You can now log in to your account."
             buttonLabel={comeFromLogin ? 'Goto Home' : 'Login Now'}
-            onPress={() =>
-              navigation.replace(comeFromLogin ? 'BottomTabs' : 'LoginScreen')
-            }
+            onPress={handleRouting}
+            //   () => {
+            //   // navigation.replace(comeFromLogin ? 'BottomTabs' : 'LoginScreen')
+            //     navigation.dispatch(
+            //       CommonActions.reset({
+            //         index: 1,
+            //         routes: [
+            //           {
+            //             name: 'LoginScreen',
+            //           },
+            //           {
+            //             name: 'VerifyEmailScreen',
+            //             params: {
+            //               email,
+            //               fromLogin: true,
+            //             },
+            //           },
+            //         ],
+            //       }),
+            //     );
+            //   }
+            // }
           />
         </SlideInView>
       )}

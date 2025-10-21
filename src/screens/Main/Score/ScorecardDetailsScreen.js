@@ -105,17 +105,12 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
             </View>
             <Button
               label={
-                isFileDownloadable ? 'Download File' : 'Send to ClayMaster'
+                isFileDownloadable ? 'Download File' : 'Send to Clay Master'
               }
               loader={isPending}
               onPress={() => {
                 if (isFileDownloadable) {
-                  downloadFile(scoreCardDetails?.download_url, 'Scoresheet'); // OLD CODE HIDE.
-                  // console.log(
-                  //   '🚀 ~ ScorecardDetailsScreen.js:54 ~ ScorescoreCardDetailsScreen ~ scoreCardDetails?.download_url:',
-                  //   scoreCardDetails?.download_url,
-                  // );
-
+                  // downloadFile(scoreCardDetails?.download_url, 'Scoresheet'); // OLD CODE HIDE.
                   Linking.openURL(scoreCardDetails?.download_url);
                   // Linking.openURL('https://demoappprojects.com/Sample.xls');
                 } else {
