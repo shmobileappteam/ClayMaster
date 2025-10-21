@@ -125,7 +125,7 @@ const TextField = React.forwardRef(
 
           {leftIcon && (
             <>
-              {leftIconName == 'phone' ? (
+              {leftIconType == 'phone' ? (
                 <Flex>
                   {/* <PhoneNoFlagSvg /> */}
                   <Typography

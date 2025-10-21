@@ -64,7 +64,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
         type: imageUri?.type,
       };
     } else {
-      delete values.image;
+      delete values.profile_image;
     }
 
     console.log('🚀 ~ handleEditProfile ~ values:', {
@@ -101,7 +101,6 @@ const ProfileDetailsScreen = ({ navigation }) => {
     return () => backHandler.remove();
   }, [edit]);
 
-console.log(`${BASE_URL}${user?.profile_image}`);
 
 
   return (
@@ -201,16 +200,17 @@ console.log(`${BASE_URL}${user?.profile_image}`);
                 {/* <InputLabel title="Phone Number" /> */}
                 <TextField
                   mT={16}
-                  leftIconName="phone"
                   value={maskPhoneNumber(values?.contact)}
                   error={errors?.contact}
                   handleChange={number =>
                     handleChange('contact')(number?.replace(/\D/g, ''))
                   }
+                  leftIconName="phone"
                   handleBlur={handleBlur('contact')}
                   leftIconFamily="FontAwesome"
+                  leftIconType="icon"
                   leftIcon
-                  placeholder="Phone"
+                  placeholder="Phone" 
                   maxLength={12}
                   disable={edit}
                 />
