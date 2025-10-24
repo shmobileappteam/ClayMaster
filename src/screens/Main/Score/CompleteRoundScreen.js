@@ -64,10 +64,21 @@ const CompleteRoundScreen = ({ navigation, route }) => {
               {/* ))} */}
             </View>
             <Button
+              label={'Send to Clay Master'}
+              loader={isPending}
+              onPress={() => {
+                navigation.navigate('SavedScoredcardSuccessScreen', {
+                  status: 'Scorecard Sent!',
+                  desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                });
+              }}
+              mt={24}
+            />
+            <Button
               label={
                 isFileDownloadable ? 'Download File' : 'Send to Clay Master'
               }
-              mt={24}
+              mt={16}
               disabled={isPending}
               loader={isPending}
               onPress={() => {
@@ -85,16 +96,6 @@ const CompleteRoundScreen = ({ navigation, route }) => {
                 }
               }}
             />
-            {/* <Button
-              label="Save and Download (DAT)"
-              mt={15}
-              onPress={() =>
-                navigation.navigate('SavedScoredcardSuccessScreen', {
-                  status: 'Scorecard Saved!!',
-                  desc: 'Your new scorecard has been saved and is ready to be downloaded into the ClayMaster Detailed Analytics Tool',
-                })
-              }
-            /> */}
           </ScrollView>
         )}
       </View>

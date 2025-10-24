@@ -231,7 +231,6 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const handleSelectedTargetPairs = targetPair => {
-    scrollRef?.current?.scrollToEnd();
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
@@ -435,6 +434,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     onSetShotsData={HandleSetShotsData}
                     onSetSelectedTargetPairs={handleSelectedTargetPairs}
                     isDisabled={station?.station_number !== addStation?.length}
+                    onScrollDown={scrollRef?.current?.scrollToEnd}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>

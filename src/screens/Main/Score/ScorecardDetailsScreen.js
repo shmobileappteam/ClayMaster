@@ -103,6 +103,17 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
               />
             </View>
             <Button
+              label={'Send to Clay Master'}
+              loader={isPending}
+              onPress={() => {
+                navigation.navigate('SavedScoredcardSuccessScreen', {
+                  status: 'Scorecard Sent!',
+                  desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                });
+              }}
+              mt={24}
+            />
+            <Button
               label={
                 isFileDownloadable ? 'Download File' : 'Send to Clay Master'
               }
@@ -121,7 +132,7 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
                   });
                 }
               }}
-              mt={24}
+              mt={16}
             />
           </View>
         </ScrollView>

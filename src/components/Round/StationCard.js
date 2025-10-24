@@ -432,6 +432,7 @@ const StationCard = ({
   onSetTrapsData = () => {},
   onSetSelectedTargetPairs = () => {},
   isDisabled = false,
+  onScrollDown = () => {},
 }) => {
   const trapsData = queryClient.getQueryData(['traps']);
   const [trapId, setTrapId] = useState(1);
@@ -451,6 +452,8 @@ const StationCard = ({
       new Promise(resolve => setTimeout(resolve, 500)).then(() => {
         setTrapId(2);
       });
+    } else {
+      onScrollDown?.();
     }
   };
 
