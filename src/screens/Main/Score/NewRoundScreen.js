@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useQueries } from '@tanstack/react-query';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
@@ -29,14 +29,16 @@ import { getClasses, getCourses, postRound } from '../../../api/roundService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { queryClient } from '../../../api/api';
 import { formatBackendErrors, formatDate, showMessage } from '../../../utils';
-import { postStations } from '../../../api/stationService';
+import { postStations, sendToClayMaster } from '../../../api/stationService';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
 
+  const scrollRef = useRef();
+
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([initialStation]);
-  console.log("🚀 ~ NewRoundScreen ~ addStation:", addStation)
+  // console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation, roundDetails);
 
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -80,10 +82,27 @@ const NewRoundScreen = ({ navigation, route }) => {
     mutationFn: postRound,
   });
 
+  //Send to ClayMaster:
+  const { mutateAsync: requestSend, isPending: isSendToClayMasterPending } =
+    useCustomMutation({
+      mutationFn: sendToClayMaster,
+    });
+
   // Post Station Mutation:
-  const { mutateAsync: postStationtoDb, isPending: isPendingPostStation } =
+  const { mutate: postStationtoDb, isPending: isPendingPostStation } =
     useCustomMutation({
       mutationFn: postStations,
+      onSuccess: async () => {
+        requestSend(roundDetails?.id || roundId).then(async () => {
+          await queryClient
+            .invalidateQueries({ queryKey: ['rounds'] })
+            .then(() => {
+              navigation.replace('CompleteRoundScreen', {
+                roundId: roundDetails?.id || roundId,
+              });
+            });
+        });
+      },
     });
 
   const [expandedStations, setExpandedStations] = useState(
@@ -212,6 +231,7 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const handleSelectedTargetPairs = targetPair => {
+    scrollRef?.current?.scrollToEnd();
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
@@ -387,6 +407,7 @@ const NewRoundScreen = ({ navigation, route }) => {
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ flexGrow: 1 }}
+            ref={scrollRef}
           >
             <View
               style={{
@@ -435,7 +456,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                   mb={13}
                   label="Complete Record"
                   mt={100}
-                  loader={isPendingPostStation}
+                  loader={isPendingPostStation || isSendToClayMasterPending}
                   onPress={() => {
                     sectionNumber == 2
                       ? handleCompleteRound()
@@ -513,11 +534,6 @@ const NewRoundScreen = ({ navigation, route }) => {
           postStationtoDb({
             roundId: roundDetails?.id || roundId,
             payload: addStation,
-          }).then(() => {
-            queryClient.invalidateQueries({ queryKey: ['rounds'] });
-            navigation.replace('CompleteRoundScreen', {
-              roundId: roundDetails?.id || roundId,
-            });
           });
         }}
       />

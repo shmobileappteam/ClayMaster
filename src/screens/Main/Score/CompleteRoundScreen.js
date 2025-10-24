@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
@@ -64,18 +64,25 @@ const CompleteRoundScreen = ({ navigation, route }) => {
               {/* ))} */}
             </View>
             <Button
-              label="Send to Clay Master"
+              label={
+                isFileDownloadable ? 'Download File' : 'Send to Clay Master'
+              }
               mt={24}
               disabled={isPending}
               loader={isPending}
               onPress={() => {
-                requestSend(roundId).then(() => {
-                  queryClient.invalidateQueries({ queryKey: ['rounds'] });
-                  navigation.navigate('SavedScoredcardSuccessScreen', {
-                    status: 'Scorecard Sent!',
-                    desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                if (isFileDownloadable) {
+                  Linking.openURL(stationsDetails?.download_url);
+                  // Linking.openURL('https://demoappprojects.com/Sample.xls');
+                } else {
+                  requestSend(roundId).then(() => {
+                    queryClient.invalidateQueries({ queryKey: ['rounds'] });
+                    navigation.navigate('SavedScoredcardSuccessScreen', {
+                      status: 'Scorecard Sent!',
+                      desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
+                    });
                   });
-                });
+                }
               }}
             />
             {/* <Button

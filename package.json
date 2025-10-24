@@ -7,7 +7,7 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start --client-logs",
-    "myDevice": "npx react-native run-android --port 8088",
+    "myDevice": "npx react-native run-android --port 8082",
     "test": "jest"
   },
   "dependencies": {

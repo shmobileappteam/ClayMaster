@@ -36,7 +36,6 @@ const TrapSelector = ({
 
   const handleSelectTrap = trapData => {
     onSetTrapId(trapData?.trap_id);
-
     onSelect(trapData, 'id');
     setIsOpen(false);
   };
@@ -53,14 +52,26 @@ const TrapSelector = ({
           borderRadius: Sizer.hSize(5),
           paddingHorizontal: Sizer.hSize(6),
           paddingVertical: Sizer.hSize(4),
+          overflow: 'hidden',
           gap: 5,
         }}
         onPress={() => setIsOpen(!isOpen)}
         hitSlop={10}
       >
-        <Typography fFamily="barlowMedium500" size={14}>
-          {selectedTrap?.trap_id == 1 ? 'Trap 1' : 'Trap 2'}
-        </Typography>
+        {selectedTrap?.trap_id == 1 && (
+          <SlideInView slide="up" slideDuration={500}>
+            <Typography fFamily="barlowMedium500" size={14}>
+              {'Trap 1'}
+            </Typography>
+          </SlideInView>
+        )}
+        {selectedTrap?.trap_id == 2 && (
+          <SlideInView slide="down" slideDuration={500}>
+            <Typography fFamily="barlowMedium500" size={14}>
+              {'Trap 2'}
+            </Typography>
+          </SlideInView>
+        )}
         <Icon
           name="play-arrow"
           size={Sizer.hSize(18)}
@@ -422,27 +433,25 @@ const StationCard = ({
   onSetSelectedTargetPairs = () => {},
   isDisabled = false,
 }) => {
-  // console.log('🚀 ~ StationCard ~ station:', station);
-  // const { data: trapsData } = useCustomQuery({
-  //   queryKey: ['traps'],
-  //   queryFn: getTraps,
-  // });
-
   const trapsData = queryClient.getQueryData(['traps']);
-
   const [trapId, setTrapId] = useState(1);
 
   const filteredTrapData =
     (station?.traps &&
       station?.traps?.find(trapData => trapData?.trap_id == trapId)) ||
     {};
-
   const [isTargetPairSelected, setIsTargetPairSelected] = useState(
     station?.isPairSelected || false,
   );
 
   const handleSelectPresentation = presentation => {
     onSetTrapsData(presentation, trapId, 'presentation');
+    if (trapId == 1 && !filteredTrapData?.presentation) {
+      onSetTrapsData({ trap_id: 2, presentation: '' }, 'id');
+      new Promise(resolve => setTimeout(resolve, 500)).then(() => {
+        setTrapId(2);
+      });
+    }
   };
 
   const deadCount =
@@ -523,11 +532,22 @@ const StationCard = ({
               style={{ zIndex: -1 }}
             >
               {/* Traps Presentation */}
-              <TrapsList
-                trapsData={trapsData}
-                onSelectPresentation={handleSelectPresentation}
-                selectedPresentation={filteredTrapData?.presentation}
-              />
+              {filteredTrapData.trap_id == 1 && (
+                <TrapsList
+                  trapsData={trapsData}
+                  onSelectPresentation={handleSelectPresentation}
+                  selectedPresentation={filteredTrapData?.presentation}
+                  slide="left"
+                />
+              )}
+              {filteredTrapData.trap_id == 2 && (
+                <TrapsList
+                  trapsData={trapsData}
+                  onSelectPresentation={handleSelectPresentation}
+                  selectedPresentation={filteredTrapData?.presentation}
+                  slide="right"
+                />
+              )}
             </View>
           </View>
         )}
