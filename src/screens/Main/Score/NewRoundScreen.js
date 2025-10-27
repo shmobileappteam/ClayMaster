@@ -215,7 +215,7 @@ const NewRoundScreen = ({ navigation, route }) => {
         ...lastStation,
         traps,
       };
-      handleStationChange(updated[lastIndex], scrollRef);
+      // handleStationChange(updated[lastIndex], scrollRef);
       return updated;
     });
   };

@@ -245,8 +245,12 @@ export const createRoundDropData = [
 export const handleStationChange = (updatedStation, scrollRef) => {
   const { pair_type, traps, selectedTargetPairs } = updatedStation;
   const hasPairType = !!pair_type;
-  const allTrapsFilled = traps?.every(trap => trap.presentation.trim() !== '');
+  const allTrapsFilled =
+    Array.isArray(traps) &&
+    traps.length === 2 &&
+    traps.every(trap => trap.presentation && trap.presentation.trim() !== '');
   const hasSelectedTargetPairs = !!selectedTargetPairs;
+
   if (hasPairType && allTrapsFilled && hasSelectedTargetPairs) {
     scrollRef?.current?.scrollToEnd({ animated: true });
   }
