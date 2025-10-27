@@ -193,7 +193,6 @@ export const validateLastStation = (lastStation = [], checkHasEmpty = true) => {
   return null; // ✅ all good
 };
 
-
 export function validateRoundData(data) {
   if (!data.course_name || data.course_name.trim() === '') {
     return 'Course name is required';
@@ -217,7 +216,6 @@ export function validateRoundData(data) {
 
   return '';
 }
-
 
 export const formatApiStations = (stations = []) => {
   if (!Array.isArray(stations) || stations.length === 0) return [];
@@ -244,3 +242,12 @@ export const createRoundDropData = [
   { label: '6', value: '6' },
 ];
 
+export const handleStationChange = (updatedStation, scrollRef) => {
+  const { pair_type, traps, selectedTargetPairs } = updatedStation;
+  const hasPairType = !!pair_type;
+  const allTrapsFilled = traps?.every(trap => trap.presentation.trim() !== '');
+  const hasSelectedTargetPairs = !!selectedTargetPairs;
+  if (hasPairType && allTrapsFilled && hasSelectedTargetPairs) {
+    scrollRef?.current?.scrollToEnd({ animated: true });
+  }
+};

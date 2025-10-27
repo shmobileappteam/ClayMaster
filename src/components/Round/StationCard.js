@@ -453,7 +453,7 @@ const StationCard = ({
         setTrapId(2);
       });
     } else {
-      onScrollDown?.();
+      // onScrollDown?.();
     }
   };
 

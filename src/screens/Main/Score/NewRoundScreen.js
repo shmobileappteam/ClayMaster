@@ -20,6 +20,7 @@ import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 import {
   createRoundDropData,
   expandedStationCardsObject,
+  handleStationChange,
   initialStation,
   pairOfTargets,
   validateLastStation,
@@ -184,6 +185,7 @@ const NewRoundScreen = ({ navigation, route }) => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
       updated[lastIndex] = { ...updated[lastIndex], pair_type: pairType };
+      handleStationChange(updated[lastIndex], scrollRef);
       return updated;
     });
   };
@@ -205,6 +207,7 @@ const NewRoundScreen = ({ navigation, route }) => {
           trap.trap_id === trapId ? { ...trap, presentation: data.slug } : trap,
         );
         updated.splice(lastIndex, 1, { ...lastStation, traps: updatedTraps });
+        handleStationChange({ ...lastStation, traps: updatedTraps }, scrollRef);
         return updated;
       }
 
@@ -212,7 +215,7 @@ const NewRoundScreen = ({ navigation, route }) => {
         ...lastStation,
         traps,
       };
-
+      handleStationChange(updated[lastIndex], scrollRef);
       return updated;
     });
   };
@@ -242,10 +245,12 @@ const NewRoundScreen = ({ navigation, route }) => {
         shots: newShots,
       };
 
+      handleStationChange(updated[lastIndex], scrollRef);
       return updated;
     });
   };
 
+  //----
   const handlePressDead = () => {
     const lastStation = addStation[addStation.length - 1];
     const message = validateLastStation(lastStation, false);
@@ -434,7 +439,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     onSetShotsData={HandleSetShotsData}
                     onSetSelectedTargetPairs={handleSelectedTargetPairs}
                     isDisabled={station?.station_number !== addStation?.length}
-                    onScrollDown={scrollRef?.current?.scrollToEnd}
+                    // onScrollDown={scrollRef?.current?.scrollToEnd}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>
@@ -455,7 +460,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                 <Button
                   mb={13}
                   label="Complete Record"
-                  mt={100}
+                  mt={60}
                   loader={isPendingPostStation || isSendToClayMasterPending}
                   onPress={() => {
                     sectionNumber == 2
