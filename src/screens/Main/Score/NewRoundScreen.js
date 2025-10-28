@@ -143,11 +143,36 @@ const NewRoundScreen = ({ navigation, route }) => {
     });
   };
 
+  const formatUsDate = dateLike => {
+    const d = dateLike ? new Date(dateLike) : new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${mm}/${dd}/${yyyy}`;
+  };
+
   //Request Create Round:
   const HandleContinue = () => {
     if (!selectedCourse) {
       showMessage({
         message: 'Course Name is required!',
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
+    // Validate Squad Sequence vs Squad Size
+    const sequence = parseInt(squadSequence?.value, 10);
+    const size = parseInt(noOfPeople?.value, 10);
+    if (!Number.isFinite(sequence) || !Number.isFinite(size) || sequence < 1 || size < 1) {
+      showMessage({
+        message: 'Please select a valid Squad Sequence and Squad Size.',
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
+    if (sequence > size) {
+      showMessage({
+        message: 'Squad Sequence cannot exceed Squad Size.',
         bgColor: COLORS.primary,
       });
       return;
@@ -420,13 +445,13 @@ const NewRoundScreen = ({ navigation, route }) => {
               }}
             >
               <View style={{}}>
-                <Label
-                  title={`${
-                    roundDetails?.course_name || 'Course'
-                  } - ${formatDate(roundDetails?.created_at)} Scorecard`}
-                  fFamily={'barlowBold700'}
-                  size={18}
-                />
+              <Label
+                title={`${
+                  roundDetails?.course_name || selectedCourse || 'Course'
+                } ${formatUsDate(roundDetails?.created_at || new Date())}`}
+                fFamily={'barlowBold700'}
+                size={18}
+              />
 
                 {addStation.map((station, index) => (
                   <StationCard
@@ -439,7 +464,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     onSetShotsData={HandleSetShotsData}
                     onSetSelectedTargetPairs={handleSelectedTargetPairs}
                     isDisabled={station?.station_number !== addStation?.length}
-                    // onScrollDown={scrollRef?.current?.scrollToEnd}
+                    onScrollDown={() => scrollRef?.current?.scrollToEnd({ animated: true })}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>

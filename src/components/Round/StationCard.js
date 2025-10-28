@@ -322,7 +322,7 @@ const TargetPairSelection = ({
                 },
               ]}
             >
-              <Typography Family="barlowMedium500">3 Target Pair </Typography>
+              <Typography fFamily="barlowMedium500">3 Target Pair </Typography>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -492,7 +492,11 @@ const StationCard = ({
               mT={15}
             >
               <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-              <Typography fFamily="barlowMedium500">
+              <Typography
+                fFamily="barlowMedium500"
+                adjustsFontSizeToFit
+                size={13}
+              >
                 Selected Pair of {station?.selectedTargetPairs} Targets{' '}
               </Typography>
               <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
@@ -504,6 +508,35 @@ const StationCard = ({
         {isExpanded && (
           <View style={styles.expandedContainer}>
             <View pointerEvents={isDisabled ? 'none' : 'auto'}>
+              {/* Instruction for Pair Type Selection */}
+              <Flex
+                jusContent={'space-between'}
+                extraStyle={{
+                  backgroundColor: COLORS.orange300,
+                }}
+                mT={15}
+              >
+                <View
+                  style={[styles.stationLine, { height: Sizer.hSize(25) }]}
+                />
+                <Typography
+                  fFamily="barlowMedium500"
+                  adjustsFontSizeToFit
+                  size={13}
+                >
+                  {!station?.pair_type && 'Select Report Pair / True Pair'}
+                  {station?.pair_type &&
+                    `Selected ${
+                      station?.pair_type === 'report_pair'
+                        ? 'Report Pair'
+                        : 'True Pair'
+                    }`}
+                </Typography>
+                <View
+                  style={[styles.stationLine, { height: Sizer.hSize(25) }]}
+                />
+              </Flex>
+
               {/* PairType Selection */}
               <Flex direction="row" algItems="center" gap={20} mT={15} mB={20}>
                 <RadioButton
@@ -536,20 +569,62 @@ const StationCard = ({
             >
               {/* Traps Presentation */}
               {filteredTrapData.trap_id == 1 && (
-                <TrapsList
-                  trapsData={trapsData}
-                  onSelectPresentation={handleSelectPresentation}
-                  selectedPresentation={filteredTrapData?.presentation}
-                  slide="left"
-                />
+                <>
+                  <Flex
+                    jusContent={'space-between'}
+                    extraStyle={{ backgroundColor: COLORS.orange300 }}
+                    mT={15}
+                  >
+                    <View
+                      style={[styles.stationLine, { height: Sizer.hSize(25) }]}
+                    />
+                    <Typography
+                      fFamily="barlowMedium500"
+                      adjustsFontSizeToFit
+                      size={13}
+                    >
+                      Select Trap/Target Presentation for Trap 1
+                    </Typography>
+                    <View
+                      style={[styles.stationLine, { height: Sizer.hSize(25) }]}
+                    />
+                  </Flex>
+                  <TrapsList
+                    trapsData={trapsData}
+                    onSelectPresentation={handleSelectPresentation}
+                    selectedPresentation={filteredTrapData?.presentation}
+                    slide="left"
+                  />
+                </>
               )}
               {filteredTrapData.trap_id == 2 && (
-                <TrapsList
-                  trapsData={trapsData}
-                  onSelectPresentation={handleSelectPresentation}
-                  selectedPresentation={filteredTrapData?.presentation}
-                  slide="right"
-                />
+                <>
+                  <Flex
+                    jusContent={'space-between'}
+                    extraStyle={{ backgroundColor: COLORS.orange300 }}
+                    mT={15}
+                  >
+                    <View
+                      style={[styles.stationLine, { height: Sizer.hSize(25) }]}
+                    />
+                    <Typography
+                      fFamily="barlowMedium500"
+                      adjustsFontSizeToFit
+                      size={13}
+                    >
+                      Select Trap/Target Presentation for Trap 2
+                    </Typography>
+                    <View
+                      style={[styles.stationLine, { height: Sizer.hSize(25) }]}
+                    />
+                  </Flex>
+                  <TrapsList
+                    trapsData={trapsData}
+                    onSelectPresentation={handleSelectPresentation}
+                    selectedPresentation={filteredTrapData?.presentation}
+                    slide="right"
+                  />
+                </>
               )}
             </View>
           </View>
