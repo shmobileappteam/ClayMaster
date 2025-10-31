@@ -14,6 +14,7 @@ import { storage } from '../../../api/api';
 import { KEYS } from '../../../constants';
 import { getRounds } from '../../../api/roundService';
 import { getTraps } from '../../../api/stationService';
+import ConfirmModal from '../../../components/modal/confirmModal';
 
 const CustomScoreCard = ({ navigation }) => {
   const route = useRoute();
@@ -26,6 +27,8 @@ const CustomScoreCard = ({ navigation }) => {
     queryKey: ['traps'],
     queryFn: getTraps,
   });
+
+  const [showNewRoundModal, setShowNewRoundModal] = React.useState(false);
 
   return (
     <Container isPadding={false}>
@@ -94,8 +97,20 @@ const CustomScoreCard = ({ navigation }) => {
           resizeMode="contain"
         />
         <View style={{ marginTop: Sizer.hSize(12) }} />
-        <IconButton onPress={() => navigation.navigate('NewRoundScreen')} />
+        <IconButton onPress={() => setShowNewRoundModal(true)} />
       </ScrollView>
+
+      <ConfirmModal
+        visible={showNewRoundModal}
+        setVisibility={setShowNewRoundModal}
+        title="Note"
+        message={
+          'Please note that the digital scorecard has been formatted to support a typical 100-target practice/tournament round with up to 16 stations and 3–5 target pairs per station. Any exception to this may cause an error.'
+        }
+        confirmText="Proceed"
+        cancelText="Cancel"
+        handleComplete={() => navigation.navigate('NewRoundScreen')}
+      />
     </Container>
   );
 };

@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white100,
     borderWidth: 0,
     borderRadius: 6,
+    maxHeight: '50%',
   },
   selectStyle: {
     color: COLORS.whiteV1,

@@ -97,7 +97,7 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
                 value={scoreCardDetails?.stats?.lost}
               />
               <TableRow
-                label={'Total Shots'}
+                label={'Total Targets'}
                 value={scoreCardDetails?.stats?.total}
                 isLast={true}
               />

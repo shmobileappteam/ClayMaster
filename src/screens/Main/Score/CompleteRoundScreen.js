@@ -57,7 +57,7 @@ const CompleteRoundScreen = ({ navigation, route }) => {
                 value={stationsDetails?.stats?.lost}
               />
               <TableRow
-                label={'Total Shots'}
+                label={'Total Targets'}
                 value={stationsDetails?.stats?.total}
                 isLast={true}
               />

@@ -293,8 +293,9 @@ const TargetPairSelection = ({
     <>
       <View style={{ marginTop: Sizer.hSize(15) }}>
         <SlideInView slideDuration={500}>
-          <Flex
+          {/* <Flex
             jusContent={'space-between'}
+            algItems={'center'}
             extraStyle={{
               backgroundColor: COLORS.orange300,
             }}
@@ -304,12 +305,12 @@ const TargetPairSelection = ({
               Select Pair of Targets
             </Typography>
             <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-          </Flex>
+          </Flex> */}
           <Flex
             direction="row"
             jusContent="space-between"
             algItems="center"
-            mT={15}
+            // mT={15}
             gap={9}
           >
             <TouchableOpacity
@@ -394,7 +395,7 @@ const ShotsPresentation = ({ shotsData = [], deadCount, lostCount }) => {
           <Typography
             size={14}
             color={deadCount ? COLORS.primary : COLORS.grey500}
-            Family="barlowMedium500"
+            fFamily="barlowSemiBold600"
           >
             Dead {deadCount}
           </Typography>
@@ -411,7 +412,7 @@ const ShotsPresentation = ({ shotsData = [], deadCount, lostCount }) => {
         >
           <Typography
             size={14}
-            fFamily="barlowMedium500"
+            fFamily="barlowSemiBold600"
             // color={lostCount ? COLORS.primary : COLORS.grey500} // OLD CODE
             color={COLORS.grey500} // OLD CODE
           >
@@ -433,6 +434,7 @@ const StationCard = ({
   onSetSelectedTargetPairs = () => {},
   isDisabled = false,
   onScrollDown = () => {},
+  totalSelectedShots = 0,
 }) => {
   const trapsData = queryClient.getQueryData(['traps']);
   const [trapId, setTrapId] = useState(1);
@@ -466,7 +468,7 @@ const StationCard = ({
 
   return (
     <SlideInView>
-      <View style={styles.stationCard}>
+      <View style={[styles.stationCard, !isDisabled && { marginBottom: 0 }]}>
         {/* Header */}
         <Header
           titleLeft={station.name}
@@ -476,32 +478,32 @@ const StationCard = ({
         />
 
         <View pointerEvents={isDisabled ? 'none' : 'auto'}>
-          {!isTargetPairSelected && (
-            <TargetPairSelection
-              onSetIsTargetPairSelected={setIsTargetPairSelected}
-              onSelectTargetPair={onSetSelectedTargetPairs}
-            />
-          )}
-
-          {isTargetPairSelected && (
-            <Flex
-              jusContent={'space-between'}
-              extraStyle={{
-                backgroundColor: COLORS.orange300,
-              }}
-              mT={15}
+          <Flex
+            jusContent={'space-between'}
+            algItems={'center'}
+            extraStyle={{
+              backgroundColor: COLORS.orange300,
+            }}
+            mT={15}
+          >
+            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+            <Typography
+              fFamily="barlowMedium500"
+              adjustsFontSizeToFit
+              size={13}
             >
-              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-              <Typography
-                fFamily="barlowMedium500"
-                adjustsFontSizeToFit
-                size={13}
-              >
-                Selected Pair of {station?.selectedTargetPairs} Targets{' '}
-              </Typography>
-              <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-            </Flex>
-          )}
+              {!isTargetPairSelected && 'Select Pair of Targets'}
+              {isTargetPairSelected &&
+                `Selected Pair of ${station?.selectedTargetPairs} Targets`}
+            </Typography>
+            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
+          </Flex>
+          {/* {!isTargetPairSelected && ( */}
+          <TargetPairSelection
+            onSetIsTargetPairSelected={setIsTargetPairSelected}
+            onSelectTargetPair={onSetSelectedTargetPairs}
+          />
+          {/* )} */}
         </View>
 
         {/* Expanded Content */}
@@ -511,6 +513,7 @@ const StationCard = ({
               {/* Instruction for Pair Type Selection */}
               <Flex
                 jusContent={'space-between'}
+                algItems={'center'}
                 extraStyle={{
                   backgroundColor: COLORS.orange300,
                 }}
@@ -572,6 +575,7 @@ const StationCard = ({
                 <>
                   <Flex
                     jusContent={'space-between'}
+                    algItems={'center'}
                     extraStyle={{ backgroundColor: COLORS.orange300 }}
                     mT={15}
                   >
@@ -641,6 +645,22 @@ const StationCard = ({
           </View>
         )}
       </View>
+      {!isDisabled && (
+        <View
+          style={[
+            styles.counter,
+            totalSelectedShots == 100 && { borderColor: COLORS.primary },
+          ]}
+        >
+          <Typography
+            size={16}
+            fFamily="barlowMedium500"
+            color={totalSelectedShots == 100 ? COLORS.primary : COLORS.grey500}
+          >
+            {`${totalSelectedShots} / 100`}
+          </Typography>
+        </View>
+      )}
     </SlideInView>
   );
 };
@@ -692,6 +712,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(8),
     borderRadius: Sizer.hSize(5),
     alignSelf: 'flex-start',
+  },
+
+  counter: {
+    alignSelf: 'flex-end',
+    marginTop: Sizer.hSize(8),
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: Sizer.fS(0.8),
+    borderRadius: 8,
+    borderColor: COLORS.grey100,
   },
 });
 

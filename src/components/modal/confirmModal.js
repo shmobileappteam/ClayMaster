@@ -8,6 +8,10 @@ const ConfirmModal = ({
   visible,
   setVisibility = () => {},
   handleComplete = () => {},
+  title = 'Are you sure you want to complete?',
+  message = '',
+  confirmText = 'Yes',
+  cancelText = 'Cancel',
 }) => {
   const handleClose = () => setVisibility(false);
 
@@ -22,11 +26,12 @@ const ConfirmModal = ({
       <View style={styles.modalOverlay}>
         <View style={styles.modalView}>
           {/* <LogoutSvg /> */}
-          <Text style={styles.heading}>Are you sure you want to complete?</Text>
+          <Text style={styles.heading}>{title}</Text>
+          {!!message && <Text style={styles.message}>{message}</Text>}
           <View style={styles.btnView}>
-            <Button text="Cancel" onPress={handleClose} />
+            <Button text={cancelText} onPress={handleClose} />
             <Button
-              text="Yes"
+              text={confirmText}
               primary
               onPress={() => {
                 handleComplete();
@@ -91,6 +96,12 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#0E0E0E',
     fontFamily: FONTS.barlowBold700,
+    textAlign: 'center',
+  },
+  message: {
+    fontSize: 14,
+    color: '#0E0E0E',
+    fontFamily: FONTS.barlowMedium500,
     textAlign: 'center',
   },
   btnView: {

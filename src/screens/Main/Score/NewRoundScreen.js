@@ -4,6 +4,7 @@ import { useQueries } from '@tanstack/react-query';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
 import {
+  BooleanRadioSelector,
   Button,
   ConfirmModal,
   CustomDropdown,
@@ -48,6 +49,10 @@ const NewRoundScreen = ({ navigation, route }) => {
   const IsAllFilled = lastStation?.shots.every(
     shot => shot.result !== '' && shot.result !== 'empty',
   );
+  const totalSelectedShots =
+    // 100;
+    (addStation?.reduce((acc, st) => acc + (st?.selectedTargetPairs || 0), 0) ||
+      0) * 2;
 
   // Feetching Queries for Courses and Classes:
   const responses = useQueries({
@@ -74,6 +79,25 @@ const NewRoundScreen = ({ navigation, route }) => {
   const [squadSequence, setSquadSequence] = useState({
     label: '1',
     value: '1',
+  });
+
+  // European Rotation controls
+  const [isEuropeanRotation, setIsEuropeanRotation] = useState(false);
+  const stationOptions = Array.from({ length: 16 }, (_, i) => {
+    const v = String(i + 1);
+    return { label: v, value: v };
+  });
+  const totalStationOptions = Array.from({ length: 7 }, (_, i) => {
+    const v = String(10 + i);
+    return { label: v, value: v };
+  });
+  const [startingStation, setStartingStation] = useState({
+    label: '1',
+    value: '1',
+  });
+  const [totalStations, setTotalStations] = useState({
+    label: '16',
+    value: '16',
   });
 
   const [roundId, setRoundId] = useState('1');
@@ -129,6 +153,15 @@ const NewRoundScreen = ({ navigation, route }) => {
       });
       return;
     }
+    if (totalSelectedShots == 100) {
+      showMessage({
+        type: 'danger',
+        message:
+          'You cannot add more stations because 100 targets have already been completed.',
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
 
     // All good
     toggleStation(lastStation?.station_number);
@@ -163,7 +196,12 @@ const NewRoundScreen = ({ navigation, route }) => {
     // Validate Squad Sequence vs Squad Size
     const sequence = parseInt(squadSequence?.value, 10);
     const size = parseInt(noOfPeople?.value, 10);
-    if (!Number.isFinite(sequence) || !Number.isFinite(size) || sequence < 1 || size < 1) {
+    if (
+      !Number.isFinite(sequence) ||
+      !Number.isFinite(size) ||
+      sequence < 1 ||
+      size < 1
+    ) {
       showMessage({
         message: 'Please select a valid Squad Sequence and Squad Size.',
         bgColor: COLORS.primary,
@@ -182,6 +220,9 @@ const NewRoundScreen = ({ navigation, route }) => {
     //   ncsca_class: selectedClass,
     //   squad_sequence: squadSequence?.value,
     //   people_in_squad: noOfPeople?.value,
+    //   european_rotation: isEuropeanRotation,
+    //   starting_station: isEuropeanRotation ? startingStation?.value : 1,
+    //   total_stations: isEuropeanRotation ? totalStations?.value : 16,
     // });
 
     createRound({
@@ -189,6 +230,13 @@ const NewRoundScreen = ({ navigation, route }) => {
       ncsca_class: selectedClass,
       squad_sequence: squadSequence?.value,
       people_in_squad: noOfPeople?.value,
+      european_rotation: !!isEuropeanRotation,
+      starting_station: isEuropeanRotation
+        ? parseInt(startingStation?.value, 10)
+        : 1,
+      total_stations: isEuropeanRotation
+        ? parseInt(totalStations?.value, 10)
+        : 16,
     })
       .then(res => {
         setSectionNumber(2);
@@ -367,6 +415,13 @@ const NewRoundScreen = ({ navigation, route }) => {
       });
       return;
     }
+    if (totalSelectedShots != 100) {
+      showMessage({
+        message: 'Please complete all 100 targets before Completing Round.',
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
 
     setConfirmVisible(true);
   };
@@ -376,13 +431,12 @@ const NewRoundScreen = ({ navigation, route }) => {
         type="app"
         title="New Round"
         onPresBack={() => {
-          // sectionNumber == 2 ? setSectionNumber(1) :
           navigation.goBack();
         }}
       />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
         {!roundDetails && sectionNumber == 1 ? (
-          <View style={styles.container}>
+          <ScrollView showsVerticalScrollIndicator={false}>
             <View>
               <Label title="Squad Sequence" />
               <CustomDropdown
@@ -412,6 +466,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                   setNoOfPeople(item);
                 }}
               />
+
               <Label title="Your Current NSCA Class" />
               <View style={styles.nscaClassContainer}>
                 {classes?.data &&
@@ -424,14 +479,42 @@ const NewRoundScreen = ({ navigation, route }) => {
                     />
                   ))}
               </View>
+
+              <Label title="European Rotation?" />
+
+              <BooleanRadioSelector
+                onSetBoleanValue={setIsEuropeanRotation}
+                boleanValue={isEuropeanRotation}
+              />
+
+              {isEuropeanRotation && (
+                <SlideInView slide="down">
+                  <Label title="Starting Station #" />
+                  <CustomDropdown
+                    data={stationOptions}
+                    placeholder="Starting Station"
+                    defaultValue={startingStation}
+                    onChange={item => setStartingStation(item)}
+                  />
+
+                  <Label title="Total number of stations" />
+                  <CustomDropdown
+                    data={totalStationOptions}
+                    placeholder="Total Stations"
+                    defaultValue={totalStations}
+                    onChange={item => setTotalStations(item)}
+                  />
+                </SlideInView>
+              )}
             </View>
             <Button
               mb={54}
+              mt={24}
               label="Continue"
               onPress={HandleContinue}
               loader={isPending}
             />
-          </View>
+          </ScrollView>
         ) : roundDetails || sectionNumber == 2 ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
@@ -445,13 +528,13 @@ const NewRoundScreen = ({ navigation, route }) => {
               }}
             >
               <View style={{}}>
-              <Label
-                title={`${
-                  roundDetails?.course_name || selectedCourse || 'Course'
-                } ${formatUsDate(roundDetails?.created_at || new Date())}`}
-                fFamily={'barlowBold700'}
-                size={18}
-              />
+                <Label
+                  title={`${
+                    roundDetails?.course_name || selectedCourse || 'Course'
+                  } ${formatUsDate(roundDetails?.created_at || new Date())}`}
+                  fFamily={'barlowBold700'}
+                  size={18}
+                />
 
                 {addStation.map((station, index) => (
                   <StationCard
@@ -464,7 +547,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     onSetShotsData={HandleSetShotsData}
                     onSetSelectedTargetPairs={handleSelectedTargetPairs}
                     isDisabled={station?.station_number !== addStation?.length}
-                    onScrollDown={() => scrollRef?.current?.scrollToEnd({ animated: true })}
+                    totalSelectedShots={totalSelectedShots}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>

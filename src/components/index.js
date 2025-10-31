@@ -3,6 +3,7 @@ import IconButton from './customButtons/IconButton';
 import TextField from './customFields/TextField';
 import SearchField from './customFields/SeacrhField';
 import CustomDropdown from './customFields/CustomDropDown';
+import BooleanRadioSelector from './customFields/BooleanRadioSelector';
 import Label from './customFields/Label';
 import Header from './header/Header';
 
@@ -23,4 +24,5 @@ export {
   Accordion,
   Label,
   ConfirmModal,
+  BooleanRadioSelector
 };
