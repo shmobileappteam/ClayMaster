@@ -10,8 +10,6 @@ import { GLOBALSTYLE } from '../../../globalStyle/Theme';
 import { downarrow, homebanner } from '../../../assets/images';
 import ScorecardList from '../../../components/Round/ScorecardList';
 import { useCustomQuery } from '../../../query/useCustomQuery';
-import { storage } from '../../../api/api';
-import { KEYS } from '../../../constants';
 import { getRounds } from '../../../api/roundService';
 import { getTraps } from '../../../api/stationService';
 import ConfirmModal from '../../../components/modal/confirmModal';
@@ -23,12 +21,10 @@ const CustomScoreCard = ({ navigation }) => {
     queryKey: ['rounds'],
     queryFn: getRounds,
   });
-  const { data: trapsData } = useCustomQuery({
-    queryKey: ['traps'],
-    queryFn: getTraps,
-  });
 
   const [showNewRoundModal, setShowNewRoundModal] = React.useState(false);
+
+  // console.log(roundsData);
 
   return (
     <Container isPadding={false}>
@@ -57,7 +53,13 @@ const CustomScoreCard = ({ navigation }) => {
                       roundId: item?.id,
                     })
                   : navigation.navigate('NewRoundScreen', {
-                      roundDetails: item,
+                      roundDetails: {
+                        ...item,
+                        // european_rotation: false,
+                        // starting_station: 3,
+                        // total_stations: 10,
+                        // station_sequence: [3, 4, 5, 6, 7, 8, 9, 10, 1, 2],
+                      },
                     });
               }}
             />

@@ -86,7 +86,10 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
               <Box name={scoreCardDetails?.ncsca_class} />
             </View>
             <Label title="Round Summary" size={20} fFamily="barlowBold700" />
-            <StationsList data={scoreCardDetails?.stations} />
+            <StationsList
+              data={scoreCardDetails?.stations}
+              isEuropeanRoration={scoreCardDetails?.european_rotation || false}
+            />
             <View style={styles.tableCont}>
               <TableRow
                 label={'Total Dead'}

@@ -1,5 +1,11 @@
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import React, { useRef, useState } from 'react';
+import {
+  BackHandler,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueries } from '@tanstack/react-query';
 //----
 import { Container, Flex, Typography } from '../../../atomComponents';
@@ -20,6 +26,7 @@ import StationCard from '../../../components/Round/StationCard';
 import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
 import {
   createRoundDropData,
+  disableStation,
   expandedStationCardsObject,
   handleStationChange,
   initialStation,
@@ -30,19 +37,27 @@ import {
 import { getClasses, getCourses, postRound } from '../../../api/roundService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { queryClient } from '../../../api/api';
-import { formatBackendErrors, formatDate, showMessage } from '../../../utils';
+import {
+  formatBackendErrors,
+  formatDate,
+  formatUsDate,
+  showMessage,
+} from '../../../utils';
 import { postStations, sendToClayMaster } from '../../../api/stationService';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
-
   const scrollRef = useRef();
 
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([initialStation]);
-  // console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation, roundDetails);
-
+  const [isEuropeanRotation, setIsEuropeanRotation] = useState(false);
+  const [stationSequence, setStationSequence] = useState([]);
+  const [maxStations, setMaxStations] = useState(16);
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [backPressModalVisible, setBackPressModalVisible] = useState(false);
+
+  console.log('🚀 ~ NewRoundScreen ~ addStation:', roundDetails);
 
   //Check if Active/Last Staion shots are fullfiled or not:
   const lastStation = addStation[addStation?.length - 1];
@@ -53,6 +68,21 @@ const NewRoundScreen = ({ navigation, route }) => {
     // 100;
     (addStation?.reduce((acc, st) => acc + (st?.selectedTargetPairs || 0), 0) ||
       0) * 2;
+
+  // Calculate current score (dead shots count)
+  const currentScore = addStation?.reduce((total, station) => {
+    const count =
+      station?.shots?.filter(
+        shot => shot.result === 'dead' || shot.result === 'lost',
+      ).length || 0;
+
+    return total + count;
+  }, 0);
+
+  // Check if at least one station has been played (has at least one shot filled)
+  const hasPlayedAtLeastOneStation = addStation.some(station =>
+    station?.shots?.some(shot => shot.result !== '' && shot.result !== 'empty'),
+  );
 
   // Feetching Queries for Courses and Classes:
   const responses = useQueries({
@@ -69,9 +99,6 @@ const NewRoundScreen = ({ navigation, route }) => {
   });
 
   const [courses, classes] = responses;
-  const coursesData = courses?.data
-    ? courses?.data.map(item => ({ label: item, value: item }))
-    : [];
 
   const [selectedClass, setSelectedClass] = useState(classes?.data?.[0]);
   const [selectedCourse, setSelectedCourse] = useState('');
@@ -82,7 +109,6 @@ const NewRoundScreen = ({ navigation, route }) => {
   });
 
   // European Rotation controls
-  const [isEuropeanRotation, setIsEuropeanRotation] = useState(false);
   const stationOptions = Array.from({ length: 16 }, (_, i) => {
     const v = String(i + 1);
     return { label: v, value: v };
@@ -101,6 +127,64 @@ const NewRoundScreen = ({ navigation, route }) => {
   });
 
   const [roundId, setRoundId] = useState('1');
+
+  useEffect(() => {
+    if (roundDetails) {
+      setRoundId(roundDetails?.id);
+      setSectionNumber(2);
+
+      const hasEuropeanRotationFields =
+        roundDetails?.european_rotation &&
+        roundDetails?.starting_station &&
+        roundDetails?.total_stations &&
+        Array.isArray(roundDetails?.station_sequence) &&
+        roundDetails?.station_sequence?.length > 0;
+
+      if (hasEuropeanRotationFields) {
+        // Initialize European rotation flow
+        setIsEuropeanRotation(roundDetails?.european_rotation);
+        setStartingStation({
+          label: String(roundDetails?.starting_station),
+          value: String(roundDetails?.starting_station),
+        });
+        setTotalStations({
+          label: String(roundDetails?.total_stations),
+          value: String(roundDetails?.total_stations),
+        });
+        setStationSequence(roundDetails?.station_sequence);
+        setMaxStations(
+          roundDetails?.total_stations ||
+            roundDetails?.station_sequence?.length,
+        );
+
+        const firstStationNumber = roundDetails?.station_sequence?.[0];
+        setAddStation([
+          {
+            ...initialStation,
+            station_number: firstStationNumber,
+            name: `Station ${firstStationNumber}`,
+          },
+        ]);
+        setExpandedStations(prev => ({
+          ...prev,
+          [firstStationNumber]: true,
+        }));
+      } else {
+        // Normal flow - no European rotation
+        setAddStation([
+          {
+            ...initialStation,
+            station_number: 1,
+            name: 'Station 1',
+          },
+        ]);
+        setExpandedStations(prev => ({
+          ...prev,
+          1: true,
+        }));
+      }
+    }
+  }, [roundDetails]);
 
   // Post Round Mutation:
   const { mutateAsync: createRound, isPending } = useCustomMutation({
@@ -163,25 +247,37 @@ const NewRoundScreen = ({ navigation, route }) => {
       return;
     }
 
-    // All good
     toggleStation(lastStation?.station_number);
-
     setAddStation(prev => {
+      const nextIndex = prev.length;
+      const nextStationNumber =
+        Array.isArray(stationSequence) && stationSequence.length > 0
+          ? stationSequence[nextIndex]
+          : nextIndex + 1;
+
+      // Respect total stations limit if provided
+      if (
+        (Array.isArray(stationSequence) &&
+          stationSequence.length > 0 &&
+          nextIndex >= (maxStations || stationSequence.length)) ||
+        ((!Array.isArray(stationSequence) || stationSequence.length === 0) &&
+          typeof maxStations === 'number' &&
+          nextIndex >= maxStations)
+      ) {
+        showMessage({
+          message: 'All stations for this round have been added.',
+          bgColor: COLORS.primary,
+        });
+        return prev;
+      }
+
       const newStation = {
         ...initialStation,
-        station_number: prev.length + 1,
-        name: `Station ${prev.length + 1}`,
+        station_number: nextStationNumber,
+        name: `Station ${nextStationNumber}`,
       };
       return [...prev, newStation];
     });
-  };
-
-  const formatUsDate = dateLike => {
-    const d = dateLike ? new Date(dateLike) : new Date();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    const yyyy = d.getFullYear();
-    return `${mm}/${dd}/${yyyy}`;
   };
 
   //Request Create Round:
@@ -221,8 +317,8 @@ const NewRoundScreen = ({ navigation, route }) => {
     //   squad_sequence: squadSequence?.value,
     //   people_in_squad: noOfPeople?.value,
     //   european_rotation: isEuropeanRotation,
-    //   starting_station: isEuropeanRotation ? startingStation?.value : 1,
-    //   total_stations: isEuropeanRotation ? totalStations?.value : 16,
+    //   starting_station: isEuropeanRotation ? startingStation?.value : null,
+    //   total_stations: isEuropeanRotation ? totalStations?.value : null,
     // });
 
     createRound({
@@ -230,24 +326,65 @@ const NewRoundScreen = ({ navigation, route }) => {
       ncsca_class: selectedClass,
       squad_sequence: squadSequence?.value,
       people_in_squad: noOfPeople?.value,
-      european_rotation: !!isEuropeanRotation,
-      starting_station: isEuropeanRotation
-        ? parseInt(startingStation?.value, 10)
-        : 1,
-      total_stations: isEuropeanRotation
-        ? parseInt(totalStations?.value, 10)
-        : 16,
+      european_rotation: isEuropeanRotation,
+      starting_station: isEuropeanRotation ? startingStation?.value : null,
+      total_stations: isEuropeanRotation ? totalStations?.value : null,
     })
       .then(res => {
+        const round = res?.round || {};
+        console.log('res: ', res);
+        console.log(round);
+
         setSectionNumber(2);
-        setRoundId(res?.round?.id);
+        setRoundId(round?.id);
+
+        // If backend provides a station sequence and total stations, adopt them
+        if (
+          Array.isArray(round?.station_sequence) &&
+          round?.station_sequence?.length
+        ) {
+          setStationSequence(round.station_sequence);
+          setMaxStations(
+            round?.total_stations || round.station_sequence.length,
+          );
+
+          // Initialize the first station to the provided starting station
+          const firstStationNumber = round.station_sequence[0];
+          setAddStation([
+            {
+              ...initialStation,
+              station_number: firstStationNumber,
+              name: `Station ${firstStationNumber}`,
+            },
+          ]);
+          setExpandedStations(prev => ({
+            ...prev,
+            [firstStationNumber]: true,
+          }));
+        }
         queryClient.invalidateQueries({ queryKey: ['rounds'] });
+
+        // else {
+        //   // Default non-European flow
+        //   setStationSequence([]);
+        //   setMaxStations(16);
+        //   // Ensure we start at Station 1
+        //   setAddStation([
+        //     {
+        //       ...initialStation,
+        //       station_number: 1,
+        //       name: 'Station 1',
+        //     },
+        //   ]);
+        //   setExpandedStations(prev => ({
+        //     ...prev,
+        //     1: true,
+        //   }));
+        // }
       })
       .catch(err => {
-        const response = err?.response;
-        const parsedErrors = formatBackendErrors(response?.data?.errors);
         showMessage({
-          message: parsedErrors?.squad_sequence,
+          message: err?.response?.data?.message || 'Something went wrong!',
           bgColor: COLORS.primary,
         });
       });
@@ -425,15 +562,33 @@ const NewRoundScreen = ({ navigation, route }) => {
 
     setConfirmVisible(true);
   };
+
+  // Handle back navigation
+  const handleBackNavigation = useCallback(() => {
+    if (hasPlayedAtLeastOneStation && sectionNumber === 2) {
+      setBackPressModalVisible(true);
+      return true; // Prevent default back action
+    }
+    navigation.goBack();
+    return false;
+  }, [hasPlayedAtLeastOneStation, sectionNumber, navigation]);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      return handleBackNavigation();
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress,
+    );
+
+    return () => backHandler.remove();
+  }, [handleBackNavigation]);
+
   return (
     <Container isPadding={false}>
-      <Header
-        type="app"
-        title="New Round"
-        onPresBack={() => {
-          navigation.goBack();
-        }}
-      />
+      <Header type="app" title="New Round" onPresBack={handleBackNavigation} />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
         {!roundDetails && sectionNumber == 1 ? (
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -546,8 +701,14 @@ const NewRoundScreen = ({ navigation, route }) => {
                     onSetTrapsData={HandleSelectedTrapsData}
                     onSetShotsData={HandleSetShotsData}
                     onSetSelectedTargetPairs={handleSelectedTargetPairs}
-                    isDisabled={station?.station_number !== addStation?.length}
+                    isDisabled={disableStation(
+                      index,
+                      addStation,
+                      isEuropeanRotation,
+                    )}
+                    // isDisabled={station?.station_number !== addStation?.length}
                     totalSelectedShots={totalSelectedShots}
+                    maxStations={maxStations}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>
@@ -648,6 +809,20 @@ const NewRoundScreen = ({ navigation, route }) => {
             roundId: roundDetails?.id || roundId,
             payload: addStation,
           });
+        }}
+      />
+
+      <ConfirmModal
+        visible={backPressModalVisible}
+        setVisibility={setBackPressModalVisible}
+        title="Leave Round?"
+        message={`Your current score is ${currentScore} shot${
+          currentScore !== 1 ? 's' : ''
+        }. If you leave now, your progress won't be saved.`}
+        confirmText="Stay"
+        cancelText="Leave"
+        handleCancel={() => {
+          navigation.goBack();
         }}
       />
     </Container>

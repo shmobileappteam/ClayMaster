@@ -217,20 +217,29 @@ export function validateRoundData(data) {
   return '';
 }
 
-export const formatApiStations = (stations = []) => {
+export const formatApiStations = (
+  stations = [],
+  isEuropeanRotation = false,
+) => {
   if (!Array.isArray(stations) || stations.length === 0) return [];
 
-  return stations.map((station, index) => ({
-    name: `Station ${index + 1}`,
-    station_number: station.station_number ?? null,
-    pair_type: station.pair_type ?? '',
-    dead: station?.dead ?? null,
-    lost: station?.lost ?? null,
-    traps: station?.traps || [],
-    shots: station?.shots || [],
-    isPairSelected: true,
-    selectedTargetPairs: station?.shots?.length / 2,
-  }));
+  return stations.map((station, index) => {
+    const stationNum = station?.station_number ?? index + 1;
+
+    return {
+      name: isEuropeanRotation
+        ? `Station ${stationNum}`
+        : `Station ${index + 1}`,
+      station_number: stationNum,
+      pair_type: station?.pair_type ?? '',
+      dead: station?.dead ?? null,
+      lost: station?.lost ?? null,
+      traps: station?.traps || [],
+      shots: station?.shots || [],
+      isPairSelected: true,
+      selectedTargetPairs: (station?.shots?.length || 0) / 2,
+    };
+  });
 };
 
 export const createRoundDropData = [
@@ -255,3 +264,40 @@ export const handleStationChange = (updatedStation, scrollRef) => {
     scrollRef?.current?.scrollToEnd({ animated: true });
   }
 };
+
+export const disableStation = (index, stations, isEuropeanRotation) => {
+  const isLast = index === stations.length - 1;
+
+  if (isEuropeanRotation) {
+    // European: only last station can be edited
+    return !isLast;
+  } else {
+    // Normal: also only last station editable
+    return !isLast;
+  }
+};
+
+
+
+function suggestPairsForEuropeanRotation(stations) {
+  const minPairs = Math.ceil(100 / (2 * stations));
+  const maxPairs = Math.floor(110 / (2 * stations));
+
+  // If min=max, then same pairs for all stations (e.g., 10 stations = 5 pairs each)
+  if (minPairs === maxPairs) {
+    return Array(stations).fill(minPairs);
+  }
+
+  // Otherwise distribute mix of minPairs and maxPairs to stay close to 100–110 shots
+  let result = Array(stations).fill(minPairs);
+  let shots = stations * minPairs * 2;
+
+  let i = 0;
+  while (shots < 100 && i < stations) {
+    result[i] = maxPairs;
+    shots = result.reduce((sum, p) => sum + p * 2, 0);
+    i++;
+  }
+
+  return result;
+}

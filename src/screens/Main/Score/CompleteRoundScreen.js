@@ -17,13 +17,13 @@ import { queryClient } from '../../../api/api';
 const CompleteRoundScreen = ({ navigation, route }) => {
   const roundId = route.params?.roundId;
   // console.log('🚀 ~ CompleteRoundScreen ~ roundId:', roundId);
-  // console.log('🚀 ~ CompleteRoundScreen ~ stationsDetails:', stationsDetails);
 
   //Fetching Round Details by id query:
   const { data: stationsDetails, isLoading } = useCustomQuery({
     queryKey: ['round', roundId],
     queryFn: ({ queryKey }) => getRound(queryKey[1]),
   });
+  console.log('🚀 ~ CompleteRoundScreen ~ stationsDetails:', stationsDetails);
 
   //Send to ClayMaster:
   const { mutateAsync: requestSend, isPending } = useCustomMutation({
@@ -45,7 +45,10 @@ const CompleteRoundScreen = ({ navigation, route }) => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: Sizer.hSize(50) }}
           >
-            <StationsList data={stationsDetails?.stations} />
+            <StationsList
+              data={stationsDetails?.stations}
+              isEuropeanRoration={stationsDetails?.european_rotation || false}
+            />
             <View style={styles.tableCont}>
               {/* {statsData.map((item, index) => ( */}
               <TableRow

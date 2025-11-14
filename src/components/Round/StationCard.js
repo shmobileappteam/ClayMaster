@@ -11,6 +11,8 @@ import TrapsList from './TrapsList';
 import { useCustomQuery } from '../../query/useCustomQuery';
 import { getTraps } from '../../api/stationService';
 import { queryClient } from '../../api/api';
+import { showMessage } from '../../utils';
+import FlashMessage, { hideMessage } from 'react-native-flash-message';
 
 const trapsData = [
   {
@@ -283,8 +285,23 @@ const RadioButton = ({ selected, onPress, label }) => (
 const TargetPairSelection = ({
   onSetIsTargetPairSelected,
   onSelectTargetPair,
+  maxStations = 10,
 }) => {
+  // console.log(maxStations);
+
   const handleTarhetPairSelection = pair => {
+    // if (maxStations <= 10 && pair < 5) {
+    //   showMessage({
+    //     type: 'danger',
+    //     bgColor: COLORS.primary,
+    //     message:
+    //       'For 10 stations, you must select 5 pairs each to make 100 targets.',
+    //   });
+    //   return;
+    // } else {
+    //   hideMessage();
+    // }
+
     onSelectTargetPair(pair);
     onSetIsTargetPairSelected(true);
   };
@@ -435,9 +452,12 @@ const StationCard = ({
   isDisabled = false,
   onScrollDown = () => {},
   totalSelectedShots = 0,
+  maxStations = 10,
 }) => {
   const trapsData = queryClient.getQueryData(['traps']);
   const [trapId, setTrapId] = useState(1);
+
+  // console.log(trapsData);
 
   const filteredTrapData =
     (station?.traps &&
@@ -502,6 +522,7 @@ const StationCard = ({
           <TargetPairSelection
             onSetIsTargetPairSelected={setIsTargetPairSelected}
             onSelectTargetPair={onSetSelectedTargetPairs}
+            maxStations={maxStations}
           />
           {/* )} */}
         </View>

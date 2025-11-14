@@ -5,10 +5,10 @@ import StationCard from './StationCard';
 
 import Sizer from '../../helpers/Sizer';
 
-const StationsList = ({ data = [], contStyle = {} }) => {
+const StationsList = ({ data = [], isEuropeanRoration, contStyle = {} }) => {
   const [expandedStations, setExpandedStations] = useState({});
 
-  const stations = formatApiStations(data || []);
+  const stations = formatApiStations(data || [], isEuropeanRoration);
 
   const toggleStation = stationId => {
     setExpandedStations(prev => ({

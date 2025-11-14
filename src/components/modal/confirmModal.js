@@ -8,12 +8,16 @@ const ConfirmModal = ({
   visible,
   setVisibility = () => {},
   handleComplete = () => {},
+  handleCancel = () => {},
   title = 'Are you sure you want to complete?',
   message = '',
   confirmText = 'Yes',
   cancelText = 'Cancel',
 }) => {
-  const handleClose = () => setVisibility(false);
+  const handleClose = () => {
+    handleCancel?.();
+    setVisibility(false);
+  };
 
   return (
     <Modal
