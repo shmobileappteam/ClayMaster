@@ -30,7 +30,7 @@ export default function BooleanRadioSelector({
           flex: 2,
         }}
       >
-        <RadioButton
+        <RadioButton.Android
           value="true"
           status={boleanValue ? 'checked' : 'unchecked'}
           onPress={() => onSetBoleanValue(true)}
