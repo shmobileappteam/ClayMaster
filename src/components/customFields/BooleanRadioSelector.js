@@ -16,7 +16,7 @@ export default function BooleanRadioSelector({
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-        <RadioButton
+        <RadioButton.Android
           value="false"
           status={!boleanValue ? 'checked' : 'unchecked'}
           onPress={() => onSetBoleanValue(false)}
