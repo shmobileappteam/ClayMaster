@@ -9,19 +9,19 @@ import { getTraps } from '../../api/stationService';
 
 async function Prefetching() {
   await Promise.all([
-    await queryClient.prefetchQuery({
+    queryClient.prefetchQuery({
       queryKey: ['courses'],
       queryFn: getCourses,
     }),
-    await queryClient.prefetchQuery({
+    queryClient.prefetchQuery({
       queryKey: ['classes'],
       queryFn: getClasses,
     }),
-    await queryClient.prefetchQuery({
+    queryClient.prefetchQuery({
       queryKey: ['rounds'],
       queryFn: getRounds,
     }),
-    await queryClient.prefetchQuery({
+    queryClient.prefetchQuery({
       queryKey: ['traps'],
       queryFn: getTraps,
     }),
@@ -41,6 +41,14 @@ export const onLoginSuccess = async (
       storage.set(KEYS.ACCESS_TOKEN, response?.token);
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       await Prefetching();
+      const traps = queryClient.getQueryData(['traps']);
+      console.log('🚀 ~ onLoginSuccess ~ traps:', traps);
+      const rounds = queryClient.getQueryData(['rounds']);
+      console.log('🚀 ~ onLoginSuccess ~ rounds:', rounds);
+      const classes = queryClient.getQueryData(['classes']);
+      console.log('🚀 ~ onLoginSuccess ~ classes:', classes);
+      const courses = queryClient.getQueryData(['courses']);
+      console.log('🚀 ~ onLoginSuccess ~ courses:', courses);
 
       if (response?.user?.email_verified_at) {
         navigation.dispatch(

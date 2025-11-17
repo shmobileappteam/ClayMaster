@@ -118,6 +118,10 @@ export const expandedStationCardsObject = {
   10: true,
   11: true,
   12: true,
+  13: true,
+  14: true,
+  15: true,
+  16: true,
 };
 
 export const pairOfTargets = {
