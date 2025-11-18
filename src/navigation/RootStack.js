@@ -9,6 +9,7 @@ import FlashMessage from 'react-native-flash-message';
 //----
 import StackNavigator from './StackNavigator';
 import { COLORS } from '../globalStyle/Theme';
+import NetworkStateMonitor from "../utils/NetworkStateMonitor"
 
 const RootStack = () => {
   const navigationRef = useNavigationContainerRef();
@@ -82,7 +83,7 @@ const RootStack = () => {
       />
       <StackNavigator />
       {/* <Loader /> */}
-      {/* <NoInternetModal /> */}
+      <NetworkStateMonitor />
     </NavigationContainer>
   );
 };

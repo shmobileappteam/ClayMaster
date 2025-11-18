@@ -33,15 +33,17 @@ const ConfirmModal = ({
           <Text style={styles.heading}>{title}</Text>
           {!!message && <Text style={styles.message}>{message}</Text>}
           <View style={styles.btnView}>
-            <Button text={cancelText} onPress={handleClose} />
-            <Button
-              text={confirmText}
-              primary
-              onPress={() => {
-                handleComplete();
-                setVisibility(false);
-              }}
-            />
+            {!!cancelText && <Button text={cancelText} onPress={handleClose} />}
+            {!!confirmText && (
+              <Button
+                text={confirmText}
+                primary
+                onPress={() => {
+                  handleComplete();
+                  setVisibility(false);
+                }}
+              />
+            )}
           </View>
         </View>
       </View>

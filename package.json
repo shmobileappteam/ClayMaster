@@ -11,6 +11,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@react-native-community/netinfo": "^11.4.1",
     "@react-native-vector-icons/ant-design": "^12.3.0",
     "@react-native-vector-icons/feather": "^12.3.0",
     "@react-native-vector-icons/fontawesome5": "^12.2.0",

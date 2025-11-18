@@ -43,7 +43,12 @@ import {
   formatUsDate,
   showMessage,
 } from '../../../utils';
-import { postStations, sendToClayMaster } from '../../../api/stationService';
+import {
+  getTraps,
+  postStations,
+  sendToClayMaster,
+} from '../../../api/stationService';
+import { useCustomQuery } from '../../../query/useCustomQuery';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
@@ -84,23 +89,17 @@ const NewRoundScreen = ({ navigation, route }) => {
     station?.shots?.some(shot => shot.result !== '' && shot.result !== 'empty'),
   );
 
-  // Feetching Queries for Courses and Classes:
-  const responses = useQueries({
-    queries: [
-      {
-        queryKey: ['courses'],
-        queryFn: getCourses,
-      },
-      {
-        queryKey: ['classes'],
-        queryFn: getClasses,
-      },
-    ],
+  // QueryData for classes:
+  const { data: classes } = useCustomQuery({
+    queryKey: ['classes'],
+    queryFn: getClasses,
+  });
+  const { data: trapsData } = useCustomQuery({
+    queryKey: ['traps'],
+    queryFn: getTraps,
   });
 
-  const [courses, classes] = responses;
-
-  const [selectedClass, setSelectedClass] = useState(classes?.data?.[0]);
+  const [selectedClass, setSelectedClass] = useState(classes?.[0]);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [noOfPeople, setNoOfPeople] = useState({ label: '1', value: '3' });
   const [squadSequence, setSquadSequence] = useState({
@@ -624,8 +623,8 @@ const NewRoundScreen = ({ navigation, route }) => {
 
               <Label title="Your Current NSCA Class" />
               <View style={styles.nscaClassContainer}>
-                {classes?.data &&
-                  classes?.data.map((item, index) => (
+                {classes?.length &&
+                  classes?.map((item, index) => (
                     <Box
                       item={item}
                       key={index}
@@ -709,6 +708,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                     // isDisabled={station?.station_number !== addStation?.length}
                     totalSelectedShots={totalSelectedShots}
                     maxStations={maxStations}
+                    trapsData={trapsData}
                   />
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>

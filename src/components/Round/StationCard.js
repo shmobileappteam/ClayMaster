@@ -453,8 +453,9 @@ const StationCard = ({
   onScrollDown = () => {},
   totalSelectedShots = 0,
   maxStations = 10,
+  trapsData,
 }) => {
-  const trapsData = queryClient.getQueryData(['traps']);
+  // const trapsData = queryClient.getQueryData(['traps']);
   const [trapId, setTrapId] = useState(1);
 
   // console.log(trapsData);
