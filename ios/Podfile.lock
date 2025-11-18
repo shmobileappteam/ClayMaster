@@ -1804,6 +1804,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-netinfo (11.4.1):
+    - React-Core
   - react-native-safe-area-context (5.6.1):
     - boost
     - DoubleConversion
@@ -2776,6 +2778,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-mmkv (from `../node_modules/react-native-mmkv`)
+  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-vector-icons-ant-design (from `../node_modules/@react-native-vector-icons/ant-design`)"
   - "react-native-vector-icons-feather (from `../node_modules/@react-native-vector-icons/feather`)"
@@ -2913,6 +2916,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-picker"
   react-native-mmkv:
     :path: "../node_modules/react-native-mmkv"
+  react-native-netinfo:
+    :path: "../node_modules/@react-native-community/netinfo"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-vector-icons-ant-design:
@@ -3047,6 +3052,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: 1ead4fe154df3b1ba34b5a9e35ef3c4bdfa72ccb
   react-native-image-picker: 0314366753615115fa55c3cc937ac44cb7e75702
   react-native-mmkv: ac7507625cd74bac0eb5333604a7cd7b08fe9e3e
+  react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-safe-area-context: c6e2edd1c1da07bdce287fa9d9e60c5f7b514616
   react-native-vector-icons-ant-design: 3764a6096f8d760e0bb6766ea762a5545f6dba1c
   react-native-vector-icons-feather: 14d6f3e1af2acefb0b4d976b226bb15b19e1db58

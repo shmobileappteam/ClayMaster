@@ -4,9 +4,16 @@ import { formatApiStations, stationsData } from '../../constants/dummydata';
 import StationCard from './StationCard';
 
 import Sizer from '../../helpers/Sizer';
+import { useCustomQuery } from '../../query/useCustomQuery';
+import { getTraps } from '../../api/stationService';
 
 const StationsList = ({ data = [], isEuropeanRoration, contStyle = {} }) => {
   const [expandedStations, setExpandedStations] = useState({});
+
+  const { data: trapsData } = useCustomQuery({
+    queryKey: ['traps'],
+    queryFn: getTraps,
+  });
 
   const stations = formatApiStations(data || [], isEuropeanRoration);
 
@@ -24,6 +31,7 @@ const StationsList = ({ data = [], isEuropeanRoration, contStyle = {} }) => {
       isExpanded={expandedStations[station?.station_number]}
       onToggle={() => toggleStation(station?.station_number)}
       isDisabled={true}
+      trapsData={trapsData}
     />
   ));
 };

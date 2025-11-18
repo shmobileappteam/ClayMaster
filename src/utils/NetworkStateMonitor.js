@@ -71,7 +71,7 @@ const NetworkStateMonitor = () => {
       }
     });
 
-    const intervalId = setInterval(checkNetworkState, 100000);
+    const intervalId = setInterval(checkNetworkState, 10000);
     return () => {
       unsubscribe();
       clearInterval(intervalId);
