@@ -2,6 +2,7 @@ import {
   BackHandler,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -19,7 +20,12 @@ import {
   Label,
   TextField,
 } from '../../../components';
-import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
+import {
+  BASEOPACITY,
+  COLORS,
+  FONTS,
+  GLOBALSTYLE,
+} from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
 import StationCard from '../../../components/Round/StationCard';
@@ -553,8 +559,36 @@ const NewRoundScreen = ({ navigation, route }) => {
     }
     if (totalSelectedShots != 100) {
       showMessage({
-        message: 'Please complete all 100 targets before Completing Round.',
+        message: (
+          <View>
+            <Typography style={{ ...styles.text, color: COLORS.white100 }}>
+              You've shot less than the expected 100 targets, do you still want
+              to complete your round?
+            </Typography>
+            <Typography
+              style={{
+                ...styles.text,
+                fontStyle: 'italic',
+                color: COLORS.white100,
+              }}
+            >
+              <Typography
+                style={{
+                  ...styles.text,
+                  fontStyle: 'italic',
+                  fontWeight: 'bold',
+                  color: COLORS.white100,
+                }}
+              >
+                Please note{' '}
+              </Typography>
+              that this practice round will not be downloaded or sent to
+              ClayMaster due to less than 100 targets.
+            </Typography>
+          </View>
+        ),
         bgColor: COLORS.primary,
+        duration: 5000,
       });
       return;
     }
@@ -813,12 +847,34 @@ const NewRoundScreen = ({ navigation, route }) => {
       />
 
       <ConfirmModal
+        // visible={true}
         visible={backPressModalVisible}
         setVisibility={setBackPressModalVisible}
         title="Leave Round?"
-        message={`Your current score is ${currentScore} shot${
-          currentScore !== 1 ? 's' : ''
-        }. If you leave now, your progress won't be saved.`}
+        // message={`Your current score is ${currentScore} shot${
+        //   currentScore !== 1 ? 's' : ''
+        // }. If you leave now, your progress won't be saved.`}
+        message={
+          <View>
+            <Typography style={styles.text}>
+              You've shot less than the expected 100 targets, do you still want
+              to complete your round?
+            </Typography>
+            <Typography style={{ ...styles.text, fontStyle: 'italic' }}>
+              <Typography
+                style={{
+                  ...styles.text,
+                  fontStyle: 'italic',
+                  fontWeight: 'bold',
+                }}
+              >
+                Please note{' '}
+              </Typography>
+              that this practice round will not be downloaded or sent to
+              ClayMaster due to less than 100 targets.
+            </Typography>
+          </View>
+        }
         confirmText="Stay"
         cancelText="Leave"
         handleCancel={() => {
@@ -876,6 +932,12 @@ const styles = StyleSheet.create({
     borderRadius: Sizer.hSize(10),
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  text: {
+    fontSize: 14,
+    color: '#0E0E0E',
+    fontFamily: FONTS.barlowMedium500,
+    textAlign: 'center',
   },
 });
 

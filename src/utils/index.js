@@ -6,6 +6,7 @@ export function showMessage({
   type = 'default',
   bgColor = '',
   position = null,
+  duration = 3000,
 }) {
   const backgroundColor =
     bgColor ||
@@ -21,7 +22,7 @@ export function showMessage({
     backgroundColor: backgroundColor,
     statusBarHeight: StatusBar.currentHeight,
     position: position || 'center',
-    duration: 3000,
+    duration: duration,
   });
 
   if (Platform.OS == 'android') {
@@ -136,7 +137,6 @@ export const generatePairOfTargets = idsArray => {
 
   return result;
 };
-
 
 export const formatUsDate = dateLike => {
   const d = dateLike ? new Date(dateLike) : new Date();
