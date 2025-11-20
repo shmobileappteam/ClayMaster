@@ -285,23 +285,9 @@ const RadioButton = ({ selected, onPress, label }) => (
 const TargetPairSelection = ({
   onSetIsTargetPairSelected,
   onSelectTargetPair,
-  maxStations = 10,
+  selectedTargetPairs,
 }) => {
-  // console.log(maxStations);
-
   const handleTarhetPairSelection = pair => {
-    // if (maxStations <= 10 && pair < 5) {
-    //   showMessage({
-    //     type: 'danger',
-    //     bgColor: COLORS.primary,
-    //     message:
-    //       'For 10 stations, you must select 5 pairs each to make 100 targets.',
-    //   });
-    //   return;
-    // } else {
-    //   hideMessage();
-    // }
-
     onSelectTargetPair(pair);
     onSetIsTargetPairSelected(true);
   };
@@ -310,19 +296,6 @@ const TargetPairSelection = ({
     <>
       <View style={{ marginTop: Sizer.hSize(15) }}>
         <SlideInView slideDuration={500}>
-          {/* <Flex
-            jusContent={'space-between'}
-            algItems={'center'}
-            extraStyle={{
-              backgroundColor: COLORS.orange300,
-            }}
-          >
-            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-            <Typography fFamily="barlowMedium500">
-              Select Pair of Targets
-            </Typography>
-            <View style={[styles.stationLine, { height: Sizer.hSize(25) }]} />
-          </Flex> */}
           <Flex
             direction="row"
             jusContent="space-between"
@@ -337,6 +310,8 @@ const TargetPairSelection = ({
                 styles.shotsInfoBox,
                 {
                   backgroundColor: '#F0F0F0',
+                  borderBottomWidth:
+                    selectedTargetPairs == 3 ? Sizer.fS(1) : null,
                 },
               ]}
             >
@@ -350,6 +325,8 @@ const TargetPairSelection = ({
                 styles.shotsInfoBox,
                 {
                   backgroundColor: '#F0F0F0',
+                  borderBottomWidth:
+                    selectedTargetPairs == 4 ? Sizer.fS(1) : null,
                 },
               ]}
             >
@@ -362,6 +339,8 @@ const TargetPairSelection = ({
                 styles.shotsInfoBox,
                 {
                   backgroundColor: '#F0F0F0',
+                  borderBottomWidth:
+                    selectedTargetPairs == 5 ? Sizer.fS(1) : null,
                 },
               ]}
             >
@@ -450,7 +429,6 @@ const StationCard = ({
   onSetTrapsData = () => {},
   onSetSelectedTargetPairs = () => {},
   isDisabled = false,
-  onScrollDown = () => {},
   totalSelectedShots = 0,
   maxStations = 10,
   trapsData,
@@ -524,6 +502,7 @@ const StationCard = ({
             onSetIsTargetPairSelected={setIsTargetPairSelected}
             onSelectTargetPair={onSetSelectedTargetPairs}
             maxStations={maxStations}
+            selectedTargetPairs={station?.selectedTargetPairs}
           />
           {/* )} */}
         </View>
@@ -714,6 +693,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: Sizer.hSize(4),
     paddingVertical: Sizer.hSize(6),
+    borderBottomColor: COLORS.primary,
   },
   expandedContainer: {
     // borderTopWidth: Sizer.hSize(1),

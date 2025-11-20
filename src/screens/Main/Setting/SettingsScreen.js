@@ -140,7 +140,7 @@ const SettingsScreen = ({ navigation }) => {
               <MenuItem key={idx} {...item} />
             ))}
           </View>
-          <Title title="More With Clay Master" />
+          <Title title="More With ClayMaster" />
           <View style={styles.menuCard}>
             {moreMenus.map((item, idx) => (
               <MenuItem key={idx} {...item} />

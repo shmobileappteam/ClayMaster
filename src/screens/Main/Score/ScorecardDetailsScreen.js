@@ -106,7 +106,7 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
               />
             </View>
             <Button
-              label={'Send to Clay Master'}
+              label={'Send to ClayMaster'}
               loader={isPending}
               onPress={() => {
                 navigation.navigate('SavedScoredcardSuccessScreen', {
@@ -118,7 +118,7 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
             />
             <Button
               label={
-                isFileDownloadable ? 'Download File' : 'Send to Clay Master'
+                isFileDownloadable ? 'Download File' : 'Send to ClayMaster'
               }
               loader={isPending}
               onPress={() => {

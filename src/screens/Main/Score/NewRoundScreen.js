@@ -25,6 +25,7 @@ import {
   COLORS,
   FONTS,
   GLOBALSTYLE,
+  WINDOW,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
@@ -58,7 +59,10 @@ import { useCustomQuery } from '../../../query/useCustomQuery';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
+  // At the top with other refs
   const scrollRef = useRef();
+  const stationLayoutsRef = useRef({});
+  const pendingScrollRef = useRef(null);
 
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([initialStation]);
@@ -191,6 +195,22 @@ const NewRoundScreen = ({ navigation, route }) => {
     }
   }, [roundDetails]);
 
+  useEffect(() => {
+    if (pendingScrollRef.current !== null && scrollRef.current) {
+      const stationNumber = pendingScrollRef.current;
+      const layout = stationLayoutsRef.current[stationNumber];
+
+      if (layout) {
+        setTimeout(() => {
+          scrollRef.current?.scrollTo({
+            y: Math.max(0, layout.y - 10),
+            animated: true,
+          });
+          pendingScrollRef.current = null;
+        }, 300);
+      }
+    }
+  }, [addStation.length]);
   // Post Round Mutation:
   const { mutateAsync: createRound, isPending } = useCustomMutation({
     mutationFn: postRound,
@@ -242,6 +262,7 @@ const NewRoundScreen = ({ navigation, route }) => {
       });
       return;
     }
+
     if (totalSelectedShots == 100) {
       showMessage({
         type: 'danger',
@@ -253,6 +274,7 @@ const NewRoundScreen = ({ navigation, route }) => {
     }
 
     toggleStation(lastStation?.station_number);
+
     setAddStation(prev => {
       const nextIndex = prev.length;
       const nextStationNumber =
@@ -260,7 +282,6 @@ const NewRoundScreen = ({ navigation, route }) => {
           ? stationSequence[nextIndex]
           : nextIndex + 1;
 
-      // Respect total stations limit if provided
       if (
         (Array.isArray(stationSequence) &&
           stationSequence.length > 0 &&
@@ -281,6 +302,10 @@ const NewRoundScreen = ({ navigation, route }) => {
         station_number: nextStationNumber,
         name: `Station ${nextStationNumber}`,
       };
+
+      // Mark this station for scrolling
+      pendingScrollRef.current = nextStationNumber;
+
       return [...prev, newStation];
     });
   };
@@ -558,38 +583,40 @@ const NewRoundScreen = ({ navigation, route }) => {
       return;
     }
     if (totalSelectedShots != 100) {
-      showMessage({
-        message: (
-          <View>
-            <Typography style={{ ...styles.text, color: COLORS.white100 }}>
-              You've shot less than the expected 100 targets, do you still want
-              to complete your round?
-            </Typography>
-            <Typography
-              style={{
-                ...styles.text,
-                fontStyle: 'italic',
-                color: COLORS.white100,
-              }}
-            >
-              <Typography
-                style={{
-                  ...styles.text,
-                  fontStyle: 'italic',
-                  fontWeight: 'bold',
-                  color: COLORS.white100,
-                }}
-              >
-                Please note{' '}
-              </Typography>
-              that this practice round will not be downloaded or sent to
-              ClayMaster due to less than 100 targets.
-            </Typography>
-          </View>
-        ),
-        bgColor: COLORS.primary,
-        duration: 5000,
-      });
+      // showMessage({
+      //   message: (
+      //     <View>
+      //       <Typography style={{ ...styles.text, color: COLORS.white100 }}>
+      //         You've shot less than the expected 100 targets, do you still want
+      //         to complete your round?
+      //       </Typography>
+      //       <Typography
+      //         style={{
+      //           ...styles.text,
+      //           fontStyle: 'italic',
+      //           color: COLORS.white100,
+      //         }}
+      //       >
+      //         <Typography
+      //           style={{
+      //             ...styles.text,
+      //             fontStyle: 'italic',
+      //             fontWeight: 'bold',
+      //             color: COLORS.white100,
+      //           }}
+      //         >
+      //           Please note{' '}
+      //         </Typography>
+      //         that this practice round will not be downloaded or sent to
+      //         ClayMaster due to less than 100 targets.
+      //       </Typography>
+      //     </View>
+      //   ),
+      //   bgColor: COLORS.primary,
+      //   duration: 5000,
+      // });
+
+      setBackPressModalVisible(true);
       return;
     }
 
@@ -725,25 +752,47 @@ const NewRoundScreen = ({ navigation, route }) => {
                 />
 
                 {addStation.map((station, index) => (
-                  <StationCard
+                  <View
                     key={index}
-                    station={station}
-                    isExpanded={expandedStations[station?.station_number]}
-                    onToggle={() => toggleStation(station?.station_number)}
-                    onSetPairType={handleSetPairType}
-                    onSetTrapsData={HandleSelectedTrapsData}
-                    onSetShotsData={HandleSetShotsData}
-                    onSetSelectedTargetPairs={handleSelectedTargetPairs}
-                    isDisabled={disableStation(
-                      index,
-                      addStation,
-                      isEuropeanRotation,
-                    )}
-                    // isDisabled={station?.station_number !== addStation?.length}
-                    totalSelectedShots={totalSelectedShots}
-                    maxStations={maxStations}
-                    trapsData={trapsData}
-                  />
+                    onLayout={event => {
+                      const { y } = event.nativeEvent.layout;
+                      stationLayoutsRef.current[station?.station_number] = {
+                        y,
+                      };
+
+                      // Trigger scroll if this is the pending station
+                      if (
+                        pendingScrollRef.current === station?.station_number &&
+                        scrollRef.current
+                      ) {
+                        setTimeout(() => {
+                          scrollRef.current?.scrollTo({
+                            y: Math.max(0, y - 10),
+                            animated: true,
+                          });
+                          pendingScrollRef.current = null;
+                        }, 100);
+                      }
+                    }}
+                  >
+                    <StationCard
+                      station={station}
+                      isExpanded={expandedStations[station?.station_number]}
+                      onToggle={() => toggleStation(station?.station_number)}
+                      onSetPairType={handleSetPairType}
+                      onSetTrapsData={HandleSelectedTrapsData}
+                      onSetShotsData={HandleSetShotsData}
+                      onSetSelectedTargetPairs={handleSelectedTargetPairs}
+                      isDisabled={disableStation(
+                        index,
+                        addStation,
+                        isEuropeanRotation,
+                      )}
+                      totalSelectedShots={totalSelectedShots}
+                      maxStations={maxStations}
+                      trapsData={trapsData}
+                    />
+                  </View>
                 ))}
                 <View style={{ alignSelf: 'flex-start' }}>
                   <IconButton
@@ -858,7 +907,7 @@ const NewRoundScreen = ({ navigation, route }) => {
           <View>
             <Typography style={styles.text}>
               You've shot less than the expected 100 targets, do you still want
-              to complete your round?
+              to complete your round?{'\n'}
             </Typography>
             <Typography style={{ ...styles.text, fontStyle: 'italic' }}>
               <Typography
