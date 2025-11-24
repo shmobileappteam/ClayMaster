@@ -286,10 +286,15 @@ const TargetPairSelection = ({
   onSetIsTargetPairSelected,
   onSelectTargetPair,
   selectedTargetPairs,
+  totalSelectedShots,
 }) => {
-  const handleTarhetPairSelection = pair => {
-    onSelectTargetPair(pair);
-    onSetIsTargetPairSelected(true);
+  const handleTarhetPairSelection = targetPair => {
+    onSelectTargetPair(targetPair);
+    const shotsCount = targetPair * 2; //TP multipy by 2 to get shots
+    const totalShots = shotsCount + totalSelectedShots;
+    if (totalShots <= 100) {
+      onSetIsTargetPairSelected(true);
+    }
   };
 
   return (
@@ -503,6 +508,7 @@ const StationCard = ({
             onSelectTargetPair={onSetSelectedTargetPairs}
             maxStations={maxStations}
             selectedTargetPairs={station?.selectedTargetPairs}
+            totalSelectedShots={totalSelectedShots}
           />
           {/* )} */}
         </View>

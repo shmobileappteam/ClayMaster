@@ -69,8 +69,10 @@ const NewRoundScreen = ({ navigation, route }) => {
   const [isEuropeanRotation, setIsEuropeanRotation] = useState(false);
   const [stationSequence, setStationSequence] = useState([]);
   const [maxStations, setMaxStations] = useState(16);
+  //Modal States
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [backPressModalVisible, setBackPressModalVisible] = useState(false);
+  const [isLeaveGameModalVisible, setIsLeaveGameModalVisible] = useState(false);
 
   console.log('🚀 ~ NewRoundScreen ~ addStation:', roundDetails);
 
@@ -83,16 +85,6 @@ const NewRoundScreen = ({ navigation, route }) => {
     // 100;
     (addStation?.reduce((acc, st) => acc + (st?.selectedTargetPairs || 0), 0) ||
       0) * 2;
-
-  // Calculate current score (dead shots count)
-  const currentScore = addStation?.reduce((total, station) => {
-    const count =
-      station?.shots?.filter(
-        shot => shot.result === 'dead' || shot.result === 'lost',
-      ).length || 0;
-
-    return total + count;
-  }, 0);
 
   // Check if at least one station has been played (has at least one shot filled)
   const hasPlayedAtLeastOneStation = addStation.some(station =>
@@ -263,7 +255,7 @@ const NewRoundScreen = ({ navigation, route }) => {
       return;
     }
 
-    if (totalSelectedShots == 100) {
+    if (totalSelectedShots >= 100) {
       showMessage({
         type: 'danger',
         message:
@@ -477,6 +469,12 @@ const NewRoundScreen = ({ navigation, route }) => {
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
+      const shotsCount = targetPair * 2; //TP multipy by 2 to get shots
+      const totalShots = shotsCount + totalSelectedShots;
+      if (totalShots > 100) {
+        setIsLeaveGameModalVisible(true);
+        return updated;
+      }
       // Deep copy pairOfTargets[targetPair] to avoid reference sharing
       const newShots = pairOfTargets[targetPair].map(shot => ({ ...shot }));
       updated[lastIndex] = {
@@ -583,39 +581,6 @@ const NewRoundScreen = ({ navigation, route }) => {
       return;
     }
     if (totalSelectedShots != 100) {
-      // showMessage({
-      //   message: (
-      //     <View>
-      //       <Typography style={{ ...styles.text, color: COLORS.white100 }}>
-      //         You've shot less than the expected 100 targets, do you still want
-      //         to complete your round?
-      //       </Typography>
-      //       <Typography
-      //         style={{
-      //           ...styles.text,
-      //           fontStyle: 'italic',
-      //           color: COLORS.white100,
-      //         }}
-      //       >
-      //         <Typography
-      //           style={{
-      //             ...styles.text,
-      //             fontStyle: 'italic',
-      //             fontWeight: 'bold',
-      //             color: COLORS.white100,
-      //           }}
-      //         >
-      //           Please note{' '}
-      //         </Typography>
-      //         that this practice round will not be downloaded or sent to
-      //         ClayMaster due to less than 100 targets.
-      //       </Typography>
-      //     </View>
-      //   ),
-      //   bgColor: COLORS.primary,
-      //   duration: 5000,
-      // });
-
       setBackPressModalVisible(true);
       return;
     }
@@ -929,6 +894,16 @@ const NewRoundScreen = ({ navigation, route }) => {
         handleCancel={() => {
           navigation.goBack();
         }}
+      />
+
+      <ConfirmModal
+        title="Score Exceeded"
+        message="Your total score has crossed the limit of 100. This round is invalid. Do you want to discard this round?"
+        visible={isLeaveGameModalVisible}
+        setVisibility={setIsLeaveGameModalVisible}
+        confirmText="Discard"
+        cancelText=""
+        handleComplete={() => navigation.goBack()}
       />
     </Container>
   );
