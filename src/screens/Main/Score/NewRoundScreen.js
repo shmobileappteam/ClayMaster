@@ -56,6 +56,7 @@ import {
   sendToClayMaster,
 } from '../../../api/stationService';
 import { useCustomQuery } from '../../../query/useCustomQuery';
+import { object } from 'yup';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
@@ -229,6 +230,13 @@ const NewRoundScreen = ({ navigation, route }) => {
             });
         });
       },
+      on422Error: error => {
+        showMessage({
+          message:
+            Object.values(error || {})?.[0] || 'Error submitting round..',
+          bgColor: COLORS.primary,
+        });
+      },
     });
 
   const [expandedStations, setExpandedStations] = useState(
@@ -265,8 +273,6 @@ const NewRoundScreen = ({ navigation, route }) => {
       return;
     }
 
-    toggleStation(lastStation?.station_number);
-
     setAddStation(prev => {
       const nextIndex = prev.length;
       const nextStationNumber =
@@ -287,6 +293,8 @@ const NewRoundScreen = ({ navigation, route }) => {
           bgColor: COLORS.primary,
         });
         return prev;
+      } else {
+        toggleStation(lastStation?.station_number);
       }
 
       const newStation = {
@@ -385,24 +393,6 @@ const NewRoundScreen = ({ navigation, route }) => {
           }));
         }
         queryClient.invalidateQueries({ queryKey: ['rounds'] });
-
-        // else {
-        //   // Default non-European flow
-        //   setStationSequence([]);
-        //   setMaxStations(16);
-        //   // Ensure we start at Station 1
-        //   setAddStation([
-        //     {
-        //       ...initialStation,
-        //       station_number: 1,
-        //       name: 'Station 1',
-        //     },
-        //   ]);
-        //   setExpandedStations(prev => ({
-        //     ...prev,
-        //     1: true,
-        //   }));
-        // }
       })
       .catch(err => {
         showMessage({
@@ -902,7 +892,7 @@ const NewRoundScreen = ({ navigation, route }) => {
         visible={isLeaveGameModalVisible}
         setVisibility={setIsLeaveGameModalVisible}
         confirmText="Discard"
-        cancelText=""
+        cancelText="Cancel"
         handleComplete={() => navigation.goBack()}
       />
     </Container>
