@@ -31,4 +31,9 @@ export const ENDPOINTS = {
   // --- Stations ---
   GET_TRAPS: 'trap-presentations',
   POST_STATION: round_id => `rounds/${round_id}/stations`,
+
+  // --- Packages and Payment ---
+  GET_PACKAGES: 'packages',
+  SETUP_INTENT: 'stripe/setup-intent',
+  PAYMENT: 'stripe/subscribe',
 };

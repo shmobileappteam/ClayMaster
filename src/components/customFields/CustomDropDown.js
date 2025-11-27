@@ -14,7 +14,7 @@ const data = [
   { label: '4', value: '4' },
 ];
 
-function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
+function CustomDropdown({ onChange = () => { }, defaultValue, ...props }) {
   const [value, setValue] = useState(defaultValue);
   const [isFocus, setIsFocus] = useState(false);
 
@@ -33,7 +33,6 @@ function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
         selectedTextStyle={styles.selectedTextStyle}
         activeColor={COLORS.primary}
         activeTextStyle={styles.activeTextStyle}
-        iconStyle={styles.iconStyle}
         iconColor={isFocus ? COLORS.primary : COLORS.greyV2}
         data={props?.data || data}
         labelField="label"
@@ -43,6 +42,8 @@ function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
         value={value}
         onFocus={() => setIsFocus(true)}
         onBlur={() => setIsFocus(false)}
+        renderLeftIcon={props?.leftIcon}
+        iconStyle={styles.iconStyle}
         onChange={item => {
           setValue(item.value);
           setIsFocus(false);
@@ -68,11 +69,14 @@ const styles = StyleSheet.create({
     color: COLORS.greyV2,
     fontFamily: FONTS.barlowRegular400,
     fontSize: Sizer.fS(13),
+    paddingLeft: Sizer.hSize(12)
   },
   selectedTextStyle: {
     color: COLORS.greyV2,
     fontFamily: FONTS.barlowRegular400,
     fontSize: Sizer.fS(13),
+    paddingLeft: Sizer.hSize(12)
+
   },
   listContainer: {
     backgroundColor: COLORS.white100,
@@ -84,10 +88,10 @@ const styles = StyleSheet.create({
     color: COLORS.whiteV1,
   },
   itemText: {
-    color: COLORS.whiteV1,
     fontSize: Sizer.fS(14),
   },
   iconStyle: {
-    color: COLORS.primary,
+    // backgroundColor: "pink"
+
   },
 });

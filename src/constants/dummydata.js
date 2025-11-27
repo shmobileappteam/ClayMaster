@@ -255,6 +255,13 @@ export const createRoundDropData = [
   { label: '6', value: '6' },
 ];
 
+
+export const discountTypeOptions = [
+  { label: 'Youth', value: 'student' },
+  { label: 'Military Discount', value: 'military' },
+];
+
+
 export const handleStationChange = (updatedStation, scrollRef) => {
   const { pair_type, traps, selectedTargetPairs } = updatedStation;
   const hasPairType = !!pair_type;

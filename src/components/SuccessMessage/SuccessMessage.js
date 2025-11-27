@@ -12,7 +12,7 @@ const SuccessMessage = ({
   title = 'Success!',
   message = 'Your action was successful.',
   buttonLabel = 'Go Back',
-  onPress = () => {},
+  onPress = () => { },
 }) => {
   const navigation = useNavigation();
 
@@ -29,7 +29,7 @@ const SuccessMessage = ({
         adjustsFontSizeToFit
         numberOfLines={1}
         color={COLORS.black100}
-        fFamily="poppinsSemiBold600"
+        fFamily="barlowSemiBold600"
       >
         {title}
       </Typography>

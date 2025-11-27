@@ -7,7 +7,7 @@ import {
   SafeAreaWrapper,
   Typography,
 } from '../../atomComponents';
-import { Button, Header, TextField } from '../../components';
+import { Button, CustomDropdown, Header, TextField } from '../../components';
 import { COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
 import { useCustomMutation } from '../../query/useCustomMutation';
@@ -15,6 +15,8 @@ import { onRegisterSuccess } from '../../query/partials/responseManager';
 import validatoinSchema from '../../validations';
 import { formatBackendErrors, maskPhoneNumber } from '../../utils';
 import { register } from '../../api/userService';
+import { discountTypeOptions } from '../../constants/dummydata';
+import Icon from '../../helpers/Icon';
 
 const SignupScreen = ({ navigation }) => {
   // Register Mutation Hook:
@@ -28,7 +30,6 @@ const SignupScreen = ({ navigation }) => {
 
   // Handle Register:
   const handleRegister = async (values, { setErrors, resetForm }) => {
-    console.log('🚀 ~ handleRegister ~ values:', values);
     requestRegister({ ...values, navigation, resetForm }).catch(err => {
       const response = err?.response;
       console.log('🚀 ~ handleRegister ~ response:', response);
@@ -66,13 +67,13 @@ const SignupScreen = ({ navigation }) => {
             email: __DEV__ ? 'Toliver@mailinator.com' : '',
             password: __DEV__ ? 'Admin@1234' : '',
             password_confirmation: __DEV__ ? 'Admin@1234' : '',
-            // phone: __DEV__ ? '1234567890' : '',
+            discount_type: ""
           }}
           validationSchema={validatoinSchema.authValidations.SignUpSchema}
           onSubmit={handleRegister}
         >
           {props => {
-            const { handleSubmit, handleChange, values, errors, handleBlur } =
+            const { handleSubmit, handleChange, values, errors, handleBlur, setFieldValue } =
               props;
 
             return (
@@ -129,6 +130,30 @@ const SignupScreen = ({ navigation }) => {
                   mT={23}
                 />
 
+                <CustomDropdown
+                  data={discountTypeOptions}
+                  placeholder="Select Discount type"
+                  dropdownStyle={{ marginTop: Sizer.hSize(23) }}
+                  value={values?.discount_type}
+                  onChange={item => {
+                    setFieldValue("discount_type", item?.value)
+                  }}
+                  leftIcon={() => <Icon
+                    iconFamily={"MaterialIcons"}
+                    size={Sizer.vSize(16)}
+                    name={"discount"}
+                  />}
+                />
+                {errors?.discount_type ? (
+                  <Typography
+                    size={13}
+                    color={COLORS.red}
+                    mT={6}
+                    style={styles.errorText}
+                    LineHeight={16}>
+                    {errors?.discount_type}
+                  </Typography>
+                ) : null}
                 <Button
                   label={'Sign Up'}
                   mt={26}
@@ -161,4 +186,9 @@ const SignupScreen = ({ navigation }) => {
 
 export default SignupScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  errorText: {
+    marginLeft: Sizer.hSize(6),
+    marginRight: Sizer.hSize(6),
+  },
+});

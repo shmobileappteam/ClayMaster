@@ -8,3 +8,8 @@ export const KEYS = {
   LOGIN_TYPE: '@login_type',
   SOCIAL_TOKEN: '@social_token',
 };
+
+
+
+export const STRIPE_PUBLISHABLE_KEY =
+  'pk_test_51REqQ9CImI4BwxIIdWakOPpxegkHmdASqC7ESEQfkRvGnnof56ElHZLIM8bjoYEYLkOSLtVFEbwQmnrCDE6D64Ym00jXj5y1CW';

@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, ToastAndroid, TouchableOpacity, View } from 'react-native';
+import RenderHtml, { defaultSystemFonts } from 'react-native-render-html';
 //-----
 import { Typography, Flex, Container } from '../../../atomComponents';
 import {
   BASEOPACITY,
   COLORS,
+  FONTS,
   GLOBALSTYLE,
   WINDOW,
 } from '../../../globalStyle/Theme';
@@ -13,7 +15,13 @@ import { subbg } from '../../../assets/images';
 import { Button, Header } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import { SeperatorSvg, SubscribeTickSvg } from '../../../assets/svgs';
-import { subscriptionPlans } from '../../../constants/dummydata';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { fetchPaymentIntent, getPackages } from "../../../api/packageService"
+import { useCustomMutation } from '../../../query/useCustomMutation';
+import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
+import { useSelector } from 'react-redux';
+
+
 
 const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
   const handleLayout = e => {
@@ -24,7 +32,7 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
   return (
     <TouchableOpacity
       activeOpacity={BASEOPACITY}
-      onPress={() => onSelect(plan.id)}
+      onPress={() => onSelect(plan?.id)}
       style={{
         width: WINDOW.width - 48,
         marginRight: Sizer.hSize(10),
@@ -58,20 +66,20 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
               }}
             />
             <Typography size={20} color={COLORS.white100}>
-              {plan.name}
+              {plan?.title}
             </Typography>
           </Flex>
-          <Typography size={24}>{plan.icon}</Typography>
+          {/* <Typography size={24}>{plan.icon}</Typography> */}
         </Flex>
 
         {/* Price */}
         <Typography
           size={25}
-          color={COLORS.white100}
           fFamily="barlowBold700"
+          color={COLORS.white100}
           mB={16}
         >
-          {plan.price}/{plan.period}
+          ${plan?.price}/{plan?.duration}
         </Typography>
         <SeperatorSvg />
 
@@ -82,10 +90,16 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
           fFamily="barlowSemiBold600"
           mB={12}
         >
-          {plan.name} Includes:
+          {plan?.title} Includes:
         </Typography>
+        <RenderHtml
+          contentWidth={WINDOW.width}
+          source={{ html: plan?.description }}
 
-        <View style={{ flex: 1 }}>
+          baseStyle={{ color: COLORS.white100, fontFamily: FONTS.barlowMedium500, textTransform: "capitalize", fontSize: Sizer.fS(11) }}
+          systemFonts={[...defaultSystemFonts, FONTS.barlowMedium500]}
+        />
+        {/* <View style={{ flex: 1 }}>
           {plan.features.map((feature, index) => (
             <Flex
               key={index}
@@ -114,7 +128,7 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
               +{plan.additionalCount} more
             </Typography>
           </Flex>
-        </View>
+        </View> */}
 
         {isSelected && (
           <View
@@ -137,7 +151,8 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
   );
 };
 
-const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
+const SubscriptionPlans = ({ onPlanSelect, packagesData = [], selectedPlanId = null }) => {
+
   const [maxHeight, setMaxHeight] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef(null);
@@ -162,10 +177,10 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
     if (
       index !== currentIndex &&
       index >= 0 &&
-      index < subscriptionPlans.length
+      index < packagesData.length
     ) {
       setCurrentIndex(index);
-      const centeredPlan = subscriptionPlans[index];
+      const centeredPlan = packagesData[index];
       if (centeredPlan) {
         handlePlanSelect(centeredPlan.id);
       }
@@ -184,7 +199,7 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
 
   useEffect(() => {
     if (selectedPlanId !== null) {
-      const index = subscriptionPlans.findIndex(
+      const index = packagesData.findIndex(
         plan => plan.id === selectedPlanId,
       );
       if (index !== -1 && index !== currentIndex) {
@@ -212,26 +227,97 @@ const SubscriptionPlans = ({ onPlanSelect, selectedPlanId = null }) => {
       onMomentumScrollEnd={handleMomentumScrollEnd}
       scrollEventThrottle={16}
     >
-      {subscriptionPlans.map(plan => (
-        <PlanCard
-          key={plan.id}
+      {packagesData?.length && packagesData.map(plan => {
+        return <PlanCard
+          key={plan?.id}
           plan={plan}
           onSelect={handlePlanSelect}
-          isSelected={selectedPlanId === plan.id}
+          isSelected={selectedPlanId === plan?.id}
           maxHeight={maxHeight}
           onMeasure={handleMeasure}
         />
-      ))}
+      }
+      )}
     </ScrollView>
   );
 };
 
 const SubscriptionScreen = ({ navigation }) => {
-  const [selectedPlan, setSelectedPlan] = React.useState(1);
+
+  const { user } = useSelector(state => state.app);
+
+  console.log(user?.
+    stripe_customer_id);
+
+
+  const { data: packagesData } = useCustomQuery({
+    queryKey: ['packages'],
+    queryFn: getPackages,
+  });
+
+
+  const { mutate: pI, isPending: isLoadingPaymentIntent } = useCustomMutation({
+    mutationFn: fetchPaymentIntent,
+    onSuccess: async ({ data }) => {
+      const clientSecret = data?.client_secret;
+      // console.log("HELLO: ", clientSecret);
+
+      const paymentIntent = data?.payment_intent_id;
+      // for stripe
+      // return
+      try {
+
+        if (clientSecret) {
+          const { error: paymentSheetError } = await initPaymentSheet({
+            // merchantDisplayName: 'ClayMaster',
+            // // paymentIntentClientSecret: clientSecret,
+            // // paymentIntentClientSecret: clientSecret,
+            // setupIntentClientSecret: clientSecret,
+            merchantDisplayName: 'ClayMaster',
+            setupIntentClientSecret: clientSecret, // ✅ correct for "seti_"
+            customerId: user?.
+              stripe_customer_id,
+
+          });
+
+          if (paymentSheetError) {
+            console.log('paymentSheetError', paymentSheetError);
+            return;
+          }
+
+          const { error: paymentError } = await presentPaymentSheet();
+
+          if (paymentError) {
+            return;
+          }
+
+          // handlePaySuccess(paymentIntent);
+        }
+      } catch (error) {
+        console.log("error", error);
+      }
+    },
+    // onError: () => {
+    //   Platform.OS === 'android'
+    //     ? ToastAndroid.show(
+    //       'Error While Payment Proceeding.',
+    //       ToastAndroid.LONG,
+    //     )
+    //     : Alert.alert('Payment Status', 'Error While Payment Proceeding.');
+    // },
+  });
+
+
+  const [selectedPlan, setSelectedPlan] = useState(packagesData?.[0]?.id || 1);
 
   const handlePlanSelection = planId => {
     setSelectedPlan(planId);
   };
+
+  const handleProceedPayment = async () => {
+    pI(); //paymemnt intemt
+  };
+
 
   return (
     <Container backgroundImage={subbg} isPadding={false}>
@@ -251,11 +337,13 @@ const SubscriptionScreen = ({ navigation }) => {
         <SubscriptionPlans
           onPlanSelect={handlePlanSelection}
           selectedPlanId={selectedPlan}
+          packagesData={packagesData || []}
         />
         <View style={{ ...GLOBALSTYLE.paddingHor, marginTop: Sizer.hSize(32) }}>
           <Button
             label="Subscribe"
-            onPress={() => navigation.navigate('BottomTabs')}
+            onPress={handleProceedPayment}
+            loader={isLoadingPaymentIntent}
           />
           <Typography mT={16} color={COLORS.white100} textAlign="center">
             Restore My Subscription
