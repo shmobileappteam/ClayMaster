@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Alert, Platform, ScrollView, ToastAndroid, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import RenderHtml, { defaultSystemFonts } from 'react-native-render-html';
 //-----
 import { Typography, Flex, Container } from '../../../atomComponents';
@@ -16,12 +23,18 @@ import { Button, Header } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import { SeperatorSvg, SubscribeTickSvg } from '../../../assets/svgs';
 import { useCustomQuery } from '../../../query/useCustomQuery';
-import { fetchPaymentIntent, getPackages } from "../../../api/packageService"
+import {
+  fetchPaymentIntent,
+  getPackages,
+  handlePaymentSuccess,
+} from '../../../api/packageService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
-import { initPaymentSheet, presentPaymentSheet } from '@stripe/stripe-react-native';
+import {
+  initPaymentSheet,
+  presentPaymentSheet,
+} from '@stripe/stripe-react-native';
 import { useSelector } from 'react-redux';
-
-
+import { showMessage } from '../../../utils';
 
 const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
   const handleLayout = e => {
@@ -95,8 +108,12 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
         <RenderHtml
           contentWidth={WINDOW.width}
           source={{ html: plan?.description }}
-
-          baseStyle={{ color: COLORS.white100, fontFamily: FONTS.barlowMedium500, textTransform: "capitalize", fontSize: Sizer.fS(11) }}
+          baseStyle={{
+            color: COLORS.white100,
+            fontFamily: FONTS.barlowMedium500,
+            textTransform: 'capitalize',
+            fontSize: Sizer.fS(11),
+          }}
           systemFonts={[...defaultSystemFonts, FONTS.barlowMedium500]}
         />
         {/* <View style={{ flex: 1 }}>
@@ -151,8 +168,11 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
   );
 };
 
-const SubscriptionPlans = ({ onPlanSelect, packagesData = [], selectedPlanId = null }) => {
-
+const SubscriptionPlans = ({
+  onPlanSelect,
+  packagesData = [],
+  selectedPlanId = null,
+}) => {
   const [maxHeight, setMaxHeight] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef(null);
@@ -174,11 +194,7 @@ const SubscriptionPlans = ({ onPlanSelect, packagesData = [], selectedPlanId = n
     const scrollX = event.nativeEvent.contentOffset.x;
     const index = Math.round((scrollX + paddingHorizontal) / cardWidth);
 
-    if (
-      index !== currentIndex &&
-      index >= 0 &&
-      index < packagesData.length
-    ) {
+    if (index !== currentIndex && index >= 0 && index < packagesData.length) {
       setCurrentIndex(index);
       const centeredPlan = packagesData[index];
       if (centeredPlan) {
@@ -199,9 +215,7 @@ const SubscriptionPlans = ({ onPlanSelect, packagesData = [], selectedPlanId = n
 
   useEffect(() => {
     if (selectedPlanId !== null) {
-      const index = packagesData.findIndex(
-        plan => plan.id === selectedPlanId,
-      );
+      const index = packagesData.findIndex(plan => plan.id === selectedPlanId);
       if (index !== -1 && index !== currentIndex) {
         setCurrentIndex(index);
         if (scrollViewRef.current) {
@@ -227,97 +241,102 @@ const SubscriptionPlans = ({ onPlanSelect, packagesData = [], selectedPlanId = n
       onMomentumScrollEnd={handleMomentumScrollEnd}
       scrollEventThrottle={16}
     >
-      {packagesData?.length && packagesData.map(plan => {
-        return <PlanCard
-          key={plan?.id}
-          plan={plan}
-          onSelect={handlePlanSelect}
-          isSelected={selectedPlanId === plan?.id}
-          maxHeight={maxHeight}
-          onMeasure={handleMeasure}
-        />
-      }
-      )}
+      {packagesData?.length &&
+        packagesData.map(plan => {
+          return (
+            <PlanCard
+              key={plan?.id}
+              plan={plan}
+              onSelect={handlePlanSelect}
+              isSelected={selectedPlanId === plan?.id}
+              maxHeight={maxHeight}
+              onMeasure={handleMeasure}
+            />
+          );
+        })}
     </ScrollView>
   );
 };
 
 const SubscriptionScreen = ({ navigation }) => {
-
   const { user } = useSelector(state => state.app);
 
-  console.log(user?.
-    stripe_customer_id);
+  const [selectedPlan, setSelectedPlan] = useState(packagesData?.[0]?.id || 1);
 
+  console.log(user?.stripe_customer_id);
 
   const { data: packagesData } = useCustomQuery({
     queryKey: ['packages'],
     queryFn: getPackages,
   });
 
+  //Custom Mutation Hook:
+  const { mutate: handlePaySuccess, isPending: isLoadingPaymentSuccess } =
+    useCustomMutation({
+      mutationFn: handlePaymentSuccess,
+      onSuccess: ({ data }) => {
+        console.log('subscribe api status: ', data);
+
+        if (data.status) {
+          showMessage({
+            message: data?.message,
+            type: 'success',
+          });
+          navigation.replace('PaymentSuccessScreen');
+        } else {
+          showMessage({
+            message: data?.message,
+            type: 'danger',
+          });
+        }
+      },
+    });
 
   const { mutate: pI, isPending: isLoadingPaymentIntent } = useCustomMutation({
     mutationFn: fetchPaymentIntent,
     onSuccess: async ({ data }) => {
       const clientSecret = data?.client_secret;
-      // console.log("HELLO: ", clientSecret);
+      if (clientSecret) {
+        const { error: paymentSheetError } = await initPaymentSheet({
+          merchantDisplayName: 'ClayMaster',
+          setupIntentClientSecret: clientSecret,
+          customerId: user?.stripe_customer_id,
+        });
 
-      const paymentIntent = data?.payment_intent_id;
-      // for stripe
-      // return
-      try {
-
-        if (clientSecret) {
-          const { error: paymentSheetError } = await initPaymentSheet({
-            // merchantDisplayName: 'ClayMaster',
-            // // paymentIntentClientSecret: clientSecret,
-            // // paymentIntentClientSecret: clientSecret,
-            // setupIntentClientSecret: clientSecret,
-            merchantDisplayName: 'ClayMaster',
-            setupIntentClientSecret: clientSecret, // ✅ correct for "seti_"
-            customerId: user?.
-              stripe_customer_id,
-
-          });
-
-          if (paymentSheetError) {
-            console.log('paymentSheetError', paymentSheetError);
-            return;
-          }
-
-          const { error: paymentError } = await presentPaymentSheet();
-
-          if (paymentError) {
-            return;
-          }
-
-          // handlePaySuccess(paymentIntent);
+        if (paymentSheetError) {
+          console.log('paymentSheetError', paymentSheetError);
+          return;
         }
-      } catch (error) {
-        console.log("error", error);
+
+        const { error: paymentError } = await presentPaymentSheet();
+
+        if (paymentError) {
+          return;
+        }
+
+        handlePaySuccess({
+          // payment_method: 'pm_123456789',
+          package_id: selectedPlan,
+        });
       }
     },
-    // onError: () => {
-    //   Platform.OS === 'android'
-    //     ? ToastAndroid.show(
-    //       'Error While Payment Proceeding.',
-    //       ToastAndroid.LONG,
-    //     )
-    //     : Alert.alert('Payment Status', 'Error While Payment Proceeding.');
-    // },
+    onError: () => {
+      Platform.OS === 'android'
+        ? ToastAndroid.show(
+            'Error While Payment Proceeding.',
+            ToastAndroid.LONG,
+          )
+        : Alert.alert('Payment Status', 'Error While Payment Proceeding.');
+    },
   });
-
-
-  const [selectedPlan, setSelectedPlan] = useState(packagesData?.[0]?.id || 1);
 
   const handlePlanSelection = planId => {
     setSelectedPlan(planId);
   };
 
   const handleProceedPayment = async () => {
-    pI(); //paymemnt intemt
+    pI();
   };
-
 
   return (
     <Container backgroundImage={subbg} isPadding={false}>
