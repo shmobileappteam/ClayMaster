@@ -14,6 +14,7 @@ import {
   ScorecardDetailsScreen,
   SignupScreen,
   SplashScreen,
+  SubscribtionSuccessScreen,
   SubscriptionScreen,
   VerifyEmailScreen,
 } from '../screens';
@@ -74,6 +75,12 @@ const StackNavigator = () => {
       <Stack.Screen
         name="ChangePasswordScreen"
         component={ChangePasswordScreen}
+      />
+      <Stack.Screen
+        name="SubscribtionSuccessScreen"
+        component={SubscribtionSuccessScreen}
+        options={{ animation: 'slide_from_bottom' }}
+
       />
 
       {/* Main */}

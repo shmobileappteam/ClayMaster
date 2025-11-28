@@ -74,7 +74,7 @@ const SettingsScreen = ({ navigation }) => {
     });
   };
 
-  const MenuItem = ({ icon, family, label, navLink, stack }) => (
+  const MenuItem = ({ icon, family, label, navLink, stack, fromProfile }) => (
     <TouchableOpacity
       style={styles.menuContainer}
       activeOpacity={BASEOPACITY}
@@ -86,7 +86,7 @@ const SettingsScreen = ({ navigation }) => {
         } else {
           stack
             ? navigation.navigate(stack, { screen: navLink })
-            : navLink && navigation.navigate(navLink);
+            : navLink && navigation.navigate(navLink, { fromProfile });
         }
       }}
     >

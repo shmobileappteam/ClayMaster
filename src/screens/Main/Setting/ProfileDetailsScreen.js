@@ -13,13 +13,11 @@ import {
   Container,
   Flex,
   FormController,
-  Typography,
 } from '../../../atomComponents';
 import { Edit } from '../../../assets/images';
 import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { Button, Header, TextField } from '../../../components';
-// import InputLabel from '../../../components/customFields/InputLabel';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { editProfile } from '../../../api/userService';
 import { setUser } from '../../../redux/slices/appSlice';
@@ -30,7 +28,6 @@ import { BASE_URL } from '../../../api/endpoints';
 const ProfileDetailsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.app);
-//   console.log('🚀 ~ ProfileDetailsScreen ~ user:', user);
 
   const { openGallery, imageUri, clearImage } = useImagePicker();
 
@@ -40,7 +37,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
   const { mutate: editProf, isPending } = useCustomMutation({
     mutationFn: editProfile,
     onSuccess: response => {
-      console.log('🚀 ~ EditProfileDetailsScreen ~ response:', response);
+      // console.log('🚀 ~ EditProfileDetailsScreen ~ response:', response);
       if (response?.status) {
         dispatch(setUser({ ...response?.user }));
         setIsEdit(false);
@@ -70,7 +67,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
     console.log('🚀 ~ handleEditProfile ~ values:', {
       id: user?.id,
       ...values,
-    //   imageUri
+      //   imageUri
     });
 
     editProf({ id: user?.id, ...values });
@@ -101,7 +98,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
     return () => backHandler.remove();
   }, [edit]);
 
-console.log(`${BASE_URL}${user?.profile_image}`);
+  // console.log(`${BASE_URL}${user?.profile_image}`);
 
 
   return (
@@ -248,19 +245,6 @@ console.log(`${BASE_URL}${user?.profile_image}`);
   );
 };
 
-const InputLabel = ({ title = '', ...props }) => {
-  return (
-    <Typography
-      mT={12}
-      size={12}
-      color={COLORS.primary}
-      fFamily="barlowMedium500"
-      {...props}
-    >
-      {title}
-    </Typography>
-  );
-};
 
 const styles = StyleSheet.create({
   formWrapper: {

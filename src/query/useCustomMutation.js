@@ -15,12 +15,12 @@ export const useCustomMutation = ({
     mutationFn: mutationFn,
     onError: error => {
       const response = error.response;
-      console.log('Top Level Error:', error);
+      console.log('Top Level Error:', error?.response?.data);
 
       if (response?.status === 422) {
         const parsedErrors = formatBackendErrors(response.data.errors);
         on422Error?.(parsedErrors);
-      } 
+      }
       onError?.(response);
     },
     onSuccess: (response, reqData) => {

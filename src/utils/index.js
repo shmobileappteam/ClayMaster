@@ -13,8 +13,8 @@ export function showMessage({
     (type === 'success'
       ? '#38E54D'
       : type === 'danger'
-      ? '#CD1818'
-      : '#999999');
+        ? '#CD1818'
+        : '#999999');
 
   flashMessage({
     message: message,
@@ -144,4 +144,30 @@ export const formatUsDate = dateLike => {
   const dd = String(d.getDate()).padStart(2, '0');
   const yyyy = d.getFullYear();
   return `${mm}/${dd}/${yyyy}`;
+};
+
+export const formatExpiryDate = (expiryString) => {
+  if (!expiryString) return '';
+
+  // Parse the date (handles "2025-11-28 00:00:00" format)
+  const date = new Date(expiryString.replace(' ', 'T') + 'Z');
+
+  if (isNaN(date.getTime())) return 'Invalid date';
+
+  const now = new Date();
+  const diffTime = date - now;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // Show countdown if expiring soon, otherwise full date
+  if (diffDays <= 7) {
+    return `${diffDays} days left`;
+  } else if (diffDays <= 30) {
+    return `${Math.floor(diffDays / 7)} weeks left`;
+  } else {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
 };

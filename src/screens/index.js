@@ -14,6 +14,8 @@ import SavedScoredcardSuccessScreen from './Main/Score/SavedScoredcardSuccessScr
 import ScorecardDetailsScreen from './Main/Score/ScorecardDetailsScreen';
 import ProfileDetailsScreen from './Main/Setting/ProfileDetailsScreen';
 import ChangePasswordScreen from './Main/Setting/ChangePasswordScreen';
+import SubscribtionSuccessScreen from './Main/Subscription/SubscribtionSuccessScreen';
+
 
 export {
   SplashScreen,
@@ -32,5 +34,6 @@ export {
   SavedScoredcardSuccessScreen,
   ScorecardDetailsScreen,
   ProfileDetailsScreen,
-  ChangePasswordScreen
+  ChangePasswordScreen,
+  SubscribtionSuccessScreen
 };

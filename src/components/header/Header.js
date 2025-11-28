@@ -37,6 +37,8 @@ const Header = ({
   defaultHeaderStyles,
   logoTextColor = COLORS.black100,
   left = Sizer.hSize(24),
+  rightIconName = "poweroff",
+  rightIconFamily = "AntDesign",
   ...titleStyles
 }) => {
   const navigation = useNavigation();
@@ -173,15 +175,18 @@ const Header = ({
           activeOpacity={BASEOPACITY}
           style={{
             borderRadius: Sizer.vSize(30),
-            padding: Sizer.fS(10),
-            backgroundColor: COLORS.secondary,
             position: 'absolute',
             right: Sizer.hSize(24),
-            top: Sizer.vSize(60),
+            bottom: Sizer.hSize(30),
+            backgroundColor: COLORS.red,
+            padding: Sizer.vSize(4),
           }}
           onPress={onPressRight}
         >
-          <Icon name="chat" size={Sizer.fS(18)} color={COLORS.white100} />
+          <Icon name={rightIconName} iconFamily={rightIconFamily}
+            size={Sizer.vSize(14)}
+
+            color={COLORS.white100} />
         </TouchableOpacity>
       )}
     </View>

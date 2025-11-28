@@ -47,19 +47,9 @@ export const onLoginSuccess = async (
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       await Prefetching();
       console.log("vresponse: ", response);
-
-      // const traps = queryClient.getQueryData(['traps']);
-      // console.log('🚀 ~ onLoginSuccess ~ traps:', traps);
-      // const rounds = queryClient.getQueryData(['rounds']);
-      // console.log('🚀 ~ onLoginSuccess ~ rounds:', rounds);
-      // const classes = queryClient.getQueryData(['classes']);
-      // console.log('🚀 ~ onLoginSuccess ~ classes:', classes);
-      // const courses = queryClient.getQueryData(['courses']);
-      // console.log('🚀 ~ onLoginSuccess ~ courses:', courses);
-
       if (response?.user?.email_verified_at) {
 
-        const rediredScreen = !response?.user?.subscription_status === "active" ? "BottomTabs" : "SubscriptionScreen"
+        const rediredScreen = response?.user?.subscription_status === "active" ? "BottomTabs" : "SubscriptionScreen"
 
         navigation.dispatch(
           CommonActions.reset({

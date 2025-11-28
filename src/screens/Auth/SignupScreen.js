@@ -17,8 +17,20 @@ import { formatBackendErrors, maskPhoneNumber } from '../../utils';
 import { register } from '../../api/userService';
 import { discountTypeOptions } from '../../constants/dummydata';
 import Icon from '../../helpers/Icon';
+import { useCustomQuery } from '../../query/useCustomQuery';
+import { getDiscountForPackages } from '../../api/packageService';
 
 const SignupScreen = ({ navigation }) => {
+
+
+  // // Discount query hook:
+  // const { data: packagesDiscount } = useCustomQuery({
+  //   queryKey: ['discounts'],
+  //   queryFn: getDiscountForPackages,
+  // });
+
+  // console.log('packagesDiscount: ', packagesDiscount);
+
   // Register Mutation Hook:
   const { mutateAsync: requestRegister, isPending } = useCustomMutation({
     mutationFn: register,
@@ -62,9 +74,9 @@ const SignupScreen = ({ navigation }) => {
       >
         <FormController
           initialValues={{
-            first_name: __DEV__ ? 'Toliver' : '',
-            last_name: __DEV__ ? 'John' : '',
-            email: __DEV__ ? 'Toliver@mailinator.com' : '',
+            first_name: __DEV__ ? 'William' : '',
+            last_name: __DEV__ ? 'Brown' : '',
+            email: __DEV__ ? 'william@mailinator.com' : '',
             password: __DEV__ ? 'Admin@1234' : '',
             password_confirmation: __DEV__ ? 'Admin@1234' : '',
             discount_type: ""

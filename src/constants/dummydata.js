@@ -13,6 +13,14 @@ export const generalMenus = [
     navLink: 'Home',
     stack: 'BottomTabs',
   },
+  {
+    label: 'Subscription',
+    icon: 'star',
+    family: 'Ionicons',
+    navLink: 'SubscriptionScreen',
+    stack: null,
+    fromProfile: true,
+  },
 ];
 
 export const moreMenus = [

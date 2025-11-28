@@ -5,11 +5,13 @@ export const getPackages = async () => {
   const response = await api.get(ENDPOINTS.GET_PACKAGES);
   return response.data;
 };
+export const getDiscountForPackages = async () => {
+  const response = await api.get(ENDPOINTS.GET_DISCOUNT_FOR_PACKAGES);
+  return response.data;
+};
 
 export const fetchPaymentIntent = async () => {
   const response = await api.post(ENDPOINTS.SETUP_INTENT);
-  console.log('intent: ', response);
-
   return response;
 };
 

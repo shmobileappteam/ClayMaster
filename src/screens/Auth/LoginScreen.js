@@ -68,7 +68,7 @@ const LoginScreen = ({ navigation }) => {
 
       <FormController
         initialValues={{
-          email: __DEV__ ? 'tooltom@mailinator.com' : '',
+          email: __DEV__ ? 'william@mailinator.com' : '',
           password: __DEV__ ? 'Admin@1234' : '',
         }}
         validationSchema={validatoinSchema.authValidations.SignInSchema}

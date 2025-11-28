@@ -17,10 +17,13 @@ import { resendOtp, verifyOtp } from '../../api/userService';
 import validatoinSchema from '../../validations';
 import { showMessage } from '../../utils';
 import { CommonActions } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
 
 const VerifyEmailScreen = ({ navigation, route }) => {
   const comeFromLogin = route.params?.fromLogin;
   const email = route.params?.email;
+
+  const { user } = useSelector(state => state.app);
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
 
@@ -53,10 +56,12 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 
   function handleRouting() {
     if (comeFromLogin) {
+      const rediredScreen = user?.subscription_status === "active" ? "BottomTabs" : "SubscriptionScreen"
+
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: 'BottomTabs' }],
+          routes: [{ name: rediredScreen }],
         }),
       );
     } else {
@@ -161,29 +166,9 @@ const VerifyEmailScreen = ({ navigation, route }) => {
           <SuccessMessage
             title="Email Verified Successfully"
             message="Your email has been successfully verified. You can now log in to your account."
-            buttonLabel={comeFromLogin ? 'Goto Home' : 'Login Now'}
+            buttonLabel={comeFromLogin ? 'Continue' : 'Login Now'}
             onPress={handleRouting}
-            //   () => {
-            //   // navigation.replace(comeFromLogin ? 'BottomTabs' : 'LoginScreen')
-            //     navigation.dispatch(
-            //       CommonActions.reset({
-            //         index: 1,
-            //         routes: [
-            //           {
-            //             name: 'LoginScreen',
-            //           },
-            //           {
-            //             name: 'VerifyEmailScreen',
-            //             params: {
-            //               email,
-            //               fromLogin: true,
-            //             },
-            //           },
-            //         ],
-            //       }),
-            //     );
-            //   }
-            // }
+
           />
         </SlideInView>
       )}

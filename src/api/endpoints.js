@@ -34,6 +34,7 @@ export const ENDPOINTS = {
 
   // --- Packages and Payment ---
   GET_PACKAGES: 'packages',
+  GET_DISCOUNT_FOR_PACKAGES: 'discounts',
   SETUP_INTENT: 'stripe/setup-intent',
   PAYMENT: 'stripe/subscribe',
 };
