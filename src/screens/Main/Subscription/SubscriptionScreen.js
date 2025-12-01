@@ -31,16 +31,14 @@ import {
   handlePaymentSuccess,
 } from '../../../api/packageService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
-import {
-  CardField,
-  useStripe,
-} from '@stripe/stripe-react-native';
+import { CardField, useStripe } from '@stripe/stripe-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { formatExpiryDate, showMessage } from '../../../utils';
 import { handleLogout, setUser } from '../../../redux/slices/appSlice';
 import { logout } from '../../../api/userService';
 import { queryClient } from '../../../api/api';
 import { CommonActions } from '@react-navigation/native';
+import { useKeyboard } from '../../../hooks/useKeyboard';
 
 const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
   const { user } = useSelector(state => state.app);
@@ -50,7 +48,8 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
     onMeasure(h);
   };
 
-  const isExpiryVisible = plan?.id == user?.package_id && user?.package_expires_at;
+  const isExpiryVisible =
+    plan?.id == user?.package_id && user?.package_expires_at;
 
   return (
     <TouchableOpacity
@@ -104,23 +103,22 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
           mB={isExpiryVisible ? 0 : 16}
         >
           ${plan?.price}/{plan?.duration}
-
         </Typography>
 
         {/*  Expiry Date */}
         {isExpiryVisible && (
-          <Flex direction="row" algItems="center"
-            mB={16}
-            mT={4}
-            gap={3}
-          >
+          <Flex direction="row" algItems="center" mB={16} mT={4} gap={3}>
             <Icon
               name="time-outline"
               size={10}
               color={COLORS.yellow}
               iconFamily="Ionicons"
             />
-            <Typography size={10} color={COLORS.yellow} fFamily="barlowSemiBold600">
+            <Typography
+              size={10}
+              color={COLORS.yellow}
+              fFamily="barlowSemiBold600"
+            >
               Expires: {formatExpiryDate(user?.package_expires_at)}
             </Typography>
           </Flex>
@@ -165,7 +163,7 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
           </View>
         )}
       </View>
-    </TouchableOpacity >
+    </TouchableOpacity>
   );
 };
 
@@ -173,11 +171,8 @@ const SubscriptionPlans = ({
   onPlanSelect,
   packagesData = [],
   selectedPlanId = null,
-  isLoading = false
+  isLoading = false,
 }) => {
-
-
-
   const [maxHeight, setMaxHeight] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef(null);
@@ -269,8 +264,9 @@ const SubscriptionScreen = ({ navigation, route }) => {
 
   const { user } = useSelector(state => state.app);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const { confirmSetupIntent } = useStripe();
+  const { keyboardOpen } = useKeyboard();
 
   const { data: packagesData } = useCustomQuery({
     queryKey: ['packages'],
@@ -283,7 +279,6 @@ const SubscriptionScreen = ({ navigation, route }) => {
     queryFn: logout,
     enabled: false,
   });
-
 
   function clearApp() {
     queryClient.clear();
@@ -327,19 +322,27 @@ const SubscriptionScreen = ({ navigation, route }) => {
     useCustomMutation({
       mutationFn: handlePaymentSuccess,
       onSuccess: ({ data }) => {
-        console.log("last stripe res: :", data);
+        console.log('last stripe res: :', data);
 
         if (data?.success) {
-          dispatch(setUser({ ...user, package_id: selectedPlan?.id, subscription_status: "active", package_expires_at: data?.package_expires_at || user?.package_expires_at }));
+          dispatch(
+            setUser({
+              ...user,
+              package_id: selectedPlan?.id,
+              subscription_status: 'active',
+              package_expires_at:
+                data?.package_expires_at || user?.package_expires_at,
+            }),
+          );
           showMessage({
-            message: "Payment Successfull!",
+            message: 'Payment Successfull!',
             type: 'success',
-            bgColor: COLORS.primary
+            bgColor: COLORS.primary,
           });
           navigation.replace('SubscribtionSuccessScreen');
         } else {
           showMessage({
-            message: "Payment Failed!",
+            message: 'Payment Failed!',
             type: 'danger',
           });
         }
@@ -349,7 +352,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
   const { mutate: pI, isPending: isLoadingPaymentIntent } = useCustomMutation({
     mutationFn: fetchPaymentIntent,
     onSuccess: async ({ data }) => {
-      console.log("pi: ", data);
+      console.log('pi: ', data);
 
       const secret = data?.client_secret;
       if (secret) {
@@ -360,9 +363,9 @@ const SubscriptionScreen = ({ navigation, route }) => {
     onError: () => {
       Platform.OS === 'android'
         ? ToastAndroid.show(
-          'Error While Payment Proceeding.',
-          ToastAndroid.LONG,
-        )
+            'Error While Payment Proceeding.',
+            ToastAndroid.LONG,
+          )
         : Alert.alert('Payment Status', 'Error While Payment Proceeding.');
     },
   });
@@ -408,24 +411,29 @@ const SubscriptionScreen = ({ navigation, route }) => {
   };
 
   const subcribtionStatus = (selectedPlan = null) => {
-    if (!selectedPlan) return "Subscribe";
+    if (!selectedPlan) return 'Subscribe';
 
     // Find current user's package
-    const currentPackage = packagesData?.find(pkg => pkg.id == user?.package_id);
+    const currentPackage = packagesData?.find(
+      pkg => pkg.id == user?.package_id,
+    );
     const selectedPlanPrice = parseFloat(selectedPlan?.price || 0);
     const currentPackagePrice = parseFloat(currentPackage?.price || 0);
 
     // Already subscribed to this plan
-    if (user?.subscription_status == 'active' && user?.package_id == selectedPlan?.id) {
-      return "Already Subscribed";
+    if (
+      user?.subscription_status == 'active' &&
+      user?.package_id == selectedPlan?.id
+    ) {
+      return 'Already Subscribed';
     }
 
     // User has active subscription - check upgrade/downgrade
     if (user?.subscription_status == 'active' && currentPackage) {
       if (selectedPlanPrice > currentPackagePrice) {
-        return "Upgrade";
+        return 'Upgrade';
       } else if (selectedPlanPrice < currentPackagePrice) {
-        return "Downgrade";
+        return 'Downgrade';
       }
     }
 
@@ -434,8 +442,8 @@ const SubscriptionScreen = ({ navigation, route }) => {
     //   return "Resubscribe";
     // }
 
-    return "Subscribe";
-  }
+    return 'Subscribe';
+  };
 
   return (
     <Container backgroundImage={subbg} isPadding={false}>
@@ -462,9 +470,9 @@ const SubscriptionScreen = ({ navigation, route }) => {
 
         <View style={{ ...GLOBALSTYLE.paddingHor, marginTop: Sizer.hSize(32) }}>
           <Button
-            label={subcribtionStatus(selectedPlan,)}
+            label={subcribtionStatus(selectedPlan)}
             onPress={handleProceedPayment}
-            disabled={subcribtionStatus(selectedPlan) == "Already Subscribed"}
+            disabled={subcribtionStatus(selectedPlan) == 'Already Subscribed'}
             loader={isLoadingPaymentIntent || isLoadingPaymentSuccess}
           />
           {/* <Typography mT={16} color={COLORS.white100} textAlign="center">
@@ -472,18 +480,31 @@ const SubscriptionScreen = ({ navigation, route }) => {
           </Typography> */}
         </View>
       </ScrollView>
-
       <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.bottomModalOuter}>
-          <View style={styles.bottomSheetContainer}>
+        <View
+          style={[
+            styles.bottomModalOuter,
+            keyboardOpen && { justifyContent: 'center' },
+          ]}
+        >
+          <View
+            style={[
+              styles.bottomSheetContainer,
+              !keyboardOpen && { paddingBottom: 50 },
+            ]}
+          >
             {/* Header */}
             <View style={styles.modalHeader}>
-              <Typography size={18} fFamily="barlowBold700" color={COLORS.black100}>
+              <Typography
+                size={18}
+                fFamily="barlowBold700"
+                color={COLORS.black100}
+              >
                 Enter Card Details
               </Typography>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
@@ -504,16 +525,17 @@ const SubscriptionScreen = ({ navigation, route }) => {
                 backgroundColor: COLORS.grey700,
                 textColor: '#000000',
               }}
+              
+              
               style={{
                 width: '100%',
                 height: 50,
                 marginVertical: 20,
               }}
-              onCardChange={(cardDetails) => {
+              onCardChange={cardDetails => {
                 setCardDetails(cardDetails);
               }}
             />
-
             {/* Pay Button */}
             <Button
               label="Pay Now"
@@ -524,7 +546,6 @@ const SubscriptionScreen = ({ navigation, route }) => {
           </View>
         </View>
       </Modal>
-
     </Container>
   );
 };
@@ -566,15 +587,10 @@ const styles = StyleSheet.create({
   bottomSheetContainer: {
     width: '100%',
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    // borderTopLeftRadius: 20,
+    // borderTopRightRadius: 20,
+    borderRadius: 20,
     padding: 20,
-    paddingBottom: 50,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 10,
   },
 });
 
