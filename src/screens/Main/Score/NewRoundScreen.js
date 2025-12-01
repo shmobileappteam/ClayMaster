@@ -35,11 +35,8 @@ import {
   createRoundDropData,
   disableStation,
   expandedStationCardsObject,
-  generateStations,
-  generateStationsByTotalShots,
   handleStationChange,
   initialStation,
-  initialStation2,
   pairOfTargets,
   validateLastStation,
   validateRoundData,
@@ -69,7 +66,7 @@ const NewRoundScreen = ({ navigation, route }) => {
   const pendingScrollRef = useRef(null);
 
   const [sectionNumber, setSectionNumber] = useState(1);
-  const [addStation, setAddStation] = useState([...initialStation2]);
+  const [addStation, setAddStation] = useState([initialStation]);
   const [isEuropeanRotation, setIsEuropeanRotation] = useState(false);
   const [stationSequence, setStationSequence] = useState([]);
   const [maxStations, setMaxStations] = useState(16);
@@ -78,7 +75,7 @@ const NewRoundScreen = ({ navigation, route }) => {
   const [backPressModalVisible, setBackPressModalVisible] = useState(false);
   const [isLeaveGameModalVisible, setIsLeaveGameModalVisible] = useState(false);
 
-  console.log('🚀 ~ NewRoundScreen ~ addStation:', addStation);
+  console.log('🚀 ~ NewRoundScreen ~ addStation:', roundDetails);
 
   //Check if Active/Last Staion shots are fullfiled or not:
   const lastStation = addStation[addStation?.length - 1];
@@ -176,13 +173,13 @@ const NewRoundScreen = ({ navigation, route }) => {
         }));
       } else {
         // Normal flow - no European rotation
-        // setAddStation([
-        //   {
-        //     ...initialStation,
-        //     station_number: 1,
-        //     name: 'Station 1',
-        //   },
-        // ]);
+        setAddStation([
+          {
+            ...initialStation,
+            station_number: 1,
+            name: 'Station 1',
+          },
+        ]);
         setExpandedStations(prev => ({
           ...prev,
           1: true,
@@ -463,6 +460,11 @@ const NewRoundScreen = ({ navigation, route }) => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
       const shotsCount = targetPair * 2; //TP multipy by 2 to get shots
+      const totalSelectedShots =
+        (addStation
+          ?.slice(0, lastIndex)
+          .reduce((acc, st) => acc + (st?.selectedTargetPairs || 0), 0) || 0) *
+        2;
       const totalShots = shotsCount + totalSelectedShots;
       if (totalShots > 100) {
         setIsLeaveGameModalVisible(true);
