@@ -8,11 +8,6 @@ import Icon from '../../helpers/Icon';
 import SlideInView from '../../animations/SlideView';
 import { CircleSvg, SlashSvg } from '../../assets/svgs';
 import TrapsList from './TrapsList';
-import { useCustomQuery } from '../../query/useCustomQuery';
-import { getTraps } from '../../api/stationService';
-import { queryClient } from '../../api/api';
-import { showMessage } from '../../utils';
-import FlashMessage, { hideMessage } from 'react-native-flash-message';
 
 const trapsData = [
   {
@@ -642,7 +637,7 @@ const StationCard = ({
         )}
 
         {/* Shots Grid */}
-        {isTargetPairSelected && (
+        {true && (
           <View pointerEvents={isDisabled ? 'none' : 'auto'}>
             <ShotsPresentation
               shotsData={station?.shots}
