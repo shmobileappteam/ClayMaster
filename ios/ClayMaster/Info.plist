@@ -35,6 +35,8 @@
 	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>$(PRODUCT_NAME) wants to access your gallery for better user experience</string>
+	<key>NSCameraUsageDescription</key>
+	<string>$(PRODUCT_NAME) wants to access your camera for better user experience</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
