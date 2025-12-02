@@ -14,9 +14,6 @@ import { STRIPE_PUBLISHABLE_KEY } from './src/constants';
 import { getDiscountForPackages } from './src/api/packageService';
 
 export default function App() {
-
-
-
   const Theme = {
     ...DefaultTheme,
     myOwnProperty: true,
@@ -27,12 +24,11 @@ export default function App() {
   };
   useEffect(() => {
     // storage.clearAll();
-    // queryClient.prefetchQuery({
-    //   queryKey: ['discounts'],
-    //   queryFn: getDiscountForPackages,
-    // })
+    queryClient.prefetchQuery({
+      queryKey: ['discounts'],
+      queryFn: getDiscountForPackages,
+    });
   }, []);
-
 
   return (
     <ReduxProvider store={store}>

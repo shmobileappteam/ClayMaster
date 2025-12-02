@@ -7,7 +7,12 @@ import {
   SafeAreaWrapper,
   Typography,
 } from '../../atomComponents';
-import { Button, CustomDropdown, Header, TextField } from '../../components';
+import {
+  Button,
+  DiscountRadioSelector,
+  Header,
+  TextField,
+} from '../../components';
 import { COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
 import { useCustomMutation } from '../../query/useCustomMutation';
@@ -16,20 +21,20 @@ import validatoinSchema from '../../validations';
 import { formatBackendErrors, maskPhoneNumber } from '../../utils';
 import { register } from '../../api/userService';
 import { discountTypeOptions } from '../../constants/dummydata';
-import Icon from '../../helpers/Icon';
 import { useCustomQuery } from '../../query/useCustomQuery';
 import { getDiscountForPackages } from '../../api/packageService';
 
 const SignupScreen = ({ navigation }) => {
+  // Discount query hook:
+  const { data: packagesDiscount } = useCustomQuery({
+    queryKey: ['discounts'],
+    queryFn: getDiscountForPackages,
+  });
 
-
-  // // Discount query hook:
-  // const { data: packagesDiscount } = useCustomQuery({
-  //   queryKey: ['discounts'],
-  //   queryFn: getDiscountForPackages,
-  // });
-
-  // console.log('packagesDiscount: ', packagesDiscount);
+  const discountData = packagesDiscount?.data?.map(item => ({
+    label: `${item.discount_name} ⭐ ${item?.value}% Off`,
+    value: item?.discount_value,
+  }));
 
   // Register Mutation Hook:
   const { mutateAsync: requestRegister, isPending } = useCustomMutation({
@@ -42,6 +47,7 @@ const SignupScreen = ({ navigation }) => {
 
   // Handle Register:
   const handleRegister = async (values, { setErrors, resetForm }) => {
+    // console.log(values);
     requestRegister({ ...values, navigation, resetForm }).catch(err => {
       const response = err?.response;
       console.log('🚀 ~ handleRegister ~ response:', response);
@@ -79,14 +85,20 @@ const SignupScreen = ({ navigation }) => {
             email: __DEV__ ? 'william@mailinator.com' : '',
             password: __DEV__ ? 'Admin@1234' : '',
             password_confirmation: __DEV__ ? 'Admin@1234' : '',
-            discount_type: ""
+            discount_type: discountData?.[0]?.value,
           }}
           validationSchema={validatoinSchema.authValidations.SignUpSchema}
           onSubmit={handleRegister}
         >
           {props => {
-            const { handleSubmit, handleChange, values, errors, handleBlur, setFieldValue } =
-              props;
+            const {
+              handleSubmit,
+              handleChange,
+              values,
+              errors,
+              handleBlur,
+              setFieldValue,
+            } = props;
 
             return (
               <>
@@ -142,19 +154,12 @@ const SignupScreen = ({ navigation }) => {
                   mT={23}
                 />
 
-                <CustomDropdown
-                  data={discountTypeOptions}
-                  placeholder="Select Discount type"
-                  dropdownStyle={{ marginTop: Sizer.hSize(23) }}
-                  value={values?.discount_type}
-                  onChange={item => {
-                    setFieldValue("discount_type", item?.value)
+                <DiscountRadioSelector
+                  options={discountData}
+                  selectedValue={values?.discount_type}
+                  onValueChange={value => {
+                    setFieldValue('discount_type', value);
                   }}
-                  leftIcon={() => <Icon
-                    iconFamily={"MaterialIcons"}
-                    size={Sizer.vSize(16)}
-                    name={"discount"}
-                  />}
                 />
                 {errors?.discount_type ? (
                   <Typography
@@ -162,7 +167,8 @@ const SignupScreen = ({ navigation }) => {
                     color={COLORS.red}
                     mT={6}
                     style={styles.errorText}
-                    LineHeight={16}>
+                    LineHeight={16}
+                  >
                     {errors?.discount_type}
                   </Typography>
                 ) : null}

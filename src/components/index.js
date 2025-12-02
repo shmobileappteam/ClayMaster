@@ -4,6 +4,7 @@ import TextField from './customFields/TextField';
 import SearchField from './customFields/SeacrhField';
 import CustomDropdown from './customFields/CustomDropDown';
 import BooleanRadioSelector from './customFields/BooleanRadioSelector';
+import DiscountRadioSelector from './customFields/DiscountRadioSelector';
 import Label from './customFields/Label';
 import Header from './header/Header';
 
@@ -24,5 +25,6 @@ export {
   Accordion,
   Label,
   ConfirmModal,
-  BooleanRadioSelector
+  BooleanRadioSelector,
+  DiscountRadioSelector,
 };
