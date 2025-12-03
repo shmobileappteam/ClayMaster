@@ -158,6 +158,8 @@ const SignupScreen = ({ navigation }) => {
                   onChange={item => {
                     setFieldValue('discount_type', item?.value);
                   }}
+                  mode={'default'}
+                  dropdownPosition={'top'}
                   leftIcon={() => (
                     <Icon
                       iconFamily={'MaterialIcons'}

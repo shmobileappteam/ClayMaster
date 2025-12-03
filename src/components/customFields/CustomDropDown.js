@@ -14,7 +14,7 @@ const data = [
   { label: '4', value: '4' },
 ];
 
-function CustomDropdown({ onChange = () => { }, defaultValue, ...props }) {
+function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
   const [value, setValue] = useState(defaultValue);
   const [isFocus, setIsFocus] = useState(false);
 
@@ -49,6 +49,7 @@ function CustomDropdown({ onChange = () => { }, defaultValue, ...props }) {
           setIsFocus(false);
           onChange(item);
         }}
+        {...props}
       />
     </>
   );
@@ -69,20 +70,22 @@ const styles = StyleSheet.create({
     color: COLORS.greyV2,
     fontFamily: FONTS.barlowRegular400,
     fontSize: Sizer.fS(13),
-    paddingLeft: Sizer.hSize(12)
+    paddingLeft: Sizer.hSize(12),
   },
   selectedTextStyle: {
     color: COLORS.greyV2,
     fontFamily: FONTS.barlowRegular400,
     fontSize: Sizer.fS(13),
-    paddingLeft: Sizer.hSize(12)
-
+    paddingLeft: Sizer.hSize(12),
   },
   listContainer: {
     backgroundColor: COLORS.white100,
     borderWidth: 0,
     borderRadius: 6,
     maxHeight: '50%',
+    marginVertical: Sizer.vSize(4),
+    borderWidth: Sizer.fS(1.3),
+    borderColor: COLORS.grey700,
   },
   selectStyle: {
     color: COLORS.whiteV1,
@@ -92,6 +95,5 @@ const styles = StyleSheet.create({
   },
   iconStyle: {
     // backgroundColor: "pink"
-
   },
 });

@@ -621,6 +621,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                 onChange={item => {
                   setSquadSequence(item);
                 }}
+                mode={'default'}
               />
 
               <Label title="Course Name" />
@@ -640,6 +641,8 @@ const NewRoundScreen = ({ navigation, route }) => {
                 onChange={item => {
                   setNoOfPeople(item);
                 }}
+                mode={'default'}
+                dropdownPosition={'top'}
               />
 
               <Label title="Your Current NSCA Class" />
