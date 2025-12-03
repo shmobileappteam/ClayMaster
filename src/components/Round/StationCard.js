@@ -607,6 +607,7 @@ const StationCard = ({
                 <>
                   <Flex
                     jusContent={'space-between'}
+                    algItems={'center'}
                     extraStyle={{ backgroundColor: COLORS.orange300 }}
                     mT={15}
                   >

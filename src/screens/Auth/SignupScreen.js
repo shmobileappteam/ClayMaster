@@ -7,12 +7,7 @@ import {
   SafeAreaWrapper,
   Typography,
 } from '../../atomComponents';
-import {
-  Button,
-  DiscountRadioSelector,
-  Header,
-  TextField,
-} from '../../components';
+import { Button, CustomDropdown, Header, TextField } from '../../components';
 import { COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
 import { useCustomMutation } from '../../query/useCustomMutation';
@@ -23,6 +18,7 @@ import { register } from '../../api/userService';
 import { discountTypeOptions } from '../../constants/dummydata';
 import { useCustomQuery } from '../../query/useCustomQuery';
 import { getDiscountForPackages } from '../../api/packageService';
+import Icon from '../../helpers/Icon';
 
 const SignupScreen = ({ navigation }) => {
   // Discount query hook:
@@ -32,7 +28,7 @@ const SignupScreen = ({ navigation }) => {
   });
 
   const discountData = packagesDiscount?.data?.map(item => ({
-    label: `${item.discount_name} ⭐ ${item?.value}% Off`,
+    label: `${item.discount_name} ${item?.value}% Off`,
     value: item?.discount_value,
   }));
 
@@ -50,7 +46,7 @@ const SignupScreen = ({ navigation }) => {
     // console.log(values);
     requestRegister({ ...values, navigation, resetForm }).catch(err => {
       const response = err?.response;
-      console.log('🚀 ~ handleRegister ~ response:', response);
+      // console.log('🚀 ~ handleRegister ~ response:', response);
       const parsedErrors = formatBackendErrors(response.data.errors);
       setErrors(parsedErrors);
     });
@@ -85,7 +81,7 @@ const SignupScreen = ({ navigation }) => {
             email: __DEV__ ? 'william@mailinator.com' : '',
             password: __DEV__ ? 'Admin@1234' : '',
             password_confirmation: __DEV__ ? 'Admin@1234' : '',
-            discount_type: discountData?.[0]?.value,
+            discount_type: '',
           }}
           validationSchema={validatoinSchema.authValidations.SignUpSchema}
           onSubmit={handleRegister}
@@ -154,12 +150,21 @@ const SignupScreen = ({ navigation }) => {
                   mT={23}
                 />
 
-                <DiscountRadioSelector
-                  options={discountData}
-                  selectedValue={values?.discount_type}
-                  onValueChange={value => {
-                    setFieldValue('discount_type', value);
+                <CustomDropdown
+                  data={discountData}
+                  placeholder="Select Discount type"
+                  dropdownStyle={{ marginTop: Sizer.hSize(23) }}
+                  value={values?.discount_type}
+                  onChange={item => {
+                    setFieldValue('discount_type', item?.value);
                   }}
+                  leftIcon={() => (
+                    <Icon
+                      iconFamily={'MaterialIcons'}
+                      size={Sizer.vSize(16)}
+                      name={'discount'}
+                    />
+                  )}
                 />
                 {errors?.discount_type ? (
                   <Typography
