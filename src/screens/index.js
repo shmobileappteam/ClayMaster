@@ -14,6 +14,9 @@ import SavedScoredcardSuccessScreen from './Main/Score/SavedScoredcardSuccessScr
 import ScorecardDetailsScreen from './Main/Score/ScorecardDetailsScreen';
 import ProfileDetailsScreen from './Main/Setting/ProfileDetailsScreen';
 import ChangePasswordScreen from './Main/Setting/ChangePasswordScreen';
+import AboutUsScreen from './Main/Setting/AboutUsScreen';
+import HelpAndSupportScreen from './Main/Setting/HelpAndSupportScreen';
+import TermsAndConditionsScreen from './Main/Setting/TermsAndConditionsScreen';
 import SubscribtionSuccessScreen from './Main/Subscription/SubscribtionSuccessScreen';
 
 
@@ -35,5 +38,8 @@ export {
   ScorecardDetailsScreen,
   ProfileDetailsScreen,
   ChangePasswordScreen,
+  AboutUsScreen,
+  HelpAndSupportScreen,
+  TermsAndConditionsScreen,
   SubscribtionSuccessScreen
 };

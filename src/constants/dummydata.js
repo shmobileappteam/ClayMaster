@@ -28,7 +28,7 @@ export const moreMenus = [
     label: 'About Us',
     icon: 'information-circle-outline',
     family: 'Ionicons',
-    navLink: 'AboutusScreen',
+    navLink: 'AboutUsScreen',
     stack: null,
   },
 
@@ -42,11 +42,17 @@ export const settingData = [
     family: 'Ionicons',
     navLink: 'ChangePasswordScreen',
   },
-  { label: 'Help & Support', icon: 'help-circle-outline', family: 'Ionicons' },
+  {
+    label: 'Help & Support',
+    icon: 'help-circle-outline',
+    family: 'Ionicons',
+    navLink: 'HelpAndSupportScreen',
+  },
   {
     label: 'Terms & Conditions',
     icon: 'document-text-outline',
     family: 'Ionicons',
+    navLink: 'TermsAndConditionsScreen',
   },
   {
     label: 'Delete Acount',

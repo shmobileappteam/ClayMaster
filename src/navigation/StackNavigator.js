@@ -3,6 +3,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 //------
 import {
   ChangePasswordScreen,
+  AboutUsScreen,
+  HelpAndSupportScreen,
+  TermsAndConditionsScreen,
   CompleteRoundScreen,
   ForgotPasswordScreen,
   LoginScreen,
@@ -75,6 +78,18 @@ const StackNavigator = () => {
       <Stack.Screen
         name="ChangePasswordScreen"
         component={ChangePasswordScreen}
+      />
+      <Stack.Screen
+        name="AboutUsScreen"
+        component={AboutUsScreen}
+      />
+      <Stack.Screen
+        name="HelpAndSupportScreen"
+        component={HelpAndSupportScreen}
+      />
+      <Stack.Screen
+        name="TermsAndConditionsScreen"
+        component={TermsAndConditionsScreen}
       />
       <Stack.Screen
         name="SubscribtionSuccessScreen"
