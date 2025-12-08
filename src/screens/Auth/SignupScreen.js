@@ -27,8 +27,10 @@ const SignupScreen = ({ navigation }) => {
     queryFn: getDiscountForPackages,
   });
 
+  console.log('packagesDiscount', packagesDiscount?.data);
+
   const discountData = packagesDiscount?.data?.map(item => ({
-    label: `${item.discount_name} ${item?.value}% Off`,
+    label: `${item.discount_name}`,
     value: item?.discount_value,
   }));
 
@@ -125,6 +127,35 @@ const SignupScreen = ({ navigation }) => {
                   onBlur={handleBlur('email')}
                   mT={23}
                 />
+                <CustomDropdown
+                  data={discountData}
+                  placeholder="Are you?"
+                  dropdownStyle={{ marginTop: Sizer.hSize(23) }}
+                  value={values?.discount_type}
+                  onChange={item => {
+                    setFieldValue('discount_type', item?.value);
+                  }}
+                  mode={'default'}
+                  dropdownPosition={'top'}
+                  leftIcon={() => (
+                    <Icon
+                      iconFamily={'MaterialIcons'}
+                      size={Sizer.vSize(16)}
+                      name={'discount'}
+                    />
+                  )}
+                />
+                {errors?.discount_type && (
+                  <Typography
+                    size={13}
+                    color={COLORS.red}
+                    mT={6}
+                    style={styles.errorText}
+                    LineHeight={16}
+                  >
+                    {errors?.discount_type}
+                  </Typography>
+                )}
                 <TextField
                   placeholder="Password"
                   leftIcon
@@ -150,35 +181,7 @@ const SignupScreen = ({ navigation }) => {
                   mT={23}
                 />
 
-                <CustomDropdown
-                  data={discountData}
-                  placeholder="Select Discount type"
-                  dropdownStyle={{ marginTop: Sizer.hSize(23) }}
-                  value={values?.discount_type}
-                  onChange={item => {
-                    setFieldValue('discount_type', item?.value);
-                  }}
-                  mode={'default'}
-                  dropdownPosition={'top'}
-                  leftIcon={() => (
-                    <Icon
-                      iconFamily={'MaterialIcons'}
-                      size={Sizer.vSize(16)}
-                      name={'discount'}
-                    />
-                  )}
-                />
-                {errors?.discount_type ? (
-                  <Typography
-                    size={13}
-                    color={COLORS.red}
-                    mT={6}
-                    style={styles.errorText}
-                    LineHeight={16}
-                  >
-                    {errors?.discount_type}
-                  </Typography>
-                ) : null}
+
                 <Button
                   label={'Sign Up'}
                   mt={26}
