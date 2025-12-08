@@ -1,5 +1,5 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
 import React from 'react';
+import { ScrollView, StyleSheet, View, Linking } from 'react-native';
 import { Container, Flex, Typography } from '../../../atomComponents';
 import { Header } from '../../../components';
 import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
@@ -80,6 +80,21 @@ const AboutUsScreen = () => {
                     performance with expert guidance, innovative tools, and a supportive
                     community.
                 </Typography>
+                <View style={{ marginTop: Sizer.hSize(30), alignItems: 'center' }}>
+                    <Typography fFamily="barlowRegular400" size={14} color={COLORS.black}>
+                        🌐 Website
+                    </Typography>
+
+                    <Typography
+                        fFamily="barlowBold700"
+                        size={14}
+                        color={COLORS.primary}
+                        style={{ textDecorationLine: 'underline', marginTop: 4 }}
+                        onPress={() => Linking.openURL('https://www.claymaster.net')}
+                    >
+                        www.claymaster.net
+                    </Typography>
+                </View>
             </ScrollView>
         </Container>
     );
