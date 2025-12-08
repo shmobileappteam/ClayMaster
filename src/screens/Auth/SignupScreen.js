@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Linking } from 'react-native';
 import React from 'react';
 //------------------
 import {
@@ -29,10 +29,10 @@ const SignupScreen = ({ navigation }) => {
 
   console.log('packagesDiscount', packagesDiscount?.data);
 
-  const discountData = packagesDiscount?.data?.map(item => ({
-    label: `${item.discount_name}`,
+  const discountData = React.useMemo(() => packagesDiscount?.data?.map(item => ({
+    label: `${item?.discount_value == 'student' ? 'Youth' : 'Military & First Responders'}`,
     value: item?.discount_value,
-  }));
+  })) || [], [packagesDiscount?.data]);
 
   // Register Mutation Hook:
   const { mutateAsync: requestRegister, isPending } = useCustomMutation({
@@ -207,6 +207,15 @@ const SignupScreen = ({ navigation }) => {
             Sign In{' '}
           </Typography>
         </Flex>
+        <Typography
+          textAlign="center"
+          mT={20}
+          color={COLORS.primary}
+          fFamily="barlowMedium500"
+          onPress={() => Linking.openURL('mailto:support@claymaster.net')}
+        >
+          Help and Support
+        </Typography>
       </ScrollView>
     </SafeAreaWrapper>
   );

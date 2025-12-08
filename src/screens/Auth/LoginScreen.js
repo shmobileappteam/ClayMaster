@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Linking } from 'react-native';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 //------------------
@@ -133,6 +133,15 @@ const LoginScreen = ({ navigation }) => {
           Sign Up{' '}
         </Typography>
       </Flex>
+      <Typography
+        textAlign="center"
+        mT={20}
+        color={COLORS.primary}
+        fFamily="barlowMedium500"
+        onPress={() => Linking.openURL('mailto:support@claymaster.net')}
+      >
+        Help and Support
+      </Typography>
     </SafeAreaWrapper>
   );
 };
