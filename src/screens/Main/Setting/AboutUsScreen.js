@@ -36,7 +36,7 @@ const AboutUsScreen = () => {
                         'Monthly webcasts hosted by Kevin DeMichiel',
                     ].map((item, index) => (
                         <Flex key={index} gap={8} mT={8} algItems={'flex-start'}>
-                            <Typography size={20} mT={-5}>{'\u2022'}</Typography>
+                            <Typography size={20} mT={-5} >{'\u2022'}</Typography>
                             <Typography fFamily="barlowRegular400" size={14} style={{ flex: 1 }}>
                                 {item}
                             </Typography>
@@ -50,7 +50,7 @@ const AboutUsScreen = () => {
 
                 <View style={styles.listContainer}>
                     <Flex gap={8} mT={8}>
-                        <Typography size={20} >{'\u2022'}</Typography>
+                        <Typography size={20} mT={-5}>{'\u2022'}</Typography>
                         <Typography fFamily="barlowRegular400" size={14} style={{ flex: 1 }}>
                             A retired{' '}
                             <Typography fFamily="barlowBold700">
@@ -63,7 +63,7 @@ const AboutUsScreen = () => {
                     </Flex>
 
                     <Flex gap={8} mT={8}>
-                        <Typography size={20} >{'\u2022'}</Typography>
+                        <Typography size={20} mT={-5} >{'\u2022'}</Typography>
                         <Typography fFamily="barlowRegular400" size={14} style={{ flex: 1 }}>
                             <Typography fFamily="barlowBold700">Kevin DeMichiel</Typography>, ONE
                             of the top sporting clays competitors and instructors in the U.S.

@@ -8,7 +8,12 @@ import Icon from '../../../helpers/Icon';
 
 const HelpAndSupportScreen = () => {
     const handleEmailPress = () => {
-        Linking.openURL('mailto:support@claymaster.net');
+        console.log('Email Pressed');
+        try {
+            Linking.openURL('mailto:support@claymaster.net');
+        } catch (e) {
+            console.log('Email not opened');
+        }
     };
 
     return (
@@ -48,7 +53,7 @@ const HelpAndSupportScreen = () => {
                         'Suggestions and feedback',
                     ].map((item, index) => (
                         <Flex key={index} gap={8} mT={8}>
-                            <Typography size={20} lineHeight={20}>{'\u2022'}</Typography>
+                            <Typography size={20} mT={-5}>{'\u2022'}</Typography>
                             <Typography fFamily="barlowRegular400" size={14} style={{ flex: 1 }}>
                                 {item}
                             </Typography>

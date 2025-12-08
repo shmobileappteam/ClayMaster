@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     divider: {
         height: 1,
         backgroundColor: COLORS.grey,
-        marginVertical: Sizer.hSize(20),
+        marginVertical: Sizer.hSize(10),
         opacity: 0.2
     },
     section: {
