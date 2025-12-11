@@ -9,7 +9,7 @@ import Icon from '../../helpers/Icon';
 import { scorecardData } from '../../constants/dummydata';
 
 const ScorecardItem = ({ item, onPress }) => {
-  const isFileDownloadable = item?.sent_status && item?.download_url;
+  const isFileDownloadable = item?.download_url;
   return (
     <TouchableOpacity
       activeOpacity={BASEOPACITY}
@@ -56,6 +56,7 @@ const ScorecardItem = ({ item, onPress }) => {
               fFamily="barlowSemiBold600"
               numberOfLines={1}
               style={{ flex: 1 }}
+              textTransform={"capitalize"}
             >
               {item?.course_name}
             </Typography>

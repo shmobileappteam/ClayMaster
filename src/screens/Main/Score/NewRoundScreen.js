@@ -102,7 +102,7 @@ const NewRoundScreen = ({ navigation, route }) => {
     queryFn: getTraps,
   });
 
-  const [selectedClass, setSelectedClass] = useState(classes?.[0]);
+  const [selectedClass, setSelectedClass] = useState(classes?.[0] || 'Master');
   const [selectedCourse, setSelectedCourse] = useState('');
   const [noOfPeople, setNoOfPeople] = useState({ label: '1', value: '3' });
   const [squadSequence, setSquadSequence] = useState({
@@ -209,25 +209,15 @@ const NewRoundScreen = ({ navigation, route }) => {
     mutationFn: postRound,
   });
 
-  //Send to ClayMaster:
-  const { mutateAsync: requestSend, isPending: isSendToClayMasterPending } =
-    useCustomMutation({
-      mutationFn: sendToClayMaster,
-    });
 
   // Post Station Mutation:
   const { mutate: postStationtoDb, isPending: isPendingPostStation } =
     useCustomMutation({
       mutationFn: postStations,
       onSuccess: async () => {
-        requestSend(roundDetails?.id || roundId).then(async () => {
-          await queryClient
-            .invalidateQueries({ queryKey: ['rounds'] })
-            .then(() => {
-              navigation.replace('CompleteRoundScreen', {
-                roundId: roundDetails?.id || roundId,
-              });
-            });
+        await queryClient.invalidateQueries({ queryKey: ['rounds'] });
+        navigation.replace('CompleteRoundScreen', {
+          roundId: roundDetails?.id || roundId,
         });
       },
       on422Error: error => {
@@ -776,7 +766,8 @@ const NewRoundScreen = ({ navigation, route }) => {
                   mb={13}
                   label="Complete Record"
                   mt={60}
-                  loader={isPendingPostStation || isSendToClayMasterPending}
+                  loader={isPendingPostStation}
+                  // loader={isPendingPostStation || isSendToClayMasterPending}
                   onPress={() => {
                     sectionNumber == 2
                       ? handleCompleteRound()

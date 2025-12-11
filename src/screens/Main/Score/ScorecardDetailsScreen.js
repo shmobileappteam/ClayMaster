@@ -24,26 +24,29 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
     queryFn: ({ queryKey }) => getRound(queryKey[1]),
   });
 
+  // console.log('scoreCardDetails: ', scoreCardDetails);
+
   //Send to ClayMaster:
   const { mutateAsync: requestSend, isPending } = useCustomMutation({
     mutationFn: sendToClayMaster,
   });
+  const isSentToClayMaster = scoreCardDetails?.sent_status;
 
-  const cardType = scoreCardDetails?.download_url ? 'Card Sent' : 'Saved Card';
-  const cardStatus =
-    scoreCardDetails?.status == 'sent' ? (
-      <Typography fFamily="barlowMedium500">
-        Analytics file is ready to{' '}
-        <Typography fFamily="barlowBold700">download</Typography>
-      </Typography>
-    ) : (
+  const cardType = isSentToClayMaster ? 'Card Sent' : 'Saved Card';
+
+  const cardStatus = scoreCardDetails?.status !== 'sent' && (
+    <Flex
+      jusContent={'space-between'}
+      mT={35}
+      extraStyle={styles.cardStatusContainer}
+    >
+      <View style={styles.horLine} />
       <Typography fFamily="barlowMedium500">
         Card is ready to send to ClayMaster{' '}
       </Typography>
-    );
-
-  const isFileDownloadable =
-    scoreCardDetails?.sent_status && scoreCardDetails?.download_url;
+      <View />
+    </Flex>
+  );
 
   return (
     <Container isPadding={false}>
@@ -59,16 +62,8 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 100 }}
         >
-          <Flex
-            jusContent={'space-between'}
-            mT={35}
-            extraStyle={styles.cardStatusContainer}
-          >
-            <View style={styles.horLine} />
-            {cardStatus}
-            <View />
-          </Flex>
           <View>
+            {cardStatus}
             <Label title="Squad Sequence" />
             <TextField
               placeholder="Enter sequence"
@@ -105,27 +100,27 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
                 isLast={true}
               />
             </View>
-            <Button
-              label={'Send to ClayMaster'}
-              loader={isPending}
-              onPress={() => {
-                navigation.navigate('SavedScoredcardSuccessScreen', {
-                  status: 'Scorecard Sent!',
-                  desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
-                });
-              }}
-              mt={24}
-            />
+
+            {scoreCardDetails?.download_url && (
+              <Button
+                label={'Download File'}
+                mt={16}
+                onPress={() => {
+                  Linking.openURL(scoreCardDetails?.download_url);
+                }}
+              />
+            )}
             <Button
               label={
-                isFileDownloadable ? 'Download File' : 'Send to ClayMaster'
+                isSentToClayMaster
+                  ? 'Already Sent to ClayMaster!'
+                  : 'Send to ClayMaster'
               }
+              disabled={isSentToClayMaster}
               loader={isPending}
+              textStyle={{ textTransform: 'none' }}
               onPress={() => {
-                if (isFileDownloadable) {
-                  Linking.openURL(scoreCardDetails?.download_url);
-                  // Linking.openURL('https://demoappprojects.com/Sample.xls');
-                } else {
+                if (!isSentToClayMaster) {
                   requestSend(roundId).then(() => {
                     queryClient.invalidateQueries({ queryKey: ['rounds'] });
                     navigation.navigate('SavedScoredcardSuccessScreen', {

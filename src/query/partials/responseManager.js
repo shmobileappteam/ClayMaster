@@ -38,7 +38,7 @@ export const onLoginSuccess = async (
   navigation,
   dispatch,
   { email, password },
-  setIsLoading = () => { },
+  setIsLoading = () => {},
 ) => {
   try {
     if (response?.status) {
@@ -46,10 +46,12 @@ export const onLoginSuccess = async (
       storage.set(KEYS.ACCESS_TOKEN, response?.token);
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       await Prefetching();
-      console.log("vresponse: ", response);
+      // console.log('vresponse: ', response);
       if (response?.user?.email_verified_at) {
-
-        const rediredScreen = response?.user?.subscription_status === "active" ? "BottomTabs" : "SubscriptionScreen"
+        const rediredScreen =
+          response?.user?.subscription_status === 'active'
+            ? 'BottomTabs'
+            : 'SubscriptionScreen';
 
         navigation.dispatch(
           CommonActions.reset({
@@ -76,20 +78,6 @@ export const onLoginSuccess = async (
           }),
         );
       }
-
-      // navigation.dispatch(
-      //   CommonActions.reset({
-      //     index: 0,
-      //     routes: [
-      //       {
-      //         name: 'BottomTabs',
-      //         // params: {
-      //         //   screen: 'BottomTabs',
-      //         // },
-      //       },
-      //     ],
-      //   }),
-      // );
     }
   } catch (err) {
     console.log('🚀 ~ onLoginSuccess ~ err:', err);

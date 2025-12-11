@@ -30,8 +30,8 @@ const CompleteRoundScreen = ({ navigation, route }) => {
     mutationFn: sendToClayMaster,
   });
 
-  const isFileDownloadable =
-    stationsDetails?.sent_status && stationsDetails?.download_url;
+  // const isFileDownloadable =
+  //   stationsDetails?.sent_status && stationsDetails?.download_url;
 
   return (
     <Container isPadding={false}>
@@ -66,38 +66,29 @@ const CompleteRoundScreen = ({ navigation, route }) => {
               />
               {/* ))} */}
             </View>
+            {stationsDetails?.download_url && (
+              <Button
+                label={'Download File'}
+                mt={16}
+                onPress={() => {
+                  Linking.openURL(stationsDetails?.download_url);
+                }}
+              />
+            )}
             <Button
               label={'Send to ClayMaster'}
               loader={isPending}
               onPress={() => {
-                navigation.navigate('SavedScoredcardSuccessScreen', {
-                  status: 'Scorecard Sent!',
-                  desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
-                });
-              }}
-              mt={24}
-            />
-            <Button
-              label={
-                isFileDownloadable ? 'Download File' : 'Send to ClayMaster'
-              }
-              mt={16}
-              disabled={isPending}
-              loader={isPending}
-              onPress={() => {
-                if (isFileDownloadable) {
-                  Linking.openURL(stationsDetails?.download_url);
-                  // Linking.openURL('https://demoappprojects.com/Sample.xls');
-                } else {
-                  requestSend(roundId).then(() => {
-                    queryClient.invalidateQueries({ queryKey: ['rounds'] });
-                    navigation.navigate('SavedScoredcardSuccessScreen', {
-                      status: 'Scorecard Sent!',
-                      desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
-                    });
+                requestSend(roundId).then(() => {
+                  queryClient.invalidateQueries({ queryKey: ['rounds'] });
+                  navigation.navigate('SavedScoredcardSuccessScreen', {
+                    status: 'Scorecard Sent!',
+                    desc: 'Your new scorecard has been sent to ClayMaster for Analytics processing',
                   });
-                }
+                });
+                
               }}
+              mt={16}
             />
           </ScrollView>
         )}
