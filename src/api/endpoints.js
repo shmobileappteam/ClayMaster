@@ -1,8 +1,8 @@
 // ✅ Base URLs
 export const BASE_URL = __DEV__
   ? 'https://php82.demo-customlinks.com/claymaster-dev/'
-  : 'https://php82.demo-customlinks.com/claymaster-dev/';
-
+  : 'https://claymaster.net/portal/';
+  
 export const API_DOMAIN = `${BASE_URL}api/`;
 
 export const ENDPOINTS = {

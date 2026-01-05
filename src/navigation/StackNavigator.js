@@ -20,6 +20,7 @@ import {
   SubscribtionSuccessScreen,
   SubscriptionScreen,
   VerifyEmailScreen,
+  InAppSubscriptionScreen,
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
 import BottomNavigator from './BottomNavigator';
@@ -96,6 +97,10 @@ const StackNavigator = () => {
         component={SubscribtionSuccessScreen}
         options={{ animation: 'slide_from_bottom' }}
 
+      />
+      <Stack.Screen
+        name="InAppSubscriptionScreen"
+        component={InAppSubscriptionScreen}
       />
 
       {/* Main */}

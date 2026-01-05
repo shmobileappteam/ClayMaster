@@ -18,6 +18,7 @@ import AboutUsScreen from './Main/Setting/AboutUsScreen';
 import HelpAndSupportScreen from './Main/Setting/HelpAndSupportScreen';
 import TermsAndConditionsScreen from './Main/Setting/TermsAndConditionsScreen';
 import SubscribtionSuccessScreen from './Main/Subscription/SubscribtionSuccessScreen';
+import InAppSubscriptionScreen from './Main/Subscription/InAppSubscriptionScreen';
 
 
 export {
@@ -41,5 +42,6 @@ export {
   AboutUsScreen,
   HelpAndSupportScreen,
   TermsAndConditionsScreen,
-  SubscribtionSuccessScreen
+  SubscribtionSuccessScreen,
+  InAppSubscriptionScreen
 };

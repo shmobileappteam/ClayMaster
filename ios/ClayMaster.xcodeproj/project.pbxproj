@@ -11,6 +11,7 @@
 		0C80B921A6F3F58F76C31292 /* libPods-ClayMaster.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-ClayMaster.a */; };
 		12D75ED36EA74489AE43F843 /* Barlow-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 81FDEB09DC6140139A30A9A9 /* Barlow-SemiBold.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		18C0D1562F02D6BB008147AD /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18C0D1552F02D6BB008147AD /* StoreKit.framework */; };
 		2A4C9E81D0BE4651B962B2BB /* Barlow-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F43A5A28E3164359AD4AF8CC /* Barlow-Medium.ttf */; };
 		530964CCE4FF46F9B7BD3399 /* Barlow-BoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B68FD9428F52467F9CAD5234 /* Barlow-BoldItalic.ttf */; };
 		5AC2D50B0A01769DB9E47C07 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
@@ -24,6 +25,7 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ClayMaster/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ClayMaster/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = ClayMaster/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		18C0D1552F02D6BB008147AD /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		3B4392A12AC88292D35C810B /* Pods-ClayMaster.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClayMaster.debug.xcconfig"; path = "Target Support Files/Pods-ClayMaster/Pods-ClayMaster.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-ClayMaster.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ClayMaster.release.xcconfig"; path = "Target Support Files/Pods-ClayMaster/Pods-ClayMaster.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-ClayMaster.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-ClayMaster.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -43,6 +45,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C80B921A6F3F58F76C31292 /* libPods-ClayMaster.a in Frameworks */,
+				18C0D1562F02D6BB008147AD /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,6 +67,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				18C0D1552F02D6BB008147AD /* StoreKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				5DCACB8F33CDC322A6C60F78 /* libPods-ClayMaster.a */,
 			);
