@@ -1,8 +1,8 @@
 // ✅ Base URLs
-export const BASE_URL = __DEV__
+export const BASE_URL = !__DEV__
   ? 'https://php82.demo-customlinks.com/claymaster-dev/'
   : 'https://claymaster.net/portal/';
-  
+
 export const API_DOMAIN = `${BASE_URL}api/`;
 
 export const ENDPOINTS = {
@@ -37,4 +37,7 @@ export const ENDPOINTS = {
   GET_DISCOUNT_FOR_PACKAGES: 'discounts',
   SETUP_INTENT: 'stripe/setup-intent',
   PAYMENT: 'stripe/subscribe',
+
+  // --- Config ---
+  SUBSCRIPTION_ENABLED: 'subscription-enabled',
 };

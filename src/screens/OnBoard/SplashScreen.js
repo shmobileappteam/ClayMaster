@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 // --------
 import { Container } from '../../atomComponents';
 import SlideInView from '../../animations/SlideView';
@@ -17,12 +17,20 @@ import { storage } from '../../api/api';
 
 const SplashScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const { subscriptionEnabled } = useSelector(state => state.app);
 
   // Custom Mutation Hook:
   const { mutate: requestLogin } = useCustomMutation({
-    mutationFn: (data) => login(data, () => {}),
+    mutationFn: data => login(data, () => {}),
     onSuccess: (response, reqData) => {
-      onLoginSuccess(response, navigation, dispatch, reqData, () => {});
+      onLoginSuccess(
+        response,
+        navigation,
+        dispatch,
+        reqData,
+        () => {},
+        subscriptionEnabled,
+      );
     },
     onError: () => {
       dispatch(handleLogout());

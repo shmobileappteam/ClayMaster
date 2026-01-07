@@ -23,7 +23,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
   const comeFromLogin = route.params?.fromLogin;
   const email = route.params?.email;
 
-  const { user } = useSelector(state => state.app);
+  const { user, subscriptionEnabled } = useSelector(state => state.app);
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
 
@@ -56,7 +56,13 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 
   function handleRouting() {
     if (comeFromLogin) {
-      const rediredScreen = user?.subscription_status === "active" ? "BottomTabs" : "SubscriptionScreen"
+      let rediredScreen = 'BottomTabs';
+
+      if (subscriptionEnabled) {
+        if (user?.subscription_status !== 'active') {
+          rediredScreen = 'SubscriptionScreen';
+        }
+      }
 
       navigation.dispatch(
         CommonActions.reset({
@@ -168,7 +174,6 @@ const VerifyEmailScreen = ({ navigation, route }) => {
             message="Your email has been successfully verified. You can now log in to your account."
             buttonLabel={comeFromLogin ? 'Continue' : 'Login Now'}
             onPress={handleRouting}
-
           />
         </SlideInView>
       )}

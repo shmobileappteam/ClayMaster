@@ -39,6 +39,7 @@ export const onLoginSuccess = async (
   dispatch,
   { email, password },
   setIsLoading = () => {},
+  subscriptionEnabled,
 ) => {
   try {
     if (response?.status) {
@@ -47,12 +48,15 @@ export const onLoginSuccess = async (
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       await Prefetching();
       // console.log('vresponse: ', response);
-      if (response?.user?.email_verified_at) {
-        const rediredScreen =
-          response?.user?.subscription_status === 'active'
-            ? 'BottomTabs'
-            : 'SubscriptionScreen';
 
+      if (response?.user?.email_verified_at) {
+        let rediredScreen = 'BottomTabs';
+
+        if (subscriptionEnabled) {
+          if (response?.user?.subscription_status !== 'active') {
+            rediredScreen = 'SubscriptionScreen';
+          }
+        }
         navigation.dispatch(
           CommonActions.reset({
             index: 0,

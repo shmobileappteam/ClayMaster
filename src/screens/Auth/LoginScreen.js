@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, Linking } from 'react-native';
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 //------------------
 import {
   Flex,
@@ -21,13 +21,22 @@ import { formatBackendErrors } from '../../utils';
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const { subscriptionEnabled } = useSelector(state => state.app);
+
   const [isLoading, setIsLoading] = useState(false);
 
   // Login Mutation:
   const { mutateAsync: requestLogin, isPending } = useCustomMutation({
     mutationFn: data => login(data, setIsLoading),
     onSuccess: (response, reqData) => {
-      onLoginSuccess(response, navigation, dispatch, reqData, setIsLoading);
+      onLoginSuccess(
+        response,
+        navigation,
+        dispatch,
+        reqData,
+        setIsLoading,
+        subscriptionEnabled,
+      );
     },
     onError: () => {
       setIsLoading(false);
@@ -68,7 +77,7 @@ const LoginScreen = ({ navigation }) => {
 
       <FormController
         initialValues={{
-          email: __DEV__ ? 'william@mailinator.com' : '',
+          email: __DEV__ ? 'mark@mailinator.com' : '',
           password: __DEV__ ? 'Admin@1234' : '',
         }}
         validationSchema={validatoinSchema.authValidations.SignInSchema}

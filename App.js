@@ -12,6 +12,8 @@ import { queryClient, storage } from './src/api/api';
 import { useEffect } from 'react';
 import { STRIPE_PUBLISHABLE_KEY } from './src/constants';
 import { getDiscountForPackages } from './src/api/packageService';
+import { getSubscriptionEnabled } from './src/api/appService';
+import { setSubscriptionEnabled } from './src/redux/slices/appSlice';
 
 export default function App() {
   const Theme = {
@@ -28,6 +30,19 @@ export default function App() {
       queryKey: ['discounts'],
       queryFn: getDiscountForPackages,
     });
+
+    getSubscriptionEnabled()
+      .then(data => {
+        if (data && typeof data?.subscription_enabled !== 'undefined') {
+          // console.log('Subscription Status:', data);
+          // store.dispatch(setSubscriptionEnabled(true));
+          store.dispatch(setSubscriptionEnabled(data?.subscription_enabled));
+        }
+      })
+      .catch(err => {
+        // console.log('Error fetching subscription status:', err);
+        store.dispatch(setSubscriptionEnabled(false)); //for now to make the App live
+      });
   }, []);
 
   return (

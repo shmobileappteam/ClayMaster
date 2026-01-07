@@ -32,7 +32,7 @@ const SettingsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const [modalVisibility, setVisibility] = useState(false);
 
-  const { user } = useSelector(state => state.app);
+  const { user, subscriptionEnabled } = useSelector(state => state.app);
 
   function clearApp() {
     queryClient.clear();
@@ -136,9 +136,16 @@ const SettingsScreen = ({ navigation }) => {
           </Flex>
           <Title title="General" />
           <View style={styles.menuCard}>
-            {generalMenus.map((item, idx) => (
-              <MenuItem key={idx} {...item} />
-            ))}
+            {generalMenus
+              .filter(item => {
+                if (item.label === 'Subscription') {
+                  return subscriptionEnabled;
+                }
+                return true;
+              })
+              .map((item, idx) => (
+                <MenuItem key={idx} {...item} />
+              ))}
           </View>
           <Title title="More With ClayMaster" />
           <View style={styles.menuCard}>
