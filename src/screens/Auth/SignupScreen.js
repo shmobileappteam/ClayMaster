@@ -1,5 +1,6 @@
 import { ScrollView, StyleSheet, Text, View, Linking } from 'react-native';
 import React from 'react';
+import { useSelector } from 'react-redux';
 //------------------
 import {
   Flex,
@@ -21,18 +22,28 @@ import { getDiscountForPackages } from '../../api/packageService';
 import Icon from '../../helpers/Icon';
 
 const SignupScreen = ({ navigation }) => {
+  const { subscriptionEnabled } = useSelector(state => state.app);
+
   // Discount query hook:
   const { data: packagesDiscount } = useCustomQuery({
     queryKey: ['discounts'],
     queryFn: getDiscountForPackages,
   });
 
-  console.log('packagesDiscount', packagesDiscount?.data);
+  // console.log('packagesDiscount', packagesDiscount?.data);
 
-  const discountData = React.useMemo(() => packagesDiscount?.data?.map(item => ({
-    label: `${item?.discount_value == 'student' ? 'Youth' : 'Military & First Responders'}`,
-    value: item?.discount_value,
-  })) || [], [packagesDiscount?.data]);
+  const discountData = React.useMemo(
+    () =>
+      packagesDiscount?.data?.map(item => ({
+        label: `${
+          item?.discount_value == 'student'
+            ? 'Youth'
+            : 'Military & First Responders'
+        }`,
+        value: item?.discount_value,
+      })) || [],
+    [packagesDiscount?.data],
+  );
 
   // Register Mutation Hook:
   const { mutateAsync: requestRegister, isPending } = useCustomMutation({
@@ -83,7 +94,7 @@ const SignupScreen = ({ navigation }) => {
             email: __DEV__ ? 'william@mailinator.com' : '',
             password: __DEV__ ? 'Admin@1234' : '',
             password_confirmation: __DEV__ ? 'Admin@1234' : '',
-            discount_type: '',
+            discount_type: subscriptionEnabled ? '' : 'student',
           }}
           validationSchema={validatoinSchema.authValidations.SignUpSchema}
           onSubmit={handleRegister}
@@ -127,34 +138,38 @@ const SignupScreen = ({ navigation }) => {
                   onBlur={handleBlur('email')}
                   mT={23}
                 />
-                <CustomDropdown
-                  data={discountData}
-                  placeholder="Are you?"
-                  dropdownStyle={{ marginTop: Sizer.hSize(23) }}
-                  value={values?.discount_type}
-                  onChange={item => {
-                    setFieldValue('discount_type', item?.value);
-                  }}
-                  mode={'default'}
-                  dropdownPosition={'top'}
-                  leftIcon={() => (
-                    <Icon
-                      iconFamily={'MaterialIcons'}
-                      size={Sizer.vSize(16)}
-                      name={'discount'}
+                {subscriptionEnabled && (
+                  <>
+                    <CustomDropdown
+                      data={discountData}
+                      placeholder="Are you?"
+                      dropdownStyle={{ marginTop: Sizer.hSize(23) }}
+                      value={values?.discount_type}
+                      onChange={item => {
+                        setFieldValue('discount_type', item?.value);
+                      }}
+                      mode={'default'}
+                      dropdownPosition={'top'}
+                      leftIcon={() => (
+                        <Icon
+                          iconFamily={'MaterialIcons'}
+                          size={Sizer.vSize(16)}
+                          name={'discount'}
+                        />
+                      )}
                     />
-                  )}
-                />
-                {errors?.discount_type && (
-                  <Typography
-                    size={13}
-                    color={COLORS.red}
-                    mT={6}
-                    style={styles.errorText}
-                    LineHeight={16}
-                  >
-                    {errors?.discount_type}
-                  </Typography>
+                    {errors?.discount_type && (
+                      <Typography
+                        size={13}
+                        color={COLORS.red}
+                        mT={6}
+                        style={styles.errorText}
+                        LineHeight={16}
+                      >
+                        {errors?.discount_type}
+                      </Typography>
+                    )}
+                  </>
                 )}
                 <TextField
                   placeholder="Password"
@@ -180,7 +195,6 @@ const SignupScreen = ({ navigation }) => {
                   onBlur={handleBlur('password_confirmation')}
                   mT={23}
                 />
-
 
                 <Button
                   label={'Sign Up'}

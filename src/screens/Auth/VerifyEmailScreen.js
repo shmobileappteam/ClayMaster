@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
 
 //------
@@ -77,106 +77,125 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaWrapper
-      keyboardAvoiding
+      keyboardAvoid
       contentStyle={
         isEmailVerified && { justifyContent: 'center', alignItem: 'center' }
       }
     >
-      {!isEmailVerified && (
-        <Header
-          isBackArrowVisible={!isEmailVerified}
-          iconColor={COLORS.white100}
-          left={Sizer.hSize(0)}
-        />
-      )}
-      {!isEmailVerified && (
-        <>
-          <Typography
-            size={40}
-            textAlign="center"
-            mT={52}
-            fFamily="barlowBoldItalic700"
-          >
-            Verify Email{' '}
-          </Typography>
-
-          <Typography
-            size={16}
-            textAlign="center"
-            color={COLORS.black200}
-            mT={8}
-          >
-            We have sent you a verification code to your provided email address,
-            Please enter the code.{' '}
-          </Typography>
-
-          <FormController
-            initialValues={{
-              otp: '',
-            }}
-            validationSchema={validatoinSchema.authValidations.verifyOtpSchema}
-            onSubmit={handleVerifyEmail}
-          >
-            {props => {
-              const { handleSubmit, handleChange, values, errors, handleBlur } =
-                props;
-
-              return (
-                <>
-                  <TextField
-                    placeholder="Enter 6-Digit Code"
-                    leftIcon
-                    leftIconName="number"
-                    leftIconFamily="Octicons"
-                    keyboardType="number-pad"
-                    maxLength={6}
-                    handleChange={handleChange('otp')}
-                    value={values?.otp}
-                    error={errors?.otp}
-                    onBlur={handleBlur('otp')}
-                    mT={23}
-                  />
-                  <TouchableOpacity
-                    activeOpacity={BASEOPACITY}
-                    style={styles.resenStyles}
-                    disabled={isFetching}
-                    onPress={handleResendOtp}
-                  >
-                    <Typography fontSize={14} fFamily="poppinsMedium500">
-                      Didn’t receive the code?{' '}
-                      <Typography
-                        fontSize={15}
-                        mL={6}
-                        fFamily="poppinsMedium500"
-                        color={COLORS.primary}
-                      >
-                        Resend Now{' '}
-                      </Typography>
-                    </Typography>
-                  </TouchableOpacity>
-                  <Button
-                    label={'Verify Now'}
-                    mt={12}
-                    onPress={handleSubmit}
-                    loader={isPending}
-                  />
-                </>
-              );
-            }}
-          </FormController>
-        </>
-      )}
-
-      {isEmailVerified && (
-        <SlideInView slide="right" slideDuration={350}>
-          <SuccessMessage
-            title="Email Verified Successfully"
-            message="Your email has been successfully verified. You can now log in to your account."
-            buttonLabel={comeFromLogin ? 'Continue' : 'Login Now'}
-            onPress={handleRouting}
+      <ScrollView
+        contentContainerStyle={[
+          { paddingBottom: 64 },
+          isEmailVerified && {
+            flexGrow: 1,
+            justifyContent: 'center',
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {!isEmailVerified && (
+          <Header
+            isBackArrowVisible={!isEmailVerified}
+            iconColor={COLORS.white100}
+            left={Sizer.hSize(0)}
           />
-        </SlideInView>
-      )}
+        )}
+        {!isEmailVerified && (
+          <>
+            <Typography
+              size={40}
+              textAlign="center"
+              mT={52}
+              fFamily="barlowBoldItalic700"
+            >
+              Verify Email{' '}
+            </Typography>
+
+            <Typography
+              size={16}
+              textAlign="center"
+              color={COLORS.black200}
+              mT={8}
+            >
+              We have sent you a verification code to your provided email
+              address, Please enter the code.{' '}
+            </Typography>
+
+            <FormController
+              initialValues={{
+                otp: '',
+              }}
+              validationSchema={
+                validatoinSchema.authValidations.verifyOtpSchema
+              }
+              onSubmit={handleVerifyEmail}
+            >
+              {props => {
+                const {
+                  handleSubmit,
+                  handleChange,
+                  values,
+                  errors,
+                  handleBlur,
+                } = props;
+
+                return (
+                  <>
+                    <TextField
+                      placeholder="Enter 6-Digit Code"
+                      leftIcon
+                      leftIconName="number"
+                      leftIconFamily="Octicons"
+                      keyboardType="number-pad"
+                      maxLength={6}
+                      handleChange={handleChange('otp')}
+                      value={values?.otp}
+                      error={errors?.otp}
+                      onBlur={handleBlur('otp')}
+                      mT={23}
+                      returnKeyType="done"
+                    />
+                    <TouchableOpacity
+                      activeOpacity={BASEOPACITY}
+                      style={styles.resenStyles}
+                      disabled={isFetching}
+                      onPress={handleResendOtp}
+                    >
+                      <Typography fontSize={14} fFamily="poppinsMedium500">
+                        Didn’t receive the code?{' '}
+                        <Typography
+                          fontSize={15}
+                          mL={6}
+                          fFamily="poppinsMedium500"
+                          color={COLORS.primary}
+                        >
+                          Resend Now{' '}
+                        </Typography>
+                      </Typography>
+                    </TouchableOpacity>
+                    <Button
+                      label={'Verify Now'}
+                      mt={12}
+                      onPress={handleSubmit}
+                      loader={isPending}
+                    />
+                  </>
+                );
+              }}
+            </FormController>
+          </>
+        )}
+
+        {isEmailVerified && (
+          <SlideInView slide="right" slideDuration={350}>
+            <SuccessMessage
+              title="Email Verified Successfully"
+              message="Your email has been successfully verified. You can now log in to your account."
+              buttonLabel={comeFromLogin ? 'Continue' : 'Login Now'}
+              onPress={handleRouting}
+            />
+          </SlideInView>
+        )}
+      </ScrollView>
     </SafeAreaWrapper>
   );
   f;

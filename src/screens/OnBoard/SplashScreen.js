@@ -40,7 +40,9 @@ const SplashScreen = ({ navigation }) => {
 
   useEffect(() => {
     // storage.clearAll();
-    checkUser();
+    setTimeout(() => {
+      checkUser();
+    }, 2000);
   }, []);
 
   const checkUser = async () => {
