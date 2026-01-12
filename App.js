@@ -13,9 +13,14 @@ import { useEffect } from 'react';
 import { STRIPE_PUBLISHABLE_KEY } from './src/constants';
 import { getDiscountForPackages } from './src/api/packageService';
 import { getSubscriptionEnabled } from './src/api/appService';
-import { setSubscriptionEnabled } from './src/redux/slices/appSlice';
+import {
+  setSubscriptionEnabled,
+  setStripePublishableKey,
+} from './src/redux/slices/appSlice';
+import { useState } from 'react';
 
 export default function App() {
+  const [stripeKey, setStripeKey] = useState(STRIPE_PUBLISHABLE_KEY);
   const Theme = {
     ...DefaultTheme,
     myOwnProperty: true,
@@ -33,10 +38,18 @@ export default function App() {
 
     getSubscriptionEnabled()
       .then(data => {
-        if (data && typeof data?.subscription_enabled !== 'undefined') {
-          // console.log('Subscription Status:', data);
-          // store.dispatch(setSubscriptionEnabled(true));
-          store.dispatch(setSubscriptionEnabled(data?.subscription_enabled));
+        if (data) {
+          if (typeof data?.subscription_enabled !== 'undefined') {
+            store.dispatch(setSubscriptionEnabled(data?.subscription_enabled));
+          }
+          console.log(
+            '🚀 ~ App ~ data?.stripe_public_key:',
+            data?.stripe_public_key,
+          );
+          if (data?.stripe_public_key) {
+            setStripeKey(data?.stripe_public_key);
+            store.dispatch(setStripePublishableKey(data?.stripe_public_key));
+          }
         }
       })
       .catch(err => {
@@ -49,7 +62,7 @@ export default function App() {
     <ReduxProvider store={store}>
       <PaperProvider theme={Theme}>
         <SafeAreaProvider>
-          <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
+          <StripeProvider publishableKey={stripeKey}>
             <QueryClientProvider client={queryClient}>
               <RootStack />
             </QueryClientProvider>

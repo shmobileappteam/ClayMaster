@@ -1,6 +1,6 @@
 // ✅ Base URLs
-export const BASE_URL = !__DEV__
-  ? 'https://php82.demo-customlinks.com/claymaster-dev/'
+export const BASE_URL = __DEV__
+  ? 'https://claymaster.net/portal/'
   : 'https://claymaster.net/portal/';
 
 export const API_DOMAIN = `${BASE_URL}api/`;

@@ -9,6 +9,7 @@ const initialState = {
   isLogged: false,
   trackLocation: null,
   subscriptionEnabled: true,
+  stripePublishableKey: '',
 };
 
 const appSlice = createSlice({
@@ -34,6 +35,9 @@ const appSlice = createSlice({
     setSubscriptionEnabled: (state, action) => {
       state.subscriptionEnabled = action.payload;
     },
+    setStripePublishableKey: (state, action) => {
+      state.stripePublishableKey = action.payload;
+    },
   },
 });
 
@@ -42,5 +46,6 @@ export const {
   handleLogout,
   setTrackLocation,
   setSubscriptionEnabled,
+  setStripePublishableKey,
 } = appSlice.actions;
 export default appSlice.reducer;

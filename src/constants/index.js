@@ -9,7 +9,5 @@ export const KEYS = {
   SOCIAL_TOKEN: '@social_token',
 };
 
-
-
 export const STRIPE_PUBLISHABLE_KEY =
-  'pk_test_51REqQ9CImI4BwxIIdWakOPpxegkHmdASqC7ESEQfkRvGnnof56ElHZLIM8bjoYEYLkOSLtVFEbwQmnrCDE6D64Ym00jXj5y1CW';
+  'pk_live_51REqPyCMP5tchOw4PQQmjqSv0vJGjZznIdwD52Q3MEDXoMPS1qfiiucNXFSMlMtiEIjvM21kk1jFa3PBgp8r23W000utzrSdQ8';
