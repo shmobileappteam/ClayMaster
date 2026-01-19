@@ -42,10 +42,6 @@ export default function App() {
           if (typeof data?.subscription_enabled !== 'undefined') {
             store.dispatch(setSubscriptionEnabled(data?.subscription_enabled));
           }
-          console.log(
-            '🚀 ~ App ~ data?.stripe_public_key:',
-            data?.stripe_public_key,
-          );
           if (data?.stripe_public_key) {
             setStripeKey(data?.stripe_public_key);
             store.dispatch(setStripePublishableKey(data?.stripe_public_key));
@@ -53,8 +49,7 @@ export default function App() {
         }
       })
       .catch(err => {
-        // console.log('Error fetching subscription status:', err);
-        store.dispatch(setSubscriptionEnabled(false)); //for now to make the App live
+        store.dispatch(setSubscriptionEnabled(false));
       });
   }, []);
 

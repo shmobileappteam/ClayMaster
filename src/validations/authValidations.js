@@ -30,7 +30,7 @@ const SignUpSchema = Yup.object().shape({
   password_confirmation: Yup.string()
     .required('Please confirm your password')
     .oneOf([Yup.ref('password')], 'Passwords do not match'),
-  discount_type: Yup.string().required("Discount type is required")
+  // discount_type: Yup.string().required("Discount type is required")
 });
 
 const ForgotPasswordSchema = Yup.object().shape({
