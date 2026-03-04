@@ -1,7 +1,7 @@
 // ✅ Base URLs
 export const BASE_URL = __DEV__
-  ? 'https://claymaster.net/portal/'
-  : 'https://claymaster.net/portal/';
+  ? 'https://claymaster.net/'
+  : 'https://claymaster.net/';
 
 export const API_DOMAIN = `${BASE_URL}api/`;
 
