@@ -37,11 +37,12 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
   const cardStatus = scoreCardDetails?.status !== 'sent' && (
     <Flex
       jusContent={'space-between'}
-      mT={35}
+      mT={24}
+      mB={16}
       extraStyle={styles.cardStatusContainer}
     >
       <View style={styles.horLine} />
-      <Typography fFamily="barlowMedium500">
+      <Typography fFamily="barlowBold700" color={COLORS.black300}>
         Card is ready to send to ClayMaster{' '}
       </Typography>
       <View />
@@ -49,7 +50,7 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
   );
 
   return (
-    <Container isPadding={false}>
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header
         type="app"
         title={isLoading ? 'Fetching ScoreCard..' : cardType}
@@ -60,7 +61,7 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
         <ScrollView
           style={GLOBALSTYLE.paddingHor}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 120 }}
         >
           <View>
             {cardStatus}
@@ -80,7 +81,9 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
             <View style={styles.nscaClassContainer}>
               <Box name={scoreCardDetails?.ncsca_class} />
             </View>
-            <Label title="Round Summary" size={20} fFamily="barlowBold700" />
+            <View style={{ marginTop: Sizer.vSize(32), marginBottom: Sizer.vSize(16) }}>
+                <Label title="Round Summary" size={20} fFamily="barlowBold700" color={COLORS.black300} />
+            </View>
             <StationsList
               data={scoreCardDetails?.stations}
               isEuropeanRoration={scoreCardDetails?.european_rotation || false}
@@ -104,7 +107,8 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
             {scoreCardDetails?.download_url && (
               <Button
                 label={'Download File'}
-                mt={16}
+                mt={24}
+                type="secondary"
                 onPress={() => {
                   Linking.openURL(scoreCardDetails?.download_url);
                 }}
@@ -142,7 +146,7 @@ const ScorescoreCardDetailsScreen = ({ route, navigation }) => {
 const Box = ({ name }) => {
   return (
     <View style={styles.box}>
-      <Typography fFamily="barlowMedium500" color={COLORS.white100}>
+      <Typography fFamily="barlowBold700" color={COLORS.white100} size={14}>
         {name}
       </Typography>
     </View>
@@ -151,32 +155,52 @@ const Box = ({ name }) => {
 
 const styles = StyleSheet.create({
   cardStatusContainer: {
-    paddingVertical: Sizer.hSize(6),
-    backgroundColor: COLORS.orange300,
-    borderLeftWidth: Sizer.hSize(3),
-    borderLeftColor: COLORS.primary,
-    borderRightWidth: Sizer.hSize(3),
-    borderRightColor: COLORS.primary,
+    paddingVertical: Sizer.vSize(12),
+    paddingHorizontal: Sizer.hSize(16),
+    backgroundColor: COLORS.white100,
+    borderLeftWidth: Sizer.hSize(4),
+    borderLeftColor: COLORS.orange400 || COLORS.primary,
+    borderRadius: Sizer.hSize(8),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   nscaClassContainer: {
     flexDirection: 'row',
     gap: 10,
+    marginBottom: Sizer.vSize(8),
   },
   box: {
-    height: Sizer.hSize(27),
-    paddingHorizontal: Sizer.hSize(8),
+    paddingVertical: Sizer.vSize(6),
+    paddingHorizontal: Sizer.hSize(16),
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: Sizer.hSize(5),
+    borderRadius: Sizer.hSize(8),
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   tableCont: {
     backgroundColor: COLORS.white100,
-    borderRadius: Sizer.hSize(10),
-    borderWidth: Sizer.hSize(1),
-    borderColor: COLORS.primary,
+    borderRadius: Sizer.hSize(12),
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
     overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    marginTop: Sizer.vSize(16),
   },
+  horLine: {
+      display: 'none',
+  }
 });
 
 export default ScorescoreCardDetailsScreen;

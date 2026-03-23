@@ -1,4 +1,4 @@
-import { Dimensions } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import Sizer from '../helpers/Sizer';
 
 const BASEOPACITY = 0.5;
@@ -8,9 +8,18 @@ const IMAGEONLOADCOLOR = {
 };
 
 const COLORS = {
-  mainBg: '#FFEFE3',
-  primary: '#EB6C0F',
-  secondary: '#7C0000',
+  /** App canvas — cool neutral for depth vs white cards */
+  mainBg: '#F4F6F9',
+  /** Slightly elevated surface for cards / sections */
+  surface: '#FFFFFF',
+  surfaceMuted: '#F3F4F6',
+  borderMuted: '#E8E8EA',
+  borderSubtle: '#EFEFEF',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#525252',
+  textMuted: '#737373',
+  primary: '#E85D04',
+  secondary: '#1A2332',
 
   //Orange Variants:
   orange100: '#EE7615',
@@ -69,16 +78,86 @@ const WINDOW = {
   fixPadding: 24,
 };
 
+/** 8pt-based spacing scale (values in logical px before Sizer) */
+const SPACING = {
+  xxs: 4,
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 40,
+};
+
+const RADIUS = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  pill: 999,
+};
+
+/** Type scale — use with Typography `size` / `fFamily` */
+const TYPE = {
+  h1: { size: 23, fFamily: 'barlowBold700' },
+  h2: { size: 19, fFamily: 'barlowSemiBold600' },
+  body: { size: 15, fFamily: 'barlowRegular400' },
+  bodySm: { size: 14, fFamily: 'barlowRegular400' },
+  caption: { size: 12, fFamily: 'barlowMedium500' },
+  overline: { size: 11, fFamily: 'barlowSemiBold600' },
+};
+
+const defaultBannerHeight = 152;
+
+const SHADOWS = {
+  card: {
+    elevation: 2,
+    shadowColor: '#1A2332',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+  },
+  /** Page intro / hero cards */
+  banner: {
+    elevation: 5,
+    shadowColor: '#1A2332',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.09,
+    shadowRadius: 16,
+  },
+  header: {
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+  },
+  floating: {
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+  },
+  /** Thumbnails, chips */
+  soft: {
+    elevation: 2,
+    shadowColor: '#1A2332',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+  },
+};
+
 const GLOBALSTYLE = {
   wrap: {
     flex: 1,
     backgroundColor: COLORS.primary,
   },
   paddingHor: {
-    paddingHorizontal: Sizer.hSize(24),
+    paddingHorizontal: Sizer.hSize(20),
   },
   marginHor: {
-    marginHorizontal: Sizer.hSize(24),
+    marginHorizontal: Sizer.hSize(20),
   },
   checkBoxWrapper: {
     width: Sizer.hSize(24),
@@ -98,10 +177,30 @@ const GLOBALSTYLE = {
     height: Sizer.vSize(16),
   },
   itemSeparatorHorizontally: {
-    height: Sizer.vSize(10),
+    height: Sizer.vSize(8),
+  },
+  /** Default elevated card — use for panels, forms, lists */
+  screenCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: Sizer.hSize(14),
+    ...SHADOWS.card,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.borderSubtle,
   },
   bgWithOpacity: (opacity = 0.3) => `rgba(0, 0, 0, ${opacity})`,
   dynamicAvatar: { uri: 'https://i.pravatar.cc/100' },
 };
 
-export { COLORS, WINDOW, FONTS, GLOBALSTYLE, BASEOPACITY, IMAGEONLOADCOLOR };
+export {
+  COLORS,
+  WINDOW,
+  FONTS,
+  GLOBALSTYLE,
+  BASEOPACITY,
+  IMAGEONLOADCOLOR,
+  SPACING,
+  RADIUS,
+  TYPE,
+  SHADOWS,
+  defaultBannerHeight,
+};

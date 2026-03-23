@@ -1,9 +1,9 @@
 import {
   BackHandler,
-  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -13,11 +13,12 @@ import {
   Container,
   Flex,
   FormController,
+  Typography,
 } from '../../../atomComponents';
-import { Edit } from '../../../assets/images';
-import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
+import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { Button, Header, TextField } from '../../../components';
+import Icon from '../../../helpers/Icon';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { editProfile } from '../../../api/userService';
 import { setUser } from '../../../redux/slices/appSlice';
@@ -37,7 +38,6 @@ const ProfileDetailsScreen = ({ navigation }) => {
   const { mutate: editProf, isPending } = useCustomMutation({
     mutationFn: editProfile,
     onSuccess: response => {
-      // console.log('🚀 ~ EditProfileDetailsScreen ~ response:', response);
       if (response?.status) {
         dispatch(setUser({ ...response?.user }));
         setIsEdit(false);
@@ -63,12 +63,6 @@ const ProfileDetailsScreen = ({ navigation }) => {
     } else {
       delete values.profile_image;
     }
-
-    console.log('🚀 ~ handleEditProfile ~ values:', {
-      id: user?.id,
-      ...values,
-      //   imageUri
-    });
 
     editProf({ id: user?.id, ...values });
   };
@@ -98,158 +92,165 @@ const ProfileDetailsScreen = ({ navigation }) => {
     return () => backHandler.remove();
   }, [edit]);
 
-  // console.log(`${BASE_URL}${user?.profile_image}`);
-
-
   return (
     <Container keyboardAvoiding isPadding={false}>
       <Header
         type="app"
-        title={edit ? 'Edit Profile' : 'My Profile'}
+        title="Account Settings"
         onPresBack={() => (edit ? setIsEdit(false) : navigation.goBack())}
       />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          ...GLOBALSTYLE.paddingHor,
-          paddingBottom: Sizer.hSize(50),
+          paddingBottom: Sizer.hSize(100),
+          paddingHorizontal: Sizer.hSize(20),
         }}
       >
-        <Flex algItems={'center'} direction={'column'} mT={25} mb={30}>
+        <Flex algItems={'center'} direction={'column'} mT={40} mB={32}>
           <TouchableOpacity
-            activeOpacity={BASEOPACITY}
-            onPress={() => {
-              if (edit) {
-                openGallery();
-              } else {
-                setIsEdit(!edit);
-              }
-            }}
-            style={{ position: 'relative' }}
+            activeOpacity={0.88}
+            onPress={openGallery}
+            style={styles.avatarContainer}
           >
             <Avatar.Image
               source={{ uri: imageUri?.uri || `${BASE_URL}${user?.profile_image}` }}
-              size={Sizer.hSize(88)}
-              style={{ backgroundColor: COLORS.orange400 }}
+              size={Sizer.hSize(120)}
+              style={{ backgroundColor: COLORS.white200 }}
             />
-
-            {!edit && (
-              <Image
-                source={Edit}
-                resizeMode="contain"
-                style={{
-                  height: Sizer.vSize(24),
-                  width: Sizer.vSize(24),
-                  position: 'absolute',
-                  bottom: 0,
-                  right: 0,
-                }}
-              />
-            )}
+            <View style={styles.editBadge}>
+              <Icon name="camera" size={18} color={COLORS.white100} iconFamily="Ionicons" />
+            </View>
           </TouchableOpacity>
         </Flex>
+
         <FormController
           initialValues={initialValues}
           onSubmit={handleEditProfile}
         >
           {props => {
-            const { handleSubmit, handleChange, handleBlur, values, errors } =
-              props;
-
+            const { handleSubmit, handleChange, handleBlur, values, errors } = props;
             return (
               <>
-                {/* <InputLabel title="Email" mT={24} /> */}
-                <TextField
-                  placeholder="email"
-                  value={values?.email}
-                  error={errors?.email}
-                  handleChange={handleChange('email')}
-                  handleBlur={handleBlur('email')}
-                  leftIcon
-                  leftIconName="mail"
-                  disable={false}
-                  mT={24}
-                />
-                {/* <InputLabel title="First Name" /> */}
+                <InputLabel title="First Name" />
                 <TextField
                   placeholder="First Name"
                   value={values?.first_name}
                   error={errors?.first_name}
                   handleChange={handleChange('first_name')}
                   handleBlur={handleBlur('first_name')}
-                  leftIcon
-                  leftIconName="person"
-                  disable={edit}
-                  mT={16}
+                  mT={0}
                 />
-                {/* <InputLabel title="Last Name" /> */}
+
+                <InputLabel title="Last Name" />
                 <TextField
                   placeholder="Last Name"
                   value={values?.last_name}
                   error={errors?.last_name}
                   handleChange={handleChange('last_name')}
                   handleBlur={handleBlur('last_name')}
-                  leftIcon
-                  leftIconName="person"
-                  disable={edit}
-                  mT={16}
-                />
-                {/* <InputLabel title="Phone Number" /> */}
-                <TextField
-                  mT={16}
-                  leftIconName="phone"
-                  value={maskPhoneNumber(values?.contact)}
-                  error={errors?.contact}
-                  handleChange={number =>
-                    handleChange('contact')(number?.replace(/\D/g, ''))
-                  }
-                  handleBlur={handleBlur('contact')}
-                  leftIconFamily="FontAwesome"
-                  leftIcon
-                  placeholder="Phone"
-                  maxLength={12}
-                  disable={edit}
+                  mT={0}
                 />
 
-                {/* <InputLabel title="Address" /> */}
+                <InputLabel title="Address" />
                 <TextField
-                  mT={16}
-                  leftIconName="location"
+                  placeholder="Address"
                   value={values?.address}
                   error={errors?.address}
                   handleChange={handleChange('address')}
                   handleBlur={handleBlur('address')}
-                  leftIconFamily="Ionicons"
-                  leftIcon
-                  placeholder="Address"
-                  disable={edit}
-                  // multiline={true}
-                  numberOfLines={5}
+                  mT={0}
                 />
 
-                {edit && (
-                  <Button
-                    label="Save Changes"
-                    mt={28}
-                    onPress={handleSubmit}
-                    loader={isPending}
-                  />
-                )}
+                <InputLabel title="Email" />
+                <TextField
+                  placeholder="Email"
+                  value={values?.email}
+                  error={errors?.email}
+                  handleChange={handleChange('email')}
+                  handleBlur={handleBlur('email')}
+                  disable={true}
+                  mT={0}
+                />
+
+                <InputLabel title="Contact" />
+                <TextField
+                  placeholder="Contact"
+                  value={maskPhoneNumber(values?.contact)}
+                  error={errors?.contact}
+                  handleChange={number => handleChange('contact')(number?.replace(/\D/g, ''))}
+                  handleBlur={handleBlur('contact')}
+                  mT={0}
+                  maxLength={12}
+                />
+
+                <Button
+                  label="Update Profile"
+                  mt={32}
+                  onPress={handleSubmit}
+                  loader={isPending}
+                />
               </>
             );
           }}
         </FormController>
+
+        <View style={styles.divider} />
+
+        <Button
+            label="Change Password"
+            mt={16}
+            onPress={() => navigation.navigate('ChangePasswordScreen')}
+            type="border"
+            btnStyle={{ borderColor: COLORS.primary }}
+            textStyle={{ color: COLORS.primary }}
+        />
+
+        <TouchableOpacity 
+            style={styles.deleteBtn}
+            onPress={() => navigation.navigate('DeleteAccountScreen')}
+        >
+            <Typography color={COLORS.red200} size={14} fFamily="barlowBold700" textAlign="center">
+                Delete My Account
+            </Typography>
+        </TouchableOpacity>
       </ScrollView>
     </Container>
   );
 };
 
-
-const styles = StyleSheet.create({
-  formWrapper: {
-    paddingHorizontal: Sizer.hSize(20),
-  },
-});
+const InputLabel = ({ title = '' }) => (
+    <Typography size={13} color={COLORS.primary} fFamily="barlowSemiBold600" mT={16} mB={6}>
+        {title}
+    </Typography>
+);
 
 export default ProfileDetailsScreen;
+
+const styles = StyleSheet.create({
+  avatarContainer: {
+    position: 'relative',
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: COLORS.primary,
+    width: Sizer.hSize(36),
+    height: Sizer.hSize(36),
+    borderRadius: Sizer.hSize(18),
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.white100,
+  },
+  divider: {
+    height: Sizer.vSize(1),
+    backgroundColor: COLORS.borderSubtle,
+    marginVertical: Sizer.vSize(32),
+  },
+  deleteBtn: {
+    marginTop: Sizer.vSize(40),
+    paddingBottom: Sizer.vSize(40),
+  }
+});

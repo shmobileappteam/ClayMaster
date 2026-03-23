@@ -20,8 +20,8 @@ function Button({
   mb = 0,
   mt = 0,
   iconGap = 8,
-  fontSize = 18,
-  fontFamily = FONTS.plusJakartaSansMedium500,
+  fontSize = 16,
+  fontFamily = FONTS.barlowSemiBold600,
   bgColor = null,
   textColor = null,
   loadColor = null,
@@ -49,14 +49,19 @@ function Button({
 
   const styles = {
     btn: {
-      borderRadius: Sizer.fS(12),
+      borderRadius: Sizer.hSize(12),
       alignItems: 'center',
       justifyContent: 'center',
-      height: Sizer.hSize(50),
-      // paddingVertical: Sizer.vSize(13),
-      // paddingHorizontal: Sizer.hSize(12),
+      height: Sizer.hSize(52),
       borderColor: borderColor,
       borderWidth: borderWidth,
+      ...(type === 'primary' && {
+        elevation: 4,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.28,
+        shadowRadius: 12,
+      }),
     },
     btnTextStyle: {
       fontFamily: fontFamily,
@@ -69,7 +74,7 @@ function Button({
   return (
     <TouchableOpacity
       disabled={loader || disabled}
-      activeOpacity={BASEOPACITY}
+      activeOpacity={0.88}
       style={[
         styles.btn,
         {

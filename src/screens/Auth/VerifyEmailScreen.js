@@ -198,7 +198,6 @@ const VerifyEmailScreen = ({ navigation, route }) => {
       </ScrollView>
     </SafeAreaWrapper>
   );
-  f;
 };
 
 export default VerifyEmailScreen;

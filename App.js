@@ -1,4 +1,5 @@
 import { DefaultTheme, PaperProvider } from 'react-native-paper';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Provider as ReduxProvider } from 'react-redux';
@@ -54,16 +55,18 @@ export default function App() {
   }, []);
 
   return (
-    <ReduxProvider store={store}>
-      <PaperProvider theme={Theme}>
-        <SafeAreaProvider>
-          <StripeProvider publishableKey={stripeKey}>
-            <QueryClientProvider client={queryClient}>
-              <RootStack />
-            </QueryClientProvider>
-          </StripeProvider>
-        </SafeAreaProvider>
-      </PaperProvider>
-    </ReduxProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ReduxProvider store={store}>
+        <PaperProvider theme={Theme}>
+          <SafeAreaProvider>
+            <StripeProvider publishableKey={stripeKey}>
+              <QueryClientProvider client={queryClient}>
+                <RootStack />
+              </QueryClientProvider>
+            </StripeProvider>
+          </SafeAreaProvider>
+        </PaperProvider>
+      </ReduxProvider>
+    </GestureHandlerRootView>
   );
 }

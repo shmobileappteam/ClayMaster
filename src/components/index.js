@@ -7,6 +7,7 @@ import BooleanRadioSelector from './customFields/BooleanRadioSelector';
 import DiscountRadioSelector from './customFields/DiscountRadioSelector';
 import Label from './customFields/Label';
 import Header from './header/Header';
+import ScreenBanner from './ScreenBanner';
 
 import ImagePicker from './imagePicker/ImagePicker';
 
@@ -21,6 +22,7 @@ export {
   SearchField,
   CustomDropdown,
   Header,
+  ScreenBanner,
   ImagePicker,
   Accordion,
   Label,

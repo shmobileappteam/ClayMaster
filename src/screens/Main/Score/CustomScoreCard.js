@@ -6,7 +6,7 @@ import React from 'react';
 import { Container, Typography } from '../../../atomComponents';
 import { Header, IconButton } from '../../../components';
 import Sizer from '../../../helpers/Sizer';
-import { GLOBALSTYLE } from '../../../globalStyle/Theme';
+import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import { downarrow, homebanner } from '../../../assets/images';
 import ScorecardList from '../../../components/Round/ScorecardList';
 import { useCustomQuery } from '../../../query/useCustomQuery';
@@ -27,15 +27,14 @@ const CustomScoreCard = ({ navigation }) => {
   // console.log(roundsData);
 
   return (
-    <Container isPadding={false}>
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header type="home" />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        style={{ marginTop: Sizer.hSize(30) }}
+        style={{ marginTop: Sizer.vSize(24) }}
         contentContainerStyle={{
-          paddingBottom: Sizer.vSize(20),
-          // ...GLOBALSTYLE.paddingHor,
+          paddingBottom: Sizer.vSize(120),
         }}
       >
         {roundsData?.length ? (
@@ -48,21 +47,18 @@ const CustomScoreCard = ({ navigation }) => {
               data={roundsData || []}
               onItemPress={item => {
                 item?.complete_status
-                  ? // item?.complete_status
-                    navigation.navigate('ScorecardDetailsScreen', {
+                  ? navigation.navigate('ScorecardDetailsScreen', {
                       roundId: item?.id,
                     })
                   : navigation.navigate('NewRoundScreen', {
                       roundDetails: {
                         ...item,
-                        // european_rotation: false,
-                        // starting_station: 3,
-                        // total_stations: 10,
-                        // station_sequence: [3, 4, 5, 6, 7, 8, 9, 10, 1, 2],
                       },
                     });
               }}
             />
+            <View style={{ marginTop: Sizer.vSize(24) }} />
+            <IconButton onPress={() => setShowNewRoundModal(true)} />
           </View>
         ) : (
           <>
@@ -75,31 +71,34 @@ const CustomScoreCard = ({ navigation }) => {
               <Typography
                 size={28}
                 textAlign="center"
-                mT={20}
+                mT={24}
                 fFamily="barlowBoldItalic700"
+                color={COLORS.black300}
               >
                 Ready To Shoot?{' '}
               </Typography>
               <Typography
                 size={16}
                 textAlign="center"
-                mT={6}
-                mB={2}
+                mT={12}
+                mB={16}
                 fFamily="barlowMedium500"
+                color={COLORS.black500}
+                lineHeight={24}
               >
                 Master your sporting clays skills and start your analytics
                 process by using our custom ClayMaster scorecard.{' '}
               </Typography>
             </View>
+            <Image
+              source={downarrow}
+              style={styles.downArrow}
+              resizeMode="contain"
+            />
+            <View style={{ marginTop: Sizer.vSize(24) }} />
+            <IconButton onPress={() => setShowNewRoundModal(true)} />
           </>
         )}
-        <Image
-          source={downarrow}
-          style={styles.downArrow}
-          resizeMode="contain"
-        />
-        <View style={{ marginTop: Sizer.hSize(12) }} />
-        <IconButton onPress={() => setShowNewRoundModal(true)} />
       </ScrollView>
 
       <ConfirmModal
@@ -130,9 +129,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   banneerimg: {
-    height: Sizer.hSize(173),
+    height: Sizer.vSize(200),
     width: '100%',
-    borderRadius: Sizer.hSize(10),
+    borderRadius: Sizer.hSize(12),
   },
 });
 

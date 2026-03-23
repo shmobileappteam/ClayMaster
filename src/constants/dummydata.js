@@ -14,6 +14,13 @@ export const generalMenus = [
     stack: 'BottomTabs',
   },
   {
+    label: 'My Orders',
+    icon: 'receipt-outline',
+    family: 'Ionicons',
+    navLink: 'OrdersScreen',
+    stack: null,
+  },
+  {
     label: 'Subscription',
     icon: 'star',
     family: 'Ionicons',
@@ -25,14 +32,54 @@ export const generalMenus = [
 
 export const moreMenus = [
   {
+    label: 'ClayMaster Shop',
+    icon: 'cart-outline',
+    family: 'Ionicons',
+    navLink: 'ShopScreen',
+    stack: null,
+  },
+  {
+    label: 'Private Forum',
+    icon: 'chatbubbles-outline',
+    family: 'Ionicons',
+    navLink: 'CommunityScreen',
+    stack: null,
+  },
+  {
+    label: 'Virtual Tournament',
+    icon: 'trophy-outline',
+    family: 'Ionicons',
+    navLink: 'VirtualTournamentScreen',
+    stack: null,
+  },
+  {
+    label: 'Additional Documents',
+    icon: 'documents-outline',
+    family: 'Ionicons',
+    navLink: 'AdditionalDocumentsScreen',
+    stack: null,
+  },
+  {
+    label: 'Additional Videos',
+    icon: 'videocam-outline',
+    family: 'Ionicons',
+    navLink: 'AdditionalVideosScreen',
+    stack: null,
+  },
+  {
+    label: 'Reviews',
+    icon: 'star-outline',
+    family: 'Ionicons',
+    navLink: 'ReviewsScreen',
+    stack: null,
+  },
+  {
     label: 'About Us',
     icon: 'information-circle-outline',
     family: 'Ionicons',
     navLink: 'AboutUsScreen',
     stack: null,
   },
-
-  // { label: 'Our Reviews', icon: 'star-outline', family: 'Ionicons' },
 ];
 
 export const settingData = [
@@ -70,52 +117,39 @@ export const settingData = [
 export const subscriptionPlans = [
   {
     id: 1,
-    name: 'Silver Plan',
+    name: 'Classic Plan',
     price: '$25',
     period: 'month',
-    icon: '👑',
+    icon: '🥈',
     features: [
-      'Self-assessment tab',
+      'Access to Classic Workbook',
+      '1 Analytics Session',
+      '1 Coaching Session',
       'Tips/techniques that can help improve your shooting performance.',
-      'Expanded practice drills.',
-      'Going beyond normal break points.',
-      'Additional 30 minute online coaching sessions can be purchased for $85/session.',
+      'Instructional Training Videos.',
+      'Standard Practice Drills.',
     ],
     additionalCount: 5,
   },
   {
     id: 2,
-    name: 'Gold Plan',
+    name: 'Pro Plan',
     price: '$45',
     period: 'month',
-    icon: '👑',
+    icon: '🥇',
     features: [
-      'Everything in Silver Plan',
+      'Everything in Classic Plan',
+      'Full access to Pro Workbooks',
+      '2 Analytics Sessions',
+      '3 Coaching Sessions',
       'Advanced performance analytics',
       'Personalized training programs',
       'Priority support',
       'Monthly video analysis',
-      'Competition preparation guides',
     ],
     additionalCount: 8,
-  },
-  {
-    id: 3,
-    name: 'Platinum Plan',
-    price: '$75',
-    period: 'month',
-    icon: '💎',
-    features: [
-      'Everything in Gold Plan',
-      'One-on-one coaching sessions',
-      'Custom equipment recommendations',
-      'Weekly performance reviews',
-      'Access to exclusive tournaments',
-      'Mobile app premium features',
-    ],
-    additionalCount: 10,
-    isPopular: false,
-    backgroundColor: '#2C5F41', // Dark green/platinum color
+    isPopular: true,
+    backgroundColor: '#2C5F41', 
   },
 ];
 

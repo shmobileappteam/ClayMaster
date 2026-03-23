@@ -3,7 +3,7 @@ import React from 'react';
 import { Container, Typography } from '../../../atomComponents';
 import { Button, Header } from '../../../components';
 import { CircledTickSvg } from '../../../assets/svgs';
-import { GLOBALSTYLE } from '../../../globalStyle/Theme';
+import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import SlideInView from '../../../animations/SlideView';
 import Sizer from '../../../helpers/Sizer';
 
@@ -11,7 +11,7 @@ const SavedScoredcardSuccessScreen = ({ navigation, route }) => {
   const status = route.params?.status || 'Scorecard';
   const desc = route.params?.desc || 'Scorecard';
   return (
-    <Container isPadding={false}>
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header type="app" isBackVisible={false} />
       <View
         style={{
@@ -28,14 +28,16 @@ const SavedScoredcardSuccessScreen = ({ navigation, route }) => {
             }}
           >
             <CircledTickSvg />
-            <Typography fFamily="barlowBoldItalic700" size={32} mT={10}>
+            <Typography fFamily="barlowBold700" size={32} color={COLORS.black300} mT={16} mB={8}>
               {status}
             </Typography>
             <Typography
               fFamily="barlowMedium500"
               textAlign="center"
-              size={16}
-              mT={2}
+              color={COLORS.black500}
+              size={15}
+              mT={4}
+              LineHeight={22}
             >
               {desc}
             </Typography>
@@ -44,11 +46,14 @@ const SavedScoredcardSuccessScreen = ({ navigation, route }) => {
         <Button
           label="Back To Home"
           onPress={() =>
-            navigation.navigate('BottomTabs', {  screen:"Home", params: { isSucceed: true } })
+            navigation.navigate('BottomTabs', {
+              screen: 'MainTabs',
+              params: { screen: 'Home', params: { isSucceed: true } },
+            })
           }
           btnStyle={{
             position: 'absolute',
-            bottom: Sizer.hSize(54),
+            bottom: Sizer.vSize(54),
             width: '100%',
           }}
         />

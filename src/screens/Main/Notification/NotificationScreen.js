@@ -57,18 +57,27 @@ const NotificationScreen = () => {
   const renderItem = ({ item, index }) => (
     <SlideInView slide="left">
       <View style={[styles.cardContainer]}>
-        <Flex gap={12}>
+        <Flex gap={12} algItems="flex-start">
           <NotificationSvg />
           <Flex direction="column" flex={1}>
             <Typography
               size={14}
-              color={COLORS.black100}
+              color={COLORS.black300}
+              fFamily="barlowBold700"
+              LineHeight={18}
+            >
+              {item.title}
+            </Typography>
+            <Typography
+              size={13}
+              color={COLORS.black500}
               fFamily="barlowMedium500"
+              mT={4}
               LineHeight={18}
             >
               {item.text}
             </Typography>
-            <Typography size={12} mT={10} color={'#7B7B7B'}>
+            <Typography size={11} mT={10} color={'#7B7B7B'} fFamily="barlowBold700">
               {item.time}
             </Typography>
           </Flex>
@@ -78,14 +87,14 @@ const NotificationScreen = () => {
   );
 
   return (
-    <Container isPadding={false}>
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header type="app" title="Notifications" />
       <FlatList
         data={notifications}
-        style={{ marginTop: Sizer.vSize(18), ...GLOBALSTYLE.paddingHor }}
+        style={{ marginTop: Sizer.vSize(24), ...GLOBALSTYLE.paddingHor }}
         renderItem={renderItem}
         keyExtractor={item => item.id}
-        contentContainerStyle={styles.container}
+        contentContainerStyle={{ paddingBottom: Sizer.vSize(80) }}
         showsVerticalScrollIndicator={false}
       />
     </Container>
@@ -96,10 +105,17 @@ export default NotificationScreen;
 
 const styles = StyleSheet.create({
   cardContainer: {
-    padding: Sizer.hSize(8),
+    padding: Sizer.hSize(16),
     borderRadius: Sizer.hSize(12),
-    marginBottom: Sizer.hSize(12),
+    marginBottom: Sizer.hSize(16),
     backgroundColor: COLORS.white100,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
   },
   cardWithBg: {
     backgroundColor: '#FEF1DD',

@@ -20,11 +20,20 @@ const Typography = ({
   textTransform,
   numberOfLines,
   LineHeight,
+  /** Scaled line height (logical px). Prefer over legacy LineHeight. */
+  lineHeight,
   children,
   style,
   onPress,
   ...props
 }) => {
+  const resolvedLineHeight =
+    lineHeight != null
+      ? Sizer.fS(lineHeight)
+      : LineHeight != null
+        ? Sizer.hSize(LineHeight)
+        : undefined;
+
   const styleObj = {
     color: color,
     fontSize: Sizer.fS(size),
@@ -39,7 +48,7 @@ const Typography = ({
     fontFamily: FONTS[fFamily],
     textAlign: textAlign,
     ...(textTransform && { textTransform: textTransform }),
-    ...(LineHeight && { lineHeight: Sizer.hSize(LineHeight) }),
+    ...(resolvedLineHeight != null && { lineHeight: resolvedLineHeight }),
     ...style,
   };
 

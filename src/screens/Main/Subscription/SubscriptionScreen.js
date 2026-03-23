@@ -17,11 +17,12 @@ import {
   COLORS,
   FONTS,
   GLOBALSTYLE,
+  SHADOWS,
   WINDOW,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { subbg } from '../../../assets/images';
-import { Button, Header } from '../../../components';
+import { Button, Header, ScreenBanner } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import { SeperatorSvg, SubscribeTickSvg } from '../../../assets/svgs';
 import { useCustomQuery } from '../../../query/useCustomQuery';
@@ -53,113 +54,138 @@ const PlanCard = ({ plan, onSelect, isSelected, maxHeight, onMeasure }) => {
 
   return (
     <TouchableOpacity
-      activeOpacity={BASEOPACITY}
+      activeOpacity={0.88}
       onPress={() => onSelect(plan?.id)}
       style={{
-        width: WINDOW.width - 48,
-        marginRight: Sizer.hSize(10),
+        width: WINDOW.width - 64,
+        marginRight: Sizer.hSize(12),
       }}
       disabled
     >
       <View
         onLayout={handleLayout}
         style={{
-          backgroundColor: COLORS.orange400,
-          borderRadius: Sizer.hSize(16),
-          padding: Sizer.hSize(20),
-          borderWidth: Sizer.hSize(1.3),
-          borderColor: isSelected ? COLORS.orange500 : COLORS.white100,
+          backgroundColor: COLORS.secondary,
+          borderRadius: Sizer.hSize(18),
+          padding: Sizer.hSize(24),
+          borderWidth: isSelected ? 2 : StyleSheet.hairlineWidth,
+          borderColor: isSelected ? COLORS.primary : COLORS.borderMuted,
           position: 'relative',
           height: maxHeight || 'auto',
+          ...SHADOWS.banner,
         }}
       >
         <Flex
           direction="row"
           jusContent="space-between"
           algItems="center"
-          mB={8}
+          mB={12}
         >
-          <Flex direction="row" algItems="center" gap={8}>
+          <Flex direction="row" algItems="center" gap={10}>
             <View
               style={{
                 width: Sizer.hSize(4),
-                height: Sizer.vSize(20),
+                height: Sizer.vSize(22),
                 backgroundColor: COLORS.primary,
-                borderRadius: Sizer.hSize(3),
+                borderRadius: Sizer.hSize(2),
               }}
             />
-            <Typography size={20} color={COLORS.white100}>
+            <Typography
+              size={22}
+              color={COLORS.white100}
+              fFamily="barlowBold700"
+            >
               {plan?.title}
             </Typography>
           </Flex>
-          {/* <Typography size={24}>{plan.icon}</Typography> */}
         </Flex>
 
         {/* Price */}
         <Typography
-          size={25}
+          size={28}
           fFamily="barlowBold700"
           color={COLORS.white100}
-          mB={isExpiryVisible ? 0 : 16}
+          mB={isExpiryVisible ? 0 : 20}
         >
-          ${plan?.price}/{plan?.duration}
+          ${plan?.price}{' '}
+          <Typography
+            size={16}
+            color="rgba(255,255,255,0.7)"
+            fFamily="barlowMedium500"
+          >
+            /{plan?.duration}
+          </Typography>
         </Typography>
 
         {/*  Expiry Date */}
         {isExpiryVisible && (
-          <Flex direction="row" algItems="center" mB={16} mT={4} gap={3}>
+          <Flex direction="row" algItems="center" mB={20} mT={6} gap={6}>
             <Icon
               name="time-outline"
-              size={10}
-              color={COLORS.yellow}
+              size={12}
+              color={COLORS.primary}
               iconFamily="Ionicons"
             />
             <Typography
-              size={10}
-              color={COLORS.yellow}
+              size={12}
+              color={COLORS.white100}
               fFamily="barlowSemiBold600"
             >
               Expires: {formatExpiryDate(user?.package_expires_at)}
             </Typography>
           </Flex>
         )}
-        <SeperatorSvg />
+
+        <View
+          style={{
+            height: 1,
+            backgroundColor: 'rgba(255,255,255,0.1)',
+            marginBottom: 20,
+          }}
+        />
 
         <Typography
           size={16}
-          mT={16}
           color={COLORS.white100}
-          fFamily="barlowSemiBold600"
-          mB={12}
+          fFamily="barlowBold700"
+          mB={14}
         >
-          {plan?.title} Includes:
+          {plan?.title} includes:
         </Typography>
         <RenderHtml
           contentWidth={WINDOW.width}
           source={{ html: plan?.description }}
           baseStyle={{
-            color: COLORS.white100,
-            fontFamily: FONTS.barlowMedium500,
-            textTransform: 'capitalize',
-            fontSize: Sizer.fS(11),
+            color: 'rgba(255,255,255,0.85)',
+            fontFamily: 'barlowMedium500',
+            fontSize: Sizer.fS(13.5),
+            lineHeight: 20,
           }}
-          systemFonts={[...defaultSystemFonts, FONTS.barlowMedium500]}
+          systemFonts={[...defaultSystemFonts, 'barlowMedium500']}
         />
 
         {isSelected && (
           <View
             style={{
               position: 'absolute',
-              top: Sizer.vSize(16),
-              right: Sizer.hSize(16),
+              top: Sizer.vSize(20),
+              right: Sizer.hSize(20),
             }}
           >
-            <Icon
-              name="check-circle-fill"
-              size={Sizer.hSize(12)}
-              color={COLORS.orange500}
-              iconFamily={'Octicons'}
-            />
+            <View
+              style={{
+                backgroundColor: COLORS.primary,
+                borderRadius: 12,
+                padding: 4,
+              }}
+            >
+              <Icon
+                name="checkmark"
+                size={16}
+                color={COLORS.white100}
+                iconFamily={'Ionicons'}
+              />
+            </View>
           </View>
         )}
       </View>
@@ -446,102 +472,196 @@ const SubscriptionScreen = ({ navigation, route }) => {
   };
 
   return (
-    <Container backgroundImage={subbg} isPadding={false}>
+    <Container
+      backgroundImage={null}
+      isPadding={false}
+      backgroundColor={COLORS.mainBg}
+    >
       <Header
-        logoTextColor={COLORS.white100}
-        defaultHeaderStyles={{ marginTop: Sizer.hSize(60) }}
-        bgColor={COLORS.white100}
+        bgColor="transparent"
+        title="Settings"
         isBackVisible={fromProfile ? true : false}
         onPressRight={fromProfile ? null : logoutHandler}
       />
       <ScrollView
         style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingTop: Sizer.vSize(26),
-          paddingBottom: 60,
+          paddingBottom: 100,
         }}
       >
-        <SubscriptionPlans
-          onPlanSelect={handlePlanSelection}
-          selectedPlanId={selectedPlan?.id}
-          packagesData={packagesData || []}
-          isLoading={isLoadingPaymentIntent || isLoadingPaymentSuccess}
+        <ScreenBanner
+          title="Subscription & billing"
+          subtitle="Manage your subscription plan, billing details, and payment methods."
         />
 
-        <View style={{ ...GLOBALSTYLE.paddingHor, marginTop: Sizer.hSize(32) }}>
+        {/* Plan Selection Section */}
+        <View style={{ marginTop: Sizer.vSize(32) }}>
+          <View style={{ paddingHorizontal: Sizer.hSize(24) }}>
+            <Typography
+              fFamily="barlowBold700"
+              size={16}
+              color={COLORS.textPrimary}
+              mB={16}
+            >
+              CHOOSE PLAN
+            </Typography>
+          </View>
+
+          <SubscriptionPlans
+            onPlanSelect={handlePlanSelection}
+            selectedPlanId={selectedPlan?.id}
+            packagesData={packagesData || []}
+            isLoading={isLoadingPaymentIntent || isLoadingPaymentSuccess}
+          />
+        </View>
+
+        <View
+          style={{
+            paddingHorizontal: Sizer.hSize(24),
+            marginTop: Sizer.vSize(32),
+          }}
+        >
           <Button
             label={subcribtionStatus(selectedPlan)}
             onPress={handleProceedPayment}
             disabled={subcribtionStatus(selectedPlan) == 'Already Subscribed'}
             loader={isLoadingPaymentIntent || isLoadingPaymentSuccess}
           />
-          {/* <Typography mT={16} color={COLORS.white100} textAlign="center">
-            Restore My Subscription
-          </Typography> */}
+        </View>
+
+        {/* Usage Details (Screen 02 spec) */}
+        <View
+          style={{
+            paddingHorizontal: Sizer.hSize(24),
+            marginTop: Sizer.vSize(32),
+          }}
+        >
+          <View style={styles.usageCard}>
+            <Typography
+              color={COLORS.white100}
+              fFamily="barlowBold700"
+              size={15}
+              mB={24}
+              textAlign="center"
+            >
+              COACHING SESSIONS STATUS
+            </Typography>
+            <Flex direction="row" jusContent="space-between" algItems="center">
+              <UsageBox label="TOTAL" value="3" />
+              <UsageBox label="USED" value="0" />
+              <UsageBox label="REMAINING" value="3" />
+            </Flex>
+          </View>
+        </View>
+
+        {/* Payment History Placeholder */}
+        <View
+          style={{
+            paddingHorizontal: Sizer.hSize(24),
+            marginTop: Sizer.vSize(32),
+          }}
+        >
+          <Typography
+            fFamily="barlowBold700"
+            size={16}
+            color={COLORS.textPrimary}
+            mB={16}
+          >
+            PAYMENT HISTORY
+          </Typography>
+          <View style={styles.historyCard}>
+            <Typography
+              color={COLORS.textMuted}
+              size={14}
+              textAlign="center"
+              fFamily="barlowMedium500"
+            >
+              No payment history found
+            </Typography>
+          </View>
         </View>
       </ScrollView>
+
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <View
-          style={[
-            styles.bottomModalOuter,
-            keyboardOpen && { justifyContent: 'center' },
-          ]}
-        >
+        <View style={styles.bottomModalOuter}>
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          />
           <View
             style={[
               styles.bottomSheetContainer,
-              !keyboardOpen && { paddingBottom: 50 },
+              keyboardOpen && { marginBottom: Sizer.vSize(20) },
+              {
+                paddingBottom: keyboardOpen ? Sizer.vSize(20) : Sizer.vSize(60),
+              },
             ]}
           >
+            {/* Handle Bar */}
+            <View style={styles.modalHandle} />
+
             {/* Header */}
             <View style={styles.modalHeader}>
               <Typography
-                size={18}
+                size={20}
                 fFamily="barlowBold700"
-                color={COLORS.black100}
+                color={COLORS.textPrimary}
               >
-                Enter Card Details
+                Payment details
               </Typography>
-              <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Icon
-                  name="close"
-                  size={24}
-                  color={COLORS.black100}
-                  iconFamily="Ionicons"
-                />
+              <TouchableOpacity
+                activeOpacity={0.88}
+                onPress={() => setModalVisible(false)}
+              >
+                <View style={styles.closeBtn}>
+                  <Icon
+                    name="close"
+                    size={20}
+                    color={COLORS.textPrimary}
+                    iconFamily="Ionicons"
+                  />
+                </View>
               </TouchableOpacity>
             </View>
 
+            <Typography size={14} color={COLORS.textSecondary} mT={4} mB={24}>
+              Securely complete your subscription using Stripe
+            </Typography>
+
             {/* Card Field */}
-            <CardField
-              postalCodeEnabled={false}
-              placeholders={{ number: '4242 4242 4242 4242' }}
-              cardStyle={{
-                backgroundColor: COLORS.grey700,
-                textColor: '#000000',
-              }}
-              
-              
-              style={{
-                width: '100%',
-                height: 50,
-                marginVertical: 20,
-              }}
-              onCardChange={cardDetails => {
-                setCardDetails(cardDetails);
-              }}
-            />
+            <View style={styles.cardFieldContainer}>
+              <CardField
+                postalCodeEnabled={false}
+                placeholders={{ number: '4242 4242 4242 4242' }}
+                cardStyle={{
+                  backgroundColor: COLORS.surfaceMuted,
+                  textColor: COLORS.textPrimary,
+                  placeholderColor: COLORS.textMuted,
+                  cursorColor: COLORS.primary,
+                }}
+                style={{
+                  width: '100%',
+                  height: 50,
+                }}
+                onCardChange={cardDetails => {
+                  setCardDetails(cardDetails);
+                }}
+              />
+            </View>
+
             {/* Pay Button */}
             <Button
-              label="Pay Now"
+              label="Pay now"
               onPress={handleConfirmPayment}
               loader={isProcessingPayment}
-              btnStyle={{ width: '100%' }}
+              btnStyle={{ width: '100%', marginTop: Sizer.vSize(8) }}
             />
           </View>
         </View>
@@ -550,47 +670,94 @@ const SubscriptionScreen = ({ navigation, route }) => {
   );
 };
 
+const UsageBox = ({ label, value }) => (
+  <View style={styles.usageBoxItem}>
+    <View style={styles.usageBadge}>
+      <Typography color={COLORS.primary} fFamily="barlowBold700" size={18}>
+        {value}
+      </Typography>
+    </View>
+    <Typography
+      color={'rgba(255,255,255,0.85)'}
+      size={11}
+      fFamily="barlowBold700"
+      mT={10}
+    >
+      {label}
+    </Typography>
+  </View>
+);
+
 const styles = StyleSheet.create({
-  centeredView: {
+  usageCard: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: Sizer.hSize(18),
+    padding: Sizer.hSize(26),
+    ...SHADOWS.banner,
+  },
+  usageBoxItem: {
+    alignItems: 'center',
     flex: 1,
+  },
+  usageBadge: {
+    width: Sizer.hSize(52),
+    height: Sizer.hSize(52),
+    borderRadius: Sizer.hSize(12),
+    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    ...SHADOWS.soft,
   },
-  modalView: {
-    width: '90%',
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  modalHeader: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+  historyCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: Sizer.hSize(14),
+    paddingVertical: Sizer.vSize(40),
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.borderSubtle,
+    ...SHADOWS.card,
   },
   bottomModalOuter: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
   },
   bottomSheetContainer: {
     width: '100%',
-    backgroundColor: 'white',
-    // borderTopLeftRadius: 20,
-    // borderTopRightRadius: 20,
-    borderRadius: 20,
-    padding: 20,
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: Sizer.hSize(24),
+    borderTopRightRadius: Sizer.hSize(24),
+    paddingHorizontal: Sizer.hSize(24),
+    paddingTop: Sizer.vSize(12),
+  },
+  modalHandle: {
+    width: Sizer.hSize(40),
+    height: Sizer.vSize(4),
+    backgroundColor: COLORS.borderMuted,
+    borderRadius: Sizer.hSize(2),
+    alignSelf: 'center',
+    marginBottom: Sizer.vSize(20),
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  closeBtn: {
+    width: Sizer.hSize(34),
+    height: Sizer.hSize(34),
+    borderRadius: Sizer.hSize(17),
+    backgroundColor: COLORS.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardFieldContainer: {
+    backgroundColor: COLORS.surfaceMuted,
+    borderRadius: Sizer.hSize(12),
+    padding: Sizer.hSize(4),
+    marginBottom: Sizer.vSize(24),
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.borderSubtle,
+    overflow: 'hidden',
   },
 });
 

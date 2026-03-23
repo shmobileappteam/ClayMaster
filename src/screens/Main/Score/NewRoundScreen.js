@@ -597,7 +597,7 @@ const NewRoundScreen = ({ navigation, route }) => {
   }, [handleBackNavigation]);
 
   return (
-    <Container isPadding={false}>
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header type="app" title="New Round" onPresBack={handleBackNavigation} />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
         {!roundDetails && sectionNumber == 1 ? (
@@ -901,18 +901,19 @@ const NewRoundScreen = ({ navigation, route }) => {
 const Box = ({ item, selectedClass, onSelectClass }) => {
   return (
     <TouchableOpacity
-      activeOpacity={BASEOPACITY}
+      activeOpacity={0.8}
       style={[
         styles.box,
-        item == selectedClass && { backgroundColor: COLORS.primary },
+        item == selectedClass && { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
       ]}
       onPress={() => {
         onSelectClass(item);
       }}
     >
       <Typography
-        fFamily="barlowMedium500"
-        color={item == selectedClass ? COLORS.white100 : COLORS.black100}
+        fFamily="barlowBold700"
+        size={14}
+        color={item == selectedClass ? COLORS.white100 : COLORS.black300}
       >
         {item}
       </Typography>
@@ -926,25 +927,38 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   box: {
-    // width: Sizer.hSize(27),
-    height: Sizer.hSize(27),
-    paddingHorizontal: Sizer.hSize(8),
+    paddingVertical: Sizer.vSize(6),
+    paddingHorizontal: Sizer.hSize(16),
     backgroundColor: COLORS.white100,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: Sizer.hSize(5),
+    borderRadius: Sizer.hSize(8),
+    borderWidth: 1,
+    borderColor: '#D4D4D4',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
   nscaClassContainer: {
     flexDirection: 'row',
     gap: 10,
+    marginBottom: Sizer.vSize(8),
+    flexWrap: 'wrap',
   },
   actionBxo: {
-    height: Sizer.hSize(134),
+    height: Sizer.vSize(120),
     flex: 1,
     backgroundColor: COLORS.primary,
-    borderRadius: Sizer.hSize(10),
+    borderRadius: Sizer.hSize(12),
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
   text: {
     fontSize: 14,

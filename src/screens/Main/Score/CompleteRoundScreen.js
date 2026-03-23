@@ -34,16 +34,19 @@ const CompleteRoundScreen = ({ navigation, route }) => {
   //   stationsDetails?.sent_status && stationsDetails?.download_url;
 
   return (
-    <Container isPadding={false}>
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header type="app" title="Round Completed" />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
-        <Label title="Round Summary" fFamily={'barlowBold700'} size={20} />
+        <View style={{ marginTop: Sizer.vSize(24), marginBottom: Sizer.vSize(16) }}>
+            <Label title="Round Summary" fFamily={'barlowBold700'} size={20} color={COLORS.black300} />
+        </View>
+        
         {isLoading ? (
           <AppLoader />
         ) : (
           <ScrollView
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: Sizer.hSize(50) }}
+            contentContainerStyle={{ paddingBottom: Sizer.vSize(120) }}
           >
             <StationsList
               data={stationsDetails?.stations}
@@ -69,7 +72,8 @@ const CompleteRoundScreen = ({ navigation, route }) => {
             {stationsDetails?.download_url && (
               <Button
                 label={'Download File'}
-                mt={16}
+                mt={24}
+                type="secondary"
                 onPress={() => {
                   Linking.openURL(stationsDetails?.download_url);
                 }}
@@ -100,10 +104,16 @@ const CompleteRoundScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   tableCont: {
     backgroundColor: COLORS.white100,
-    borderRadius: Sizer.hSize(10),
-    borderWidth: Sizer.hSize(1),
-    borderColor: COLORS.primary,
+    borderRadius: Sizer.hSize(12),
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
     overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    marginTop: Sizer.vSize(16),
   },
 });
 

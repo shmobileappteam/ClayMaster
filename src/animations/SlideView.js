@@ -10,6 +10,8 @@ const SlideInView = ({
   slide = 'left',
   slideDuration = 500,
   fadeDuration = 500,
+  /** Merged after animation styles (e.g. `{ width: '100%' }` for full-bleed headers) */
+  containerStyle,
 }) => {
   // Initialize shared values for x, y axis, and opacity
   const translateX = useSharedValue(0);
@@ -52,7 +54,11 @@ const SlideInView = ({
     };
   });
 
-  return <Animated.View style={animatedStyle}>{children}</Animated.View>;
+  return (
+    <Animated.View style={[animatedStyle, containerStyle]}>
+      {children}
+    </Animated.View>
+  );
 };
 
 export default SlideInView;

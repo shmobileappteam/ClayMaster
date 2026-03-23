@@ -16,7 +16,6 @@ import { formatBackendErrors } from '../../utils';
 import Sizer from '../../helpers/Sizer';
 
 const ForgotPasswordScreen = ({ navigation }) => {
-  // Forget Password Mutation:
   const { mutateAsync: fp, isPending } = useCustomMutation({
     mutationFn: forgotPassword,
     onSuccess: (response, { email }) => {
@@ -28,18 +27,23 @@ const ForgotPasswordScreen = ({ navigation }) => {
     },
   });
 
-  // Handle Forgot Passeord:
   const handleForgotPassword = (values, { setErrors }) => {
     fp(values).catch(err => {
       const response = err?.response;
-      const parsedErrors = formatBackendErrors(response.data.errors);
-      setErrors(parsedErrors);
+      if (response?.data?.errors) {
+        const parsedErrors = formatBackendErrors(response.data.errors);
+        setErrors(parsedErrors);
+      }
     });
   };
 
   return (
     <SafeAreaWrapper>
-      <Header type="title" iconColor={COLORS.white100} left={Sizer.hSize(0)} />
+      <Header
+        iconColor={COLORS.white100}
+        left={Sizer.hSize(0)}
+        isBackVisible={true}
+      />
 
       <Typography
         size={40}
@@ -47,11 +51,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
         mT={52}
         fFamily="barlowBoldItalic700"
       >
-        Forgot Password
+        Reset password
       </Typography>
 
       <Typography size={16} textAlign="center" color={COLORS.black200} mT={8}>
-        Enter your email address to Verify it's you.
+        Sign in to continue
       </Typography>
 
       <FormController
@@ -60,8 +64,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
         onSubmit={handleForgotPassword}
       >
         {props => {
-          const { handleSubmit, handleBlur, handleChange, values, errors } =
-            props;
+          const { handleSubmit, handleBlur, handleChange, values, errors } = props;
           return (
             <>
               <TextField
@@ -71,14 +74,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
                 value={values?.email}
                 error={errors?.email}
                 leftIcon
-                leftIconName="mail"
-                leftIconFamily="Octicons"
-                keyboardType="email-address"
                 mT={23}
               />
 
               <Button
-                label={'Get Verification Code'}
+                label="Send code"
                 mt={30}
                 onPress={handleSubmit}
                 loader={isPending}
