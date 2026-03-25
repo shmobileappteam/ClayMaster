@@ -16,7 +16,7 @@ const ReviewsScreen = () => {
 
     return (
         <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-            <Header type="app" title="Reviews" isBackVisible={false} />
+            <Header type="app" title="Reviews" isBackVisible={true} />
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
                 <ScreenBanner 
                     title="Reviews & feedback"

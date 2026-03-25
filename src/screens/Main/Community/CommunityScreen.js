@@ -1,317 +1,218 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput } from 'react-native';
 import { Container, Flex, Typography } from '../../../atomComponents';
-import { Header, ScreenBanner, Button } from '../../../components';
-import { COLORS, GLOBALSTYLE, SHADOWS } from '../../../globalStyle/Theme';
+import { Header, Button } from '../../../components';
+import { COLORS, GLOBALSTYLE, SHADOWS, BASEOPACITY } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import Icon from '../../../helpers/Icon';
 
-const FORUM_TABS = ['Kevin', 'Bill', 'Ladies', 'Technicals', 'Community'];
 const FORUM_POSTS = [
-    { author: 'MARC BRAVO', date: 'March 24, 2026', title: 'Improving my quartering target accuracy', content: 'Kevin, your recent video on quartering targets helped me realize I was over-leading the bird. After applying your "silky smooth" swing technique during my session yesterday, my hit rate increased by 20%...' },
-    { author: 'STEVE HOOPER', date: 'March 22, 2026', title: 'Best lead method for fast crossers?', content: 'I am struggling with high-speed crossing targets at Station 4. Which lead method would you recommend for consistent results...?' },
-];
-
-const LEADERBOARD_DATA = [
-    { rank: 1, name: 'John Anderson', score: 99, division: 'Competitor' },
-    { rank: 2, name: 'Sarah Mitchell', score: 97, division: 'Hunter' },
-    { rank: 3, name: 'Cody Davis', score: 95, division: 'Competitor' },
-    { rank: 4, name: 'Emma White', score: 92, division: 'Hunter' },
-    { rank: 5, name: 'Brad Collins', score: 90, division: 'Competitor' },
+    { 
+        id: 1,
+        author: 'Scott Winstead', 
+        time: '15h ago', 
+        title: 'Tournament Jitters/Pressure - Is This Something That Impacts You?', 
+        excerpt: 'I watched a video on YouTube (I think it was by Russell Mark, the Olympic Trap shooter) where he talked about the "little man on his shoulder" that would talk to him when things were going good (e.g., running a couple of stations in a row, knowing you had the potential for a good score, etc.). That stuck with me...',
+        category: 'General Discussion',
+        stats: { comments: 0, views: 1 },
+        avatar: 'https://i.pravatar.cc/150?u=scott'
+    },
+    { 
+        id: 2,
+        author: 'Scott Winstead', 
+        time: '3d ago', 
+        title: "We're Going To Be Filming Some New Videos Next Month Focused On \"Misses\" - Would Love Some Feedback From You!", 
+        excerpt: "We're going to be filming some new videos next month focused on \"misses\" and how to fix them on different target presentations. We would love to hear from our community members about which specific targets give you the most trouble...",
+        category: 'General Discussion',
+        stats: { comments: 0, views: 1 },
+        avatar: 'https://i.pravatar.cc/150?u=scott'
+    },
+    { 
+        id: 3,
+        author: 'Scott Winstead', 
+        time: '3d ago', 
+        title: 'GOOD GEAR ALERT - 10 Gauge Bronze Bore Brush 3-Pack', 
+        excerpt: "Ok, I know it sounds a little trivial but like I said earlier, I like good gear at a great price. So, first of all it's a great brush that really does a good job of clearing the copper fouling without scratching the barrel...",
+        category: 'Equipment/Gear Recommendations',
+        stats: { comments: 0, views: 1 },
+        avatar: 'https://i.pravatar.cc/150?u=scott'
+    },
+    { 
+        id: 4,
+        author: 'Scott Winstead', 
+        time: '3d ago', 
+        title: 'GOOD GEAR ALERT - Briley Soft Gun Case', 
+        excerpt: 'I have a bunch of gun cases (e.g., Pelican knock off case for international travel, Negrini hard case, various soft cases for local matches). This Briley case is specifically padded for safe transport...',
+        category: 'Equipment/Gear Recommendations',
+        stats: { comments: 0, views: 1 },
+        avatar: 'https://i.pravatar.cc/150?u=scott'
+    },
 ];
 
 const CommunityScreen = ({ navigation }) => {
-    const [activeMainTab, setActiveMainTab] = useState('FORUM');
-    const [activeForumTab, setActiveForumTab] = useState('Kevin');
-
-    const renderForum = () => (
-        <View>
-            <ScreenBanner 
-                title="Community forum"
-                subtitle="Join the conversation with Kevin DeMichiel, Bill McGuire, and the entire ClayMaster community."
-            />
-            <View style={styles.sectionHeader}>
-                <Typography fFamily="barlowBold700" size={15} color={COLORS.textPrimary}>Join the conversation:</Typography>
-            </View>
-            <View style={styles.tabContainer}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabScroll}>
-                    {FORUM_TABS.map(tab => (
-                        <TouchableOpacity 
-                            key={tab} 
-                            activeOpacity={0.88}
-                            style={[styles.tabItem, activeForumTab === tab && styles.activeTabItem]}
-                            onPress={() => setActiveForumTab(tab)}
-                        >
-                            <Typography 
-                                size={14} 
-                                fFamily="barlowBold700" 
-                                color={activeForumTab === tab ? COLORS.primary : COLORS.textMuted}
-                            >
-                                {tab}
-                            </Typography>
-                            {activeForumTab === tab && <View style={styles.activeUnderline} />}
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            </View>
-
-            <View style={[GLOBALSTYLE.paddingHor, { paddingHorizontal: Sizer.hSize(20) }]}>
-                <Button label="Create new post" mt={24} btnStyle={{ width: '100%' }} textStyle={{ textTransform: 'none' }} />
-                
-                {FORUM_POSTS.map((post, idx) => (
-                    <TouchableOpacity key={idx} activeOpacity={0.88} style={styles.postCard}>
-                        <Flex direction="row" algItems="center" jusContent="space-between">
-                            <Typography fFamily="barlowBold700" size={12} color={COLORS.primary}>BY: {post.author}</Typography>
-                            <Typography size={11} color={COLORS.textMuted}>{post.date}</Typography>
-                        </Flex>
-                        <Typography fFamily="barlowBold700" size={16} lineHeight={22} mT={10} color={COLORS.textPrimary}>{post.title}</Typography>
-                        <Typography size={14} color={COLORS.textSecondary} mT={8} lineHeight={20} numberOfLines={3}>
-                            {post.content}
-                        </Typography>
-                        <TouchableOpacity style={{ marginTop: Sizer.vSize(12) }} activeOpacity={0.88}>
-                            <Typography color={COLORS.primary} fFamily="barlowBold700" size={13}>Read more...</Typography>
-                        </TouchableOpacity>
-                    </TouchableOpacity>
-                ))}
-            </View>
-        </View>
-    );
-
-    const renderTournament = () => (
-        <View>
-            <ScreenBanner 
-                title="Virtual tournament"
-                subtitle="Participate in our monthly virtual competitions. Submit your scores and see how you rank against the community."
-            />
-            
-            <View style={[GLOBALSTYLE.paddingHor, { paddingHorizontal: Sizer.hSize(20) }]}>
-               <View style={styles.tournamentStatus}>
-                    <Typography color={COLORS.white100} fFamily="barlowBold700" size={13}>LIVE: MARCH 2026 VIRTUAL TOURNAMENT</Typography>
-               </View>
-
-               <View style={styles.stepsCard}>
-                   <Typography fFamily="barlowBold700" size={16} lineHeight={22} color={COLORS.textPrimary} mB={20}>How to participate:</Typography>
-                   <TournamentStep num={1} title="Review rules" sub="Understand the scoring and submission guidelines." />
-                   <TournamentStep num={2} title="Submit score" sub="Enter your scorecard details and upload photo proof." />
-                   <TournamentStep num={3} title="Review leaderboard" sub="See your rank in the hunter or competitor division." />
-               </View>
-
-               <Button 
-                label="Submit my score" 
-                mt={24} 
-                btnStyle={{ width: '100%' }} 
-                textStyle={{ textTransform: 'none' }}
-                onPress={() => navigation.navigate('VirtualTournamentScreen')}
-               />
-
-               <Typography fFamily="barlowBold700" size={16} lineHeight={22} mT={32} mB={16} color={COLORS.textPrimary}>Current leaderboard</Typography>
-               
-               <View style={styles.leaderboardTable}>
-                   <View style={styles.tableHead}>
-                       <Typography size={12} fFamily="barlowBold700" flex={1} color={COLORS.textMuted}>RANK</Typography>
-                       <Typography size={12} fFamily="barlowBold700" flex={3} color={COLORS.textMuted}>NAME</Typography>
-                       <Typography size={12} fFamily="barlowBold700" flex={1.5} color={COLORS.textMuted}>SCORE</Typography>
-                       <Typography size={12} fFamily="barlowBold700" flex={2} color={COLORS.textMuted}>DIVISION</Typography>
-                   </View>
-                   {LEADERBOARD_DATA.map((item, idx) => {
-                       const isTop3 = item.rank <= 3;
-                       return (
-                           <View key={idx} style={[
-                               styles.tableRow, 
-                               isTop3 && styles.topPerformerRow,
-                               idx === LEADERBOARD_DATA.length - 1 && { borderBottomWidth: 0 }
-                           ]}>
-                               <Flex flex={1} direction="row" algItems="center">
-                                   <View style={isTop3 ? styles.rankBadge : null}>
-                                       <Typography size={13} fFamily="barlowBold700" color={isTop3 ? COLORS.white100 : COLORS.textPrimary}>#{item.rank}</Typography>
-                                   </View>
-                               </Flex>
-                               <Typography size={14} fFamily={isTop3 ? "barlowBold700" : "barlowSemiBold600"} flex={3} color={COLORS.textPrimary}>{item.name}</Typography>
-                               <Typography size={15} fFamily="barlowBold700" flex={1.5} color={isTop3 ? COLORS.primary : COLORS.textPrimary}>{item.score}/100</Typography>
-                               <Typography size={12} color={COLORS.textSecondary} flex={2}>{item.division}</Typography>
-                           </View>
-                       );
-                   })}
-               </View>
-            </View>
-        </View>
-    );
+    const [search, setSearch] = useState('');
 
     return (
-        <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-            <Header type="app" title="Community" isBackVisible={false} />
+        <Container isPadding={false} backgroundColor="#FCFBFA">
+            <Header type="app" title="Private Community Forum" isBackVisible={true} />
             
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-                {/* Main Tab Switcher */}
-                <Flex direction="row" style={styles.mainTabs}>
-                    <TouchableOpacity 
-                        style={[styles.mainTabItem, activeMainTab === 'FORUM' && styles.activeMainTab]}
-                        onPress={() => setActiveMainTab('FORUM')}
-                        activeOpacity={0.88}
-                    >
-                        <Typography size={14} fFamily="barlowBold700" color={activeMainTab === 'FORUM' ? COLORS.primary : COLORS.textMuted}>PRIVATE FORUM</Typography>
-                    </TouchableOpacity>
-                    <TouchableOpacity 
-                        style={[styles.mainTabItem, activeMainTab === 'TOURNAMENT' && styles.activeMainTab]}
-                        onPress={() => setActiveMainTab('TOURNAMENT')}
-                        activeOpacity={0.88}
-                    >
-                        <Typography size={14} fFamily="barlowBold700" color={activeMainTab === 'TOURNAMENT' ? COLORS.primary : COLORS.textMuted}>VIRTUAL TOURNAMENT</Typography>
-                    </TouchableOpacity>
-                </Flex>
+            <View style={styles.topSearch}>
+                <View style={styles.searchBar}>
+                     <Icon name="search" iconFamily="Ionicons" size={20} color={COLORS.black400} />
+                     <TextInput 
+                        placeholder="SEARCH HERE..." 
+                        style={styles.searchInput}
+                        placeholderTextColor={COLORS.black400}
+                        value={search}
+                        onChangeText={setSearch}
+                     />
+                </View>
+            </View>
 
-                {activeMainTab === 'FORUM' ? renderForum() : renderTournament()}
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+                <View style={[GLOBALSTYLE.paddingHor, { marginTop: 24 }]}>
+                    
+                    <Typography fFamily="barlowBold700" size={24} color={COLORS.black100} mB={8}>Private Community Forum</Typography>
+                    <View style={styles.headerDivider} />
+
+                    <Flex direction="row" algItems="center" jusContent="space-between" mT={24} mB={32} gap={10}>
+                        <View style={{ flex: 1.8, flexDirection: 'row', gap: 8 }}>
+                            <View style={[styles.dropdown, { flex: 1 }]}>
+                                <Typography size={11} color={COLORS.black300} numberOfLines={1}>Most Recent</Typography>
+                                <Icon name="chevron-down" iconFamily="Ionicons" size={12} color={COLORS.black100} />
+                            </View>
+                            <View style={[styles.dropdown, { flex: 1 }]}>
+                                <Typography size={11} color={COLORS.black300} numberOfLines={1}>All Categories</Typography>
+                                <Icon name="chevron-down" iconFamily="Ionicons" size={12} color={COLORS.black100} />
+                            </View>
+                        </View>
+                        <TouchableOpacity style={styles.createBtn} activeOpacity={BASEOPACITY}>
+                            <Icon name="add-circle" iconFamily="Ionicons" size={18} color={COLORS.white100} />
+                            <Typography size={11} fFamily="barlowBold700" color={COLORS.white100} mL={6}>CREATE TOPIC</Typography>
+                        </TouchableOpacity>
+                    </Flex>
+
+                    {FORUM_POSTS.map((post) => (
+                        <TouchableOpacity 
+                            key={post.id} 
+                            activeOpacity={0.88} 
+                            style={styles.postCard}
+                            onPress={() => navigation.navigate('CommunityDetailScreen', { topicId: post.id })}
+                        >
+                            <Flex direction="row" algItems="flex-start">
+                                <Image source={{ uri: post.avatar }} style={styles.avatar} />
+                                <View style={{ flex: 1, marginHorizontal: 14 }}>
+                                    <Typography fFamily="barlowBold700" size={15} color={COLORS.black100} lineHeight={20}>{post.title}</Typography>
+                                    <Typography size={12} color={COLORS.textSecondary} mT={6} numberOfLines={2} lineHeight={16}>{post.excerpt}</Typography>
+                                    {/* Sub-meta */}
+                                    <View style={styles.metaRow}>
+                                        <Typography size={11} color={COLORS.textMuted}>Category: <Typography size={11} color={COLORS.primary} fFamily="barlowSemiBold600">{post.category}</Typography></Typography>
+                                    </View>
+                                </View>
+                                <View style={styles.postStats}>
+                                    <Flex direction="row" algItems="center" mB={6}>
+                                        <Icon name="chatbubble-outline" iconFamily="Ionicons" size={14} color={COLORS.textMuted} />
+                                        <Typography size={12} color={COLORS.textMuted} mL={6}>{post.stats.comments}</Typography>
+                                    </Flex>
+                                    <Flex direction="row" algItems="center" mB={12}>
+                                        <Icon name="eye-outline" iconFamily="Ionicons" size={14} color={COLORS.textMuted} />
+                                        <Typography size={12} color={COLORS.textMuted} mL={6}>{post.stats.views}</Typography>
+                                    </Flex>
+                                    <Typography size={12} color={COLORS.black100} fFamily="barlowBold700" textAlign="right">{post.time}</Typography>
+                                </View>
+                            </Flex>
+                        </TouchableOpacity>
+                    ))}
+                </View>
             </ScrollView>
         </Container>
     );
 };
 
-const TournamentStep = ({ num, title, sub }) => (
-    <View style={styles.stepRow}>
-        <View style={styles.stepNum}>
-            <Typography color={COLORS.white100} fFamily="barlowBold700" size={14}>{num}</Typography>
-        </View>
-        <View style={{ flex: 1, marginLeft: Sizer.hSize(16) }}>
-            <Typography fFamily="barlowBold700" size={16} color={COLORS.textPrimary}>{title}</Typography>
-            <Typography size={14} color={COLORS.textSecondary} mT={4} lineHeight={20}>{sub}</Typography>
-        </View>
-    </View>
-);
-
 export default CommunityScreen;
 
 const styles = StyleSheet.create({
-    mainTabs: {
-        backgroundColor: COLORS.white100,
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        marginBottom: Sizer.vSize(8),
+    topSearch: {
+        paddingHorizontal: Sizer.hSize(20),
+        paddingVertical: Sizer.vSize(16),
+        backgroundColor: '#FCFAF8',
+        borderBottomWidth:1,
+        borderBottomColor: '#F0F0F0',
     },
-    mainTabItem: {
+    searchBar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.white100,
+        height: Sizer.vSize(48),
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        borderWidth: 1,
+        borderColor: '#EFEFEF',
+        ...SHADOWS.card,
+    },
+    searchInput: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: Sizer.vSize(16),
+        marginLeft: 10,
+        fontSize: 13,
+        fontFamily: 'barlowSemiBold600',
+        color: COLORS.black100,
     },
-    activeMainTab: {
-        borderBottomWidth: 3,
-        borderBottomColor: COLORS.primary,
-    },
-    sectionHeader: {
-        backgroundColor: COLORS.mainBg,
-        paddingHorizontal: Sizer.hSize(24),
-        paddingVertical: Sizer.vSize(16),
-    },
-    tabContainer: {
-        backgroundColor: COLORS.white100,
-        borderBottomWidth: 1,
-        borderBottomColor: '#EFEFEF',
-    },
-    tabScroll: {
-        paddingHorizontal: Sizer.hSize(18),
-    },
-    tabItem: {
-        paddingHorizontal: Sizer.hSize(16),
-        paddingVertical: Sizer.vSize(16),
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    activeUnderline: {
-        position: 'absolute',
-        bottom: 0,
-        width: '100%',
-        height: 3,
+    headerDivider: {
+        width: 60,
+        height: 4,
         backgroundColor: COLORS.primary,
-        borderTopLeftRadius: 4,
-        borderTopRightRadius: 4,
+        borderRadius: 2,
+        marginTop: 4,
+    },
+    dropdown: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: COLORS.white100,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+        borderRadius: 6,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+    },
+    createBtn: {
+        flex: 1.1,
+        backgroundColor: COLORS.primary,
+        borderRadius: 8,
+        height: Sizer.vSize(44),
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 4,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
     },
     postCard: {
         backgroundColor: COLORS.white100,
-        borderRadius: Sizer.hSize(12),
-        padding: Sizer.hSize(20),
-        marginTop: Sizer.vSize(16),
+        borderRadius: 16,
+        padding: 18,
+        marginBottom: 16,
         borderWidth: 1,
-        borderColor: '#F0F0F0',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
+        borderColor: '#F5F5F5',
+        ...SHADOWS.card,
     },
-    tournamentStatus: {
-        backgroundColor: COLORS.primary,
-        borderRadius: Sizer.hSize(8),
-        paddingVertical: Sizer.vSize(12),
-        alignItems: 'center',
-        marginTop: Sizer.vSize(24),
+    avatar: {
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: '#F0F0F0',
     },
-    stepsCard: {
-        backgroundColor: COLORS.white100,
-        borderRadius: Sizer.hSize(12),
-        padding: Sizer.hSize(24),
-        marginTop: Sizer.vSize(24),
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-    },
-    stepRow: {
+    metaRow: {
+        marginTop: 10,
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: Sizer.vSize(16),
     },
-    stepNum: {
-        width: Sizer.hSize(32),
-        height: Sizer.hSize(32),
-        borderRadius: Sizer.hSize(16),
-        backgroundColor: COLORS.secondary,
+    postStats: {
+        alignItems: 'flex-end',
         justifyContent: 'center',
-        alignItems: 'center',
-    },
-    leaderboardTable: {
-        backgroundColor: COLORS.white100,
-        borderRadius: Sizer.hSize(12),
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-    },
-    tableHead: {
-        flexDirection: 'row',
-        backgroundColor: '#F9F9F9',
-        paddingVertical: Sizer.vSize(16),
-        paddingHorizontal: Sizer.hSize(16),
-        borderBottomWidth: 1,
-        borderBottomColor: '#EFEFEF',
-    },
-    tableRow: {
-        flexDirection: 'row',
-        paddingVertical: Sizer.vSize(16),
-        paddingHorizontal: Sizer.hSize(16),
-        borderBottomWidth: 1,
-        borderBottomColor: '#EFEFEF',
-        alignItems: 'center',
-        backgroundColor: COLORS.white100,
-    },
-    topPerformerRow: {
-        backgroundColor: COLORS.orange300,
-    },
-    rankBadge: {
-        backgroundColor: COLORS.primary,
-        paddingHorizontal: Sizer.hSize(8),
-        paddingVertical: Sizer.vSize(4),
-        borderRadius: Sizer.hSize(6),
-        justifyContent: 'center',
-        alignItems: 'center',
+        minWidth: 50,
     }
 });

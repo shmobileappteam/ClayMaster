@@ -28,7 +28,7 @@ const AnalyticsDashboard = () => {
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <Header type="app" title="Analytics" isBackVisible={false} />
+      <Header type="app" title="Analytics" isBackVisible={true} />
       
       <ScrollView stickyHeaderIndices={[1]} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
         <ScreenBanner 

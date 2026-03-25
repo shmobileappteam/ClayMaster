@@ -31,6 +31,7 @@ import {
   DrillsScreen,
   CoachingScreen,
   CommunityScreen,
+  CommunityDetailScreen,
   VirtualTournamentScreen,
   ShopScreen,
   OrdersScreen,
@@ -39,6 +40,8 @@ import {
   AdditionalVideosScreen,
   DeleteAccountScreen,
   DashboardScreen,
+  CartScreen,
+  CheckoutScreen,
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
 import MainDrawer from './MainDrawer';
@@ -151,6 +154,7 @@ const StackNavigator = () => {
 
       {/* Community */}
       <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
+      <Stack.Screen name="CommunityDetailScreen" component={CommunityDetailScreen} />
       <Stack.Screen
         name="VirtualTournamentScreen"
         component={VirtualTournamentScreen}
@@ -159,6 +163,8 @@ const StackNavigator = () => {
       {/* Commerce */}
       <Stack.Screen name="ShopScreen" component={ShopScreen} />
       <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
+      <Stack.Screen name="CartScreen" component={CartScreen} options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
 
       {/* Reviews */}
       <Stack.Screen name="ReviewsScreen" component={ReviewsScreen} />

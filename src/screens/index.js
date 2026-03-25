@@ -35,6 +35,7 @@ import DrillsScreen from './Main/Academy/DrillsScreen';
 import CoachingScreen from './Main/Coaching/CoachingScreen';
 // Community / Tournament
 import CommunityScreen from './Main/Community/CommunityScreen';
+import CommunityDetailScreen from './Main/Community/CommunityDetailScreen';
 import VirtualTournamentScreen from './Main/Community/VirtualTournamentScreen';
 // Commerce
 import ShopScreen from './Main/Commerce/ShopScreen';
@@ -45,6 +46,8 @@ import ReviewsScreen from './Main/Reviews/ReviewsScreen';
 import AdditionalDocumentsScreen from './Main/Documents/AdditionalDocumentsScreen';
 import AdditionalVideosScreen from './Main/Videos/AdditionalVideosScreen';
 import MoreHubScreen from './Main/More/MoreHubScreen';
+import CartScreen from './Main/Commerce/CartScreen';
+import CheckoutScreen from './Main/Commerce/CheckoutScreen';
 
 export {
   SplashScreen,
@@ -80,6 +83,7 @@ export {
   DrillsScreen,
   CoachingScreen,
   CommunityScreen,
+  CommunityDetailScreen,
   VirtualTournamentScreen,
   ShopScreen,
   OrdersScreen,
@@ -87,4 +91,6 @@ export {
   AdditionalDocumentsScreen,
   AdditionalVideosScreen,
   MoreHubScreen,
+  CartScreen,
+  CheckoutScreen,
 };

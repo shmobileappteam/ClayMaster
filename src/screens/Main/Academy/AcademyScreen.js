@@ -64,7 +64,7 @@ const AcademyScreen = ({ navigation }) => {
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <Header type="app" title="Academy" isBackVisible={false} />
+      <Header type="app" title="Academy" isBackVisible={true} />
 
       <ScrollView
         showsVerticalScrollIndicator={false}

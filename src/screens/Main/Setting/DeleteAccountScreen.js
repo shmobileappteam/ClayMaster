@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { View, StyleSheet, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { useDispatch } from 'react-redux';
 import { Container, Flex, Typography } from '../../../atomComponents';
 import { Header, Button } from '../../../components';
-import { COLORS, GLOBALSTYLE, BASEOPACITY } from '../../../globalStyle/Theme';
+import { COLORS, GLOBALSTYLE, BASEOPACITY, SHADOWS } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import Icon from '../../../helpers/Icon';
 import { deleteAccount } from '../../../api/userService';
 import { handleLogout } from '../../../redux/slices/appSlice';
 import { useCustomQuery } from '../../../query/useCustomQuery';
@@ -25,14 +26,12 @@ const DeleteAccountScreen = ({ navigation }) => {
     );
   }
 
-  //Custom Delate Query Hook
   const { refetch: triggerDeleteAccount, isLoading } = useCustomQuery({
     queryKey: ['delete'],
     queryFn: deleteAccount,
     enabled: false,
   });
 
-  //Request Delete
   const handleDeleteAcount = () => {
     triggerDeleteAccount().then(() => {
       clearApp();
@@ -40,67 +39,81 @@ const DeleteAccountScreen = ({ navigation }) => {
     });
   };
 
-  const handleDeletePress = () => {
-    setVisibility(true);
-  };
-
   return (
-    <Container isPadding={false}>
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header 
         type="app" 
         title="DELETE ACCOUNT" 
         isBackVisible={true} 
       />
 
-      <View style={[GLOBALSTYLE.paddingHor, { marginTop: Sizer.vSize(20) }]}>
-        <View style={styles.card}>
-          <Typography fFamily="barlowBold700" size={18} color={COLORS.black300}>
-            Are you sure you want to delete your account?
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+        <View style={[GLOBALSTYLE.paddingHor, { marginTop: Sizer.vSize(24) }]}>
+          
+          <View style={styles.topIconBox}>
+             <View style={styles.iconCircle}>
+                <Icon name="trash-outline" iconFamily="Ionicons" size={48} color={COLORS.red300} />
+             </View>
+          </View>
+
+          <Typography fFamily="barlowBold700" size={24} color={COLORS.black300} textAlign="center">
+            We're sorry to see you go
           </Typography>
           
-          <Typography color={COLORS.grey200} size={13} mT={12} lineHeight={20}>
-            If you delete your account, your access will end immediately and your account data will be permanently removed. This action cannot be undone.
+          <Typography color={COLORS.textMuted} size={15} mT={12} textAlign="center" lineHeight={22}>
+            Deleting your account is permanent. All your data, scores, and history will be lost forever.
           </Typography>
 
-          {/* Warning Box */}
-          <View style={styles.warningBox}>
+          <View style={styles.dangerZone}>
+            <Typography fFamily="barlowBold700" size={14} color={COLORS.red300} mB={16}>WHAT YOU'LL LOSE:</Typography>
+            
             <View style={styles.warningItem}>
-              <View style={styles.bullet} />
-              <Typography color={COLORS.red300} size={12}>Your login access will be removed.</Typography>
+                <View style={[styles.iconSquare, { backgroundColor: 'rgba(235, 15, 15, 0.1)' }]}>
+                    <Icon name="person-remove" iconFamily="Ionicons" size={20} color={COLORS.red300} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                    <Typography fFamily="barlowBold700" size={14}>Profile & Access</Typography>
+                    <Typography size={12} color={COLORS.textMuted} mT={2}>Your login credentials and profile details will be deleted.</Typography>
+                </View>
             </View>
+
             <View style={styles.warningItem}>
-              <View style={styles.bullet} />
-              <Typography color={COLORS.red300} size={12}>Your subscription/access (if any) will no longer be available.</Typography>
+                <View style={[styles.iconSquare, { backgroundColor: 'rgba(235, 15, 15, 0.1)' }]}>
+                    <Icon name="bar-chart" iconFamily="Ionicons" size={20} color={COLORS.red300} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                    <Typography fFamily="barlowBold700" size={14}>Scores & History</Typography>
+                    <Typography size={12} color={COLORS.textMuted} mT={2}>All your practice rounds, tournament stats, and progress data will be vanished.</Typography>
+                </View>
             </View>
+
             <View style={styles.warningItem}>
-              <View style={styles.bullet} />
-              <Typography color={COLORS.red300} size={12}>Your account will be permanently deleted and cannot be restored.</Typography>
+                <View style={[styles.iconSquare, { backgroundColor: 'rgba(235, 15, 15, 0.1)' }]}>
+                    <Icon name="card" iconFamily="Ionicons" size={20} color={COLORS.red300} />
+                </View>
+                <View style={{ flex: 1, marginLeft: 16 }}>
+                    <Typography fFamily="barlowBold700" size={14}>Subscription</Typography>
+                    <Typography size={12} color={COLORS.textMuted} mT={2}>Active subscriptions will be canceled and no refunds will be provided.</Typography>
+                </View>
             </View>
           </View>
 
-          {/* Action Buttons */}
-          <Flex direction="row" jusContent="space-between" mT={32}>
+          <View style={{ marginTop: 40 }}>
+            <Button 
+                label="KEEP MY ACCOUNT" 
+                type="primary"
+                onPress={() => navigation.goBack()}
+            />
             <TouchableOpacity 
-              style={styles.cancelBtn}
-              activeOpacity={BASEOPACITY}
-              onPress={() => navigation.goBack()}
+                activeOpacity={BASEOPACITY} 
+                style={styles.deleteLink}
+                onPress={() => setVisibility(true)}
             >
-              <Typography fFamily="barlowBold700" size={13}>CANCEL</Typography>
+                <Typography color={COLORS.red300} fFamily="barlowBold700" size={14}>YES, DELETE EVERYTHING</Typography>
             </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.deleteBtn}
-              activeOpacity={BASEOPACITY}
-              onPress={handleDeletePress}
-              disabled={isLoading}
-            >
-              <Typography color={COLORS.white100} fFamily="barlowBold700" size={13}>
-                YES, DELETE MY ACCOUNT
-              </Typography>
-            </TouchableOpacity>
-          </Flex>
+          </View>
         </View>
-      </View>
+      </ScrollView>
 
       <Modal
         visible={modalVisibility}
@@ -110,101 +123,96 @@ const DeleteAccountScreen = ({ navigation }) => {
         onRequestClose={() => setVisibility(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Typography textAlign="center" fFamily="barlowSemiBold600" size={20}>
-              Are you sure you want to delete your account?
-            </Typography>
+           <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                    <Icon name="alert-circle" iconFamily="Ionicons" size={40} color={COLORS.red300} />
+                    <Typography fFamily="barlowBold700" size={20} mT={12}>Confirm Deletion</Typography>
+                </View>
+                
+                <Typography size={14} textAlign="center" color={COLORS.textMuted} lineHeight={20}>
+                    This is your final warning. Are you absolutely sure you want to permanently delete your ClayMaster account?
+                </Typography>
 
-            <Typography size={14} textAlign="center" color={COLORS.grey300} mT={10}>
-              This action is permanent and cannot be undone.
-            </Typography>
-
-            <Flex gap={12} mT={30}>
-              <Button
-                btnStyle={{ flex: 1, backgroundColor: COLORS.red300 }}
-                label="Delete"
-                textColor={COLORS.white100}
-                onPress={handleDeleteAcount}
-                loader={isLoading}
-              />
-              <Button
-                btnStyle={{ flex: 1 }}
-                label="Cancel"
-                onPress={() => setVisibility(false)}
-                disabled={isLoading}
-              />
-            </Flex>
-          </View>
+                <Flex gap={12} mT={32}>
+                    <Button
+                        btnStyle={{ flex: 1, backgroundColor: COLORS.red300 }}
+                        label="Delete"
+                        onPress={handleDeleteAcount}
+                        loader={isLoading}
+                    />
+                    <Button
+                        btnStyle={{ flex: 1 }}
+                        type="secondary"
+                        label="Cancel"
+                        onPress={() => setVisibility(false)}
+                        disabled={isLoading}
+                    />
+                </Flex>
+           </View>
         </View>
       </Modal>
     </Container>
   );
 };
 
-export default DeleteAccountScreen;
-
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.white100,
-    borderRadius: Sizer.hSize(12),
-    padding: Sizer.hSize(20),
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+  topIconBox: {
+    alignItems: 'center',
+    marginBottom: 24,
   },
-  warningBox: {
+  iconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: 'rgba(235, 15, 15, 0.05)',
-    borderRadius: Sizer.hSize(8),
-    padding: Sizer.hSize(16),
-    marginTop: Sizer.vSize(20),
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(235, 15, 15, 0.1)',
   },
+  dangerZone: {
+    backgroundColor: COLORS.white100,
+    borderRadius: 20,
+    padding: 20,
+    marginTop: 32,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+    ...SHADOWS.card,
+  },
   warningItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: Sizer.vSize(8),
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  bullet: {
-    width: Sizer.hSize(6),
-    height: Sizer.hSize(6),
-    borderRadius: 3,
-    backgroundColor: COLORS.red200,
-    marginRight: Sizer.hSize(10),
-    marginTop: Sizer.vSize(6),
-  },
-  cancelBtn: {
-    flex: 1,
-    height: Sizer.vSize(48),
-    borderWidth: 1,
-    borderColor: COLORS.black200,
-    borderRadius: Sizer.hSize(8),
+  iconSquare: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: Sizer.hSize(10),
   },
-  deleteBtn: {
-    flex: 1.5,
-    height: Sizer.vSize(48),
-    backgroundColor: COLORS.red200,
-    borderRadius: Sizer.hSize(8),
-    justifyContent: 'center',
+  deleteLink: {
+    marginTop: 24,
     alignItems: 'center',
+    padding: 10,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalContent: {
     backgroundColor: COLORS.white100,
-    marginHorizontal: 20,
-    paddingVertical: 30,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    width: '90%',
+    borderRadius: 24,
+    padding: 24,
+    width: '85%',
+    alignItems: 'center',
+  },
+  modalHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
   }
 });
+
+export default DeleteAccountScreen;
