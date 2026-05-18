@@ -3,10 +3,14 @@ export const KEYS = {
   CREDENTIALS: '@credentials',
   REMEMBER_ME: '@remember_me',
   SPLASH_SCREEN: '@splash_screen',
-  IS_ONBOARD: '@is_on_board',
+  IS_ONBOARD: '@is_onboard',
+  IS_ON_BOARD: '@is_on_board',
   FCM_TOKEN: '@fcm_token',
   LOGIN_TYPE: '@login_type',
   SOCIAL_TOKEN: '@social_token',
+  APP_MODE: '@cm_last_mode',
+  ACTIVE_ROUND: '@cm_active_round',
+  LAST_PRIMARY_MISS: '@cm_last_primary_miss',
 };
 
 export const STRIPE_PUBLISHABLE_KEY =

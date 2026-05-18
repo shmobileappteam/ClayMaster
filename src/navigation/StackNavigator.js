@@ -1,6 +1,5 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-//------
 import {
   ChangePasswordScreen,
   AboutUsScreen,
@@ -17,11 +16,12 @@ import {
   ScorecardDetailsScreen,
   SignupScreen,
   SplashScreen,
+  OnboardingScreen,
+  ModeSelectScreen,
   SubscribtionSuccessScreen,
   SubscriptionScreen,
   VerifyEmailScreen,
   InAppSubscriptionScreen,
-  // ─── Milestone 2 ───────────────────────────────────────────────────────────
   AnalyticsDashboard,
   AnalyticsScheduleScreen,
   AcademyScreen,
@@ -34,6 +34,7 @@ import {
   CommunityDetailScreen,
   VirtualTournamentScreen,
   ShopScreen,
+  ProductDetailScreen,
   OrdersScreen,
   ReviewsScreen,
   AdditionalDocumentsScreen,
@@ -42,6 +43,21 @@ import {
   DashboardScreen,
   CartScreen,
   CheckoutScreen,
+  CourseHomeScreen,
+  CourseMissDiagnosisScreen,
+  CourseMissFixVideoScreen,
+  CourseMissFixAudioScreen,
+  CourseMissFixDrillScreen,
+  CourseTrainScreen,
+  CourseTrainDetailScreen,
+  CourseAudioTipScreen,
+  CourseProgressScreen,
+  CourseProgressDetailScreen,
+  CourseAddScoreScreen,
+  CourseScorecardScreen,
+  CourseRoundScreen,
+  CourseRoundSummaryScreen,
+  MoreHubScreen,
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
 import MainDrawer from './MainDrawer';
@@ -56,14 +72,14 @@ const StackNavigator = () => {
         headerTransparent: true,
         animationTypeForReplace: 'push',
         animation: 'slide_from_right',
-        navigationBarColor: COLORS.orange200,
+        navigationBarColor: COLORS.mainBg,
       }}
-      initialRouteName={__DEV__ ? 'SplashScreen' : 'SplashScreen'}
+      initialRouteName="SplashScreen"
     >
-      {/* Splash */}
       <Stack.Screen name="SplashScreen" component={SplashScreen} />
+      <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
+      <Stack.Screen name="ModeSelectScreen" component={ModeSelectScreen} />
 
-      {/* Auth */}
       <Stack.Screen name="SignupScreen" component={SignupScreen} />
       <Stack.Screen name="LoginScreen" component={LoginScreen} />
       <Stack.Screen name="VerifyEmailScreen" component={VerifyEmailScreen} />
@@ -72,112 +88,78 @@ const StackNavigator = () => {
         options={{ animation: 'slide_from_bottom' }}
         component={ForgotPasswordScreen}
       />
-      <Stack.Screen
-        name="ResetPasswordScreen"
-        component={ResetPasswordScreen}
-      />
+      <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
 
-      {/* Scorecard (Milestone 1) */}
       <Stack.Screen name="NewRoundScreen" component={NewRoundScreen} />
-      <Stack.Screen
-        name="CompleteRoundScreen"
-        component={CompleteRoundScreen}
-      />
+      <Stack.Screen name="CompleteRoundScreen" component={CompleteRoundScreen} />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
       <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
       <Stack.Screen
         name="SavedScoredcardSuccessScreen"
         component={SavedScoredcardSuccessScreen}
       />
-      <Stack.Screen
-        name="ScorecardDetailsScreen"
-        component={ScorecardDetailsScreen}
-      />
-      <Stack.Screen
-        name="ProfileDetailsScreen"
-        component={ProfileDetailsScreen}
-      />
-      <Stack.Screen
-        name="ChangePasswordScreen"
-        component={ChangePasswordScreen}
-      />
-      <Stack.Screen
-        name="DeleteAccountScreen"
-        component={DeleteAccountScreen}
-      />
+      <Stack.Screen name="ScorecardDetailsScreen" component={ScorecardDetailsScreen} />
+      <Stack.Screen name="ProfileDetailsScreen" component={ProfileDetailsScreen} />
+      <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
+      <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
       <Stack.Screen name="AboutUsScreen" component={AboutUsScreen} />
-      <Stack.Screen
-        name="HelpAndSupportScreen"
-        component={HelpAndSupportScreen}
-      />
-      <Stack.Screen
-        name="TermsAndConditionsScreen"
-        component={TermsAndConditionsScreen}
-      />
+      <Stack.Screen name="HelpAndSupportScreen" component={HelpAndSupportScreen} />
+      <Stack.Screen name="TermsAndConditionsScreen" component={TermsAndConditionsScreen} />
       <Stack.Screen
         name="SubscribtionSuccessScreen"
         component={SubscribtionSuccessScreen}
         options={{ animation: 'slide_from_bottom' }}
       />
-      <Stack.Screen
-        name="InAppSubscriptionScreen"
-        component={InAppSubscriptionScreen}
-      />
+      <Stack.Screen name="InAppSubscriptionScreen" component={InAppSubscriptionScreen} />
 
-      {/* Main app: bottom tabs + slide-out drawer (More menu) */}
       <Stack.Screen name="BottomTabs" component={MainDrawer} />
-
-      {/* Dashboard */}
       <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
 
-      {/* ─── Milestone 2 Screens ──────────────────────────────────────────── */}
-
-      {/* Analytics */}
       <Stack.Screen name="AnalyticsDashboard" component={AnalyticsDashboard} />
-      <Stack.Screen
-        name="AnalyticsScheduleScreen"
-        component={AnalyticsScheduleScreen}
-      />
+      <Stack.Screen name="AnalyticsScheduleScreen" component={AnalyticsScheduleScreen} />
 
-      {/* Academy */}
       <Stack.Screen name="AcademyScreen" component={AcademyScreen} />
-      <Stack.Screen
-        name="InstructionalVideosScreen"
-        component={InstructionalVideosScreen}
-      />
-      {/* <Stack.Screen name="VideoDetailScreen" component={VideoDetailScreen} /> */}
+      <Stack.Screen name="InstructionalVideosScreen" component={InstructionalVideosScreen} />
+      <Stack.Screen name="VideoDetailScreen" component={VideoDetailScreen} />
       <Stack.Screen name="WebcastScreen" component={WebcastScreen} />
       <Stack.Screen name="DrillsScreen" component={DrillsScreen} />
 
-      {/* Coaching */}
       <Stack.Screen name="CoachingScreen" component={CoachingScreen} />
 
-      {/* Community */}
       <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
       <Stack.Screen name="CommunityDetailScreen" component={CommunityDetailScreen} />
-      <Stack.Screen
-        name="VirtualTournamentScreen"
-        component={VirtualTournamentScreen}
-      />
+      <Stack.Screen name="VirtualTournamentScreen" component={VirtualTournamentScreen} />
 
-      {/* Commerce */}
       <Stack.Screen name="ShopScreen" component={ShopScreen} />
+      <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
       <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
-      <Stack.Screen name="CartScreen" component={CartScreen} options={{ animation: 'slide_from_bottom' }} />
+      <Stack.Screen
+        name="CartScreen"
+        component={CartScreen}
+        options={{ animation: 'slide_from_bottom' }}
+      />
       <Stack.Screen name="CheckoutScreen" component={CheckoutScreen} />
 
-      {/* Reviews */}
       <Stack.Screen name="ReviewsScreen" component={ReviewsScreen} />
+      <Stack.Screen name="AdditionalDocumentsScreen" component={AdditionalDocumentsScreen} />
+      <Stack.Screen name="AdditionalVideosScreen" component={AdditionalVideosScreen} />
+      <Stack.Screen name="MoreHubScreen" component={MoreHubScreen} />
 
-      {/* Documents & Videos */}
-      <Stack.Screen
-        name="AdditionalDocumentsScreen"
-        component={AdditionalDocumentsScreen}
-      />
-      <Stack.Screen
-        name="AdditionalVideosScreen"
-        component={AdditionalVideosScreen}
-      />
+      {/* On the Course mode */}
+      <Stack.Screen name="CourseHomeScreen" component={CourseHomeScreen} />
+      <Stack.Screen name="CourseMissDiagnosisScreen" component={CourseMissDiagnosisScreen} />
+      <Stack.Screen name="CourseMissFixVideoScreen" component={CourseMissFixVideoScreen} />
+      <Stack.Screen name="CourseMissFixAudioScreen" component={CourseMissFixAudioScreen} />
+      <Stack.Screen name="CourseMissFixDrillScreen" component={CourseMissFixDrillScreen} />
+      <Stack.Screen name="CourseTrainScreen" component={CourseTrainScreen} />
+      <Stack.Screen name="CourseTrainDetailScreen" component={CourseTrainDetailScreen} />
+      <Stack.Screen name="CourseAudioTipScreen" component={CourseAudioTipScreen} />
+      <Stack.Screen name="CourseProgressScreen" component={CourseProgressScreen} />
+      <Stack.Screen name="CourseProgressDetailScreen" component={CourseProgressDetailScreen} />
+      <Stack.Screen name="CourseAddScoreScreen" component={CourseAddScoreScreen} />
+      <Stack.Screen name="CourseScorecardScreen" component={CourseScorecardScreen} />
+      <Stack.Screen name="CourseRoundScreen" component={CourseRoundScreen} />
+      <Stack.Screen name="CourseRoundSummaryScreen" component={CourseRoundSummaryScreen} />
     </Stack.Navigator>
   );
 };

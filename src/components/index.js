@@ -8,6 +8,7 @@ import DiscountRadioSelector from './customFields/DiscountRadioSelector';
 import Label from './customFields/Label';
 import Header from './header/Header';
 import ScreenBanner from './ScreenBanner';
+import LibraryHeader from './layout/LibraryHeader';
 
 import ImagePicker from './imagePicker/ImagePicker';
 
@@ -23,6 +24,7 @@ export {
   CustomDropdown,
   Header,
   ScreenBanner,
+  LibraryHeader,
   ImagePicker,
   Accordion,
   Label,

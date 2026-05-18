@@ -28,6 +28,8 @@ const RootStack = () => {
     'ResetPasswordScreen',
     'GetStartedScreen',
     'SplashScreen',
+    'OnboardingScreen',
+    'ModeSelectScreen',
     'AddPetScreen-',
   ];
 

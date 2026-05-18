@@ -2,10 +2,10 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
-  AcademyScreen,
-  CommunityScreen,
+  AnalyticsDashboard,
   DashboardScreen,
-  MoreHubScreen,
+  ProfileScreen,
+  ShopScreen,
   VirtualTournamentScreen,
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
@@ -15,110 +15,62 @@ import Icon from '../helpers/Icon';
 
 const Tab = createBottomTabNavigator();
 
+/** Web BottomTabBar parity: Home, Analytics, Tournament, Shop, Profile */
+const TABS = [
+  { name: 'Home', label: 'Home', icon: 'home-outline', screen: DashboardScreen },
+  {
+    name: 'Analytics',
+    label: 'Analytics',
+    icon: 'stats-chart-outline',
+    screen: AnalyticsDashboard,
+  },
+  {
+    name: 'Tournament',
+    label: 'Tournament',
+    icon: 'trophy-outline',
+    screen: VirtualTournamentScreen,
+  },
+  { name: 'Shop', label: 'Shop', icon: 'bag-outline', screen: ShopScreen },
+  {
+    name: 'Profile',
+    label: 'Profile',
+    icon: 'person-outline',
+    screen: ProfileScreen,
+  },
+];
+
 const BottomNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={{
         tabBarHideOnKeyboard: true,
         headerShown: false,
-        tabBarStyle: {
-          height: Sizer.vSize(78),
-          backgroundColor: COLORS.surface,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          borderTopColor: COLORS.borderMuted,
-          elevation: 12,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        },
+        tabBarStyle: styles.tabBar,
       }}
       initialRouteName="Home"
     >
-      <Tab.Screen
-        name="Home"
-        options={{
-          tabBarButton: props => (
-            <BottomTabItem
-              {...props}
-              label={'Home'}
-              isFocus={props['aria-selected']}
-              icon="home"
-              family="Ionicons"
-            />
-          ),
-        }}
-        component={DashboardScreen}
-      />
-      <Tab.Screen
-        name="Videos"
-        options={{
-          tabBarButton: props => (
-            <BottomTabItem
-              {...props}
-              label={'Videos'}
-              isFocus={props['aria-selected']}
-              icon="play-circle"
-              family="Ionicons"
-            />
-          ),
-        }}
-        component={AcademyScreen}
-      />
-      <Tab.Screen
-        name="Community"
-        options={{
-          tabBarButton: props => (
-            <BottomTabItem
-              {...props}
-              label={'Community'}
-              isFocus={props['aria-selected']}
-              icon="chatbubbles"
-              family="Ionicons"
-            />
-          ),
-        }}
-        component={CommunityScreen}
-      />
-      <Tab.Screen
-        name="Tournament"
-        options={{
-          tabBarButton: props => (
-            <BottomTabItem
-              {...props}
-              label={'Tournament'}
-              isFocus={props['aria-selected']}
-              icon="trophy"
-              family="Ionicons"
-            />
-          ),
-        }}
-        component={VirtualTournamentScreen}
-      />
-      <Tab.Screen
-        name="More"
-        component={MoreHubScreen}
-        options={{
-          tabBarButton: props => (
-            <BottomTabItem
-              {...props}
-              label={'More'}
-              isFocus={props['aria-selected']}
-              icon="grid"
-              family="Ionicons"
-            />
-          ),
-        }}
-      />
+      {TABS.map(tab => (
+        <Tab.Screen
+          key={tab.name}
+          name={tab.name}
+          component={tab.screen}
+          options={{
+            tabBarButton: props => (
+              <BottomTabItem
+                {...props}
+                label={tab.label}
+                isFocus={props['aria-selected']}
+                icon={tab.icon}
+              />
+            ),
+          }}
+        />
+      ))}
     </Tab.Navigator>
   );
 };
 
-const BottomTabItem = ({ label, isFocus, onPress, icon, family, ...props }) => {
+const BottomTabItem = ({ label, isFocus, onPress, icon, ...props }) => {
   return (
     <TouchableOpacity
       {...props}
@@ -126,27 +78,20 @@ const BottomTabItem = ({ label, isFocus, onPress, icon, family, ...props }) => {
       activeOpacity={0.88}
       onPress={onPress}
     >
-      {isFocus ? (
-        <View style={styles.tabTopPill} />
-      ) : null}
-
-      <View style={[styles.iconPill, isFocus && styles.iconPillActive]}>
-        <Icon
-          name={icon}
-          iconFamily={family}
-          size={isFocus ? 25 : 24}
-          color={isFocus ? COLORS.primary : COLORS.textMuted}
-        />
-      </View>
-
+      <Icon
+        name={icon}
+        iconFamily="Ionicons"
+        size={24}
+        color={isFocus ? COLORS.primary : COLORS.textSecondary}
+      />
       <Typography
-        color={isFocus ? COLORS.primary : COLORS.textMuted}
+        color={isFocus ? COLORS.primary : COLORS.textSecondary}
         numberOfLines={1}
-        size={11}
-        lineHeight={14}
-        fFamily={isFocus ? 'barlowBold700' : 'barlowMedium500'}
+        size={12}
+        lineHeight={17}
+        fFamily={isFocus ? 'barlowMedium500' : 'barlowRegular400'}
         textAlign="center"
-        mT={5}
+        mT={2}
       >
         {label}
       </Typography>
@@ -157,32 +102,23 @@ const BottomTabItem = ({ label, isFocus, onPress, icon, family, ...props }) => {
 export default BottomNavigator;
 
 const styles = StyleSheet.create({
+  tabBar: {
+    height: Sizer.vSize(64),
+    backgroundColor: COLORS.surface,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.borderMuted,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingTop: Sizer.vSize(8),
+    paddingBottom: Sizer.vSize(8),
+  },
   tabBtn: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Sizer.vSize(8),
-    paddingBottom: Sizer.vSize(8),
-    position: 'relative',
-  },
-  tabTopPill: {
-    position: 'absolute',
-    top: 0,
-    width: '36%',
-    minWidth: Sizer.hSize(28),
-    height: Sizer.vSize(3),
-    backgroundColor: COLORS.primary,
-    borderBottomLeftRadius: Sizer.hSize(4),
-    borderBottomRightRadius: Sizer.hSize(4),
-  },
-  iconPill: {
-    width: Sizer.hSize(48),
-    height: Sizer.hSize(48),
-    borderRadius: Sizer.hSize(14),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconPillActive: {
-    backgroundColor: 'rgba(232, 93, 4, 0.14)',
+    paddingVertical: Sizer.vSize(4),
+    paddingHorizontal: Sizer.hSize(12),
   },
 });

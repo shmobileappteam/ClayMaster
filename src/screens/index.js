@@ -1,4 +1,6 @@
 import SplashScreen from './OnBoard/SplashScreen';
+import OnboardingScreen from './OnBoard/OnboardingScreen';
+import ModeSelectScreen from './OnBoard/ModeSelectScreen';
 import DashboardScreen from './Main/Dashboard/DashboardScreen';
 import LoginScreen from './Auth/LoginScreen';
 import SignupScreen from './Auth/SignupScreen';
@@ -13,6 +15,7 @@ import SubscriptionScreen from './Main/Subscription/SubscriptionScreen';
 import SavedScoredcardSuccessScreen from './Main/Score/SavedScoredcardSuccessScreen';
 import ScorecardDetailsScreen from './Main/Score/ScorecardDetailsScreen';
 import ProfileDetailsScreen from './Main/Setting/ProfileDetailsScreen';
+import ProfileScreen from './Main/Setting/ProfileScreen';
 import ChangePasswordScreen from './Main/Setting/ChangePasswordScreen';
 import DeleteAccountScreen from './Main/Setting/DeleteAccountScreen';
 import AboutUsScreen from './Main/Setting/AboutUsScreen';
@@ -22,42 +25,53 @@ import SubscribtionSuccessScreen from './Main/Subscription/SubscribtionSuccessSc
 import InAppSubscriptionScreen from './Main/Subscription/InAppSubscriptionScreen';
 
 // ─── Milestone 2 ────────────────────────────────────────────────────────────
-// Analytics
 import AnalyticsDashboard from './Main/Analytics/AnalyticsDashboard';
 import AnalyticsScheduleScreen from './Main/Analytics/AnalyticsScheduleScreen';
-// Academy
 import AcademyScreen from './Main/Academy/AcademyScreen';
 import InstructionalVideosScreen from './Main/Academy/InstructionalVideosScreen';
-import { VideoDetailScreen } from './Main/Academy/InstructionalVideosScreen';
+import VideoDetailScreen from './Main/Academy/VideoDetailScreen';
 import WebcastScreen from './Main/Academy/WebcastScreen';
 import DrillsScreen from './Main/Academy/DrillsScreen';
-// Coaching
 import CoachingScreen from './Main/Coaching/CoachingScreen';
-// Community / Tournament
 import CommunityScreen from './Main/Community/CommunityScreen';
 import CommunityDetailScreen from './Main/Community/CommunityDetailScreen';
 import VirtualTournamentScreen from './Main/Community/VirtualTournamentScreen';
-// Commerce
 import ShopScreen from './Main/Commerce/ShopScreen';
+import ProductDetailScreen from './Main/Commerce/ProductDetailScreen';
 import OrdersScreen from './Main/Commerce/OrdersScreen';
-// Reviews
 import ReviewsScreen from './Main/Reviews/ReviewsScreen';
-// Documents & Videos
 import AdditionalDocumentsScreen from './Main/Documents/AdditionalDocumentsScreen';
 import AdditionalVideosScreen from './Main/Videos/AdditionalVideosScreen';
 import MoreHubScreen from './Main/More/MoreHubScreen';
 import CartScreen from './Main/Commerce/CartScreen';
 import CheckoutScreen from './Main/Commerce/CheckoutScreen';
 
+// ─── Course mode ───────────────────────────────────────────────────────────
+import CourseHomeScreen from './Main/Course/CourseHomeScreen';
+import CourseMissDiagnosisScreen from './Main/Course/CourseMissDiagnosisScreen';
+import CourseMissFixVideoScreen from './Main/Course/CourseMissFixVideoScreen';
+import CourseMissFixAudioScreen from './Main/Course/CourseMissFixAudioScreen';
+import CourseMissFixDrillScreen from './Main/Course/CourseMissFixDrillScreen';
+import CourseTrainScreen from './Main/Course/CourseTrainScreen';
+import CourseTrainDetailScreen from './Main/Course/CourseTrainDetailScreen';
+import CourseAudioTipScreen from './Main/Course/CourseAudioTipScreen';
+import CourseProgressScreen from './Main/Course/CourseProgressScreen';
+import CourseProgressDetailScreen from './Main/Course/CourseProgressDetailScreen';
+import CourseAddScoreScreen from './Main/Course/CourseAddScoreScreen';
+import CourseScorecardScreen from './Main/Course/CourseScorecardScreen';
+import CourseRoundScreen from './Main/Course/CourseRoundScreen';
+import CourseRoundSummaryScreen from './Main/Course/CourseRoundSummaryScreen';
+
 export {
   SplashScreen,
+  OnboardingScreen,
+  ModeSelectScreen,
   DashboardScreen,
   SignupScreen,
   LoginScreen,
   VerifyEmailScreen,
   ForgotPasswordScreen,
   ResetPasswordScreen,
-  //---
   CustomScoreCard,
   NewRoundScreen,
   CompleteRoundScreen,
@@ -66,6 +80,7 @@ export {
   SavedScoredcardSuccessScreen,
   ScorecardDetailsScreen,
   ProfileDetailsScreen,
+  ProfileScreen,
   ChangePasswordScreen,
   DeleteAccountScreen,
   AboutUsScreen,
@@ -73,7 +88,6 @@ export {
   TermsAndConditionsScreen,
   SubscribtionSuccessScreen,
   InAppSubscriptionScreen,
-  // ─── Milestone 2 ─────────────────────────────────────────────────────────
   AnalyticsDashboard,
   AnalyticsScheduleScreen,
   AcademyScreen,
@@ -86,6 +100,7 @@ export {
   CommunityDetailScreen,
   VirtualTournamentScreen,
   ShopScreen,
+  ProductDetailScreen,
   OrdersScreen,
   ReviewsScreen,
   AdditionalDocumentsScreen,
@@ -93,4 +108,18 @@ export {
   MoreHubScreen,
   CartScreen,
   CheckoutScreen,
+  CourseHomeScreen,
+  CourseMissDiagnosisScreen,
+  CourseMissFixVideoScreen,
+  CourseMissFixAudioScreen,
+  CourseMissFixDrillScreen,
+  CourseTrainScreen,
+  CourseTrainDetailScreen,
+  CourseAudioTipScreen,
+  CourseProgressScreen,
+  CourseProgressDetailScreen,
+  CourseAddScoreScreen,
+  CourseScorecardScreen,
+  CourseRoundScreen,
+  CourseRoundSummaryScreen,
 };

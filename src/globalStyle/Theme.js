@@ -8,18 +8,25 @@ const IMAGEONLOADCOLOR = {
 };
 
 const COLORS = {
-  /** App canvas — cool neutral for depth vs white cards */
-  mainBg: '#F4F6F9',
+  /** App canvas — web peach background */
+  mainBg: '#FFF5EB',
   /** Slightly elevated surface for cards / sections */
   surface: '#FFFFFF',
-  surfaceMuted: '#F3F4F6',
-  borderMuted: '#E8E8EA',
-  borderSubtle: '#EFEFEF',
+  surfaceMuted: '#FFEFE3',
+  borderMuted: '#E5E5E5',
+  borderSubtle: '#E5E5E5',
   textPrimary: '#1A1A1A',
-  textSecondary: '#525252',
-  textMuted: '#737373',
-  primary: '#E85D04',
+  textSecondary: '#6B6B6B',
+  textMuted: '#6B6B6B',
+  primary: '#EB6C0F',
+  primaryLight: '#FFEFE3',
   secondary: '#1A2332',
+  /** On-the-Course dark theme */
+  courseBg: '#0D0D0D',
+  courseSurface: '#1A1A1A',
+  courseBorder: '#2A2A2A',
+  courseTextMuted: '#888888',
+  destructive: '#DC2626',
 
   //Orange Variants:
   orange100: '#EE7615',
@@ -78,7 +85,7 @@ const WINDOW = {
   fixPadding: 24,
 };
 
-/** 8pt-based spacing scale (values in logical px before Sizer) */
+/** Spacing — web tailwind `spacing` + 8pt scale (logical px before Sizer) */
 const SPACING = {
   xxs: 4,
   xs: 8,
@@ -87,6 +94,14 @@ const SPACING = {
   lg: 24,
   xl: 32,
   xxl: 40,
+  /** Web `screen-px` */
+  screenPx: 16,
+  /** Web `section` */
+  section: 24,
+  /** Web `component` */
+  component: 12,
+  /** Web `card-p` */
+  cardP: 16,
 };
 
 const RADIUS = {
@@ -94,27 +109,31 @@ const RADIUS = {
   md: 12,
   lg: 16,
   pill: 999,
+  /** Web `--radius` 0.75rem */
+  web: 12,
 };
 
-/** Type scale — use with Typography `size` / `fFamily` */
+/** Type scale — ClayMaster-App-UI `tailwind.config.ts` fontSize */
 const TYPE = {
-  h1: { size: 23, fFamily: 'barlowBold700' },
-  h2: { size: 19, fFamily: 'barlowSemiBold600' },
-  body: { size: 15, fFamily: 'barlowRegular400' },
-  bodySm: { size: 14, fFamily: 'barlowRegular400' },
-  caption: { size: 12, fFamily: 'barlowMedium500' },
+  h1: { size: 24, lineHeight: 31, fFamily: 'barlowBold700' },
+  h2: { size: 20, lineHeight: 26, fFamily: 'barlowSemiBold600' },
+  h3: { size: 18, lineHeight: 25, fFamily: 'barlowMedium500' },
+  body: { size: 14, lineHeight: 21, fFamily: 'barlowRegular400' },
+  bodySm: { size: 14, lineHeight: 21, fFamily: 'barlowRegular400' },
+  caption: { size: 12, lineHeight: 17, fFamily: 'barlowRegular400' },
   overline: { size: 11, fFamily: 'barlowSemiBold600' },
 };
 
 const defaultBannerHeight = 152;
 
 const SHADOWS = {
+  /** Web `.cm-card-shadow` */
   card: {
     elevation: 2,
-    shadowColor: '#1A2332',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowRadius: 12,
   },
   /** Page intro / hero cards */
   banner: {
@@ -154,10 +173,10 @@ const GLOBALSTYLE = {
     backgroundColor: COLORS.primary,
   },
   paddingHor: {
-    paddingHorizontal: Sizer.hSize(20),
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
   },
   marginHor: {
-    marginHorizontal: Sizer.hSize(20),
+    marginHorizontal: Sizer.hSize(SPACING.screenPx),
   },
   checkBoxWrapper: {
     width: Sizer.hSize(24),

@@ -10,6 +10,7 @@ import RootStack from './src/navigation/RootStack';
 import { COLORS } from './src/globalStyle/Theme';
 import store from './src/redux/store/store';
 import { queryClient, storage } from './src/api/api';
+import { AppModeProvider } from './src/context/AppModeContext';
 import { useEffect } from 'react';
 import { STRIPE_PUBLISHABLE_KEY } from './src/constants';
 import { getDiscountForPackages } from './src/api/packageService';
@@ -61,7 +62,9 @@ export default function App() {
           <SafeAreaProvider>
             <StripeProvider publishableKey={stripeKey}>
               <QueryClientProvider client={queryClient}>
-                <RootStack />
+                <AppModeProvider>
+                  <RootStack />
+                </AppModeProvider>
               </QueryClientProvider>
             </StripeProvider>
           </SafeAreaProvider>

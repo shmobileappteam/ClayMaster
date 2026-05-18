@@ -7,7 +7,7 @@ import { COLORS } from '../globalStyle/Theme';
 const Drawer = createDrawerNavigator();
 
 /**
- * Wraps bottom tabs + slide-out drawer (Antigravity Screen 24).
+ * Wraps bottom tabs + side menu sheet (web AppMenuSheet parity).
  * Stack still registers this as "BottomTabs" so existing redirects keep working.
  */
 const MainDrawer = () => {
@@ -18,11 +18,11 @@ const MainDrawer = () => {
         headerShown: false,
         drawerType: 'slide',
         drawerStyle: {
-          backgroundColor: COLORS.secondary,
+          backgroundColor: COLORS.surface,
           width: '88%',
-          maxWidth: 360,
+          maxWidth: 384,
         },
-        overlayColor: 'rgba(0,0,0,0.5)',
+        overlayColor: 'rgba(0,0,0,0.8)',
         sceneContainerStyle: { backgroundColor: COLORS.mainBg },
       }}
     >

@@ -1,34 +1,87 @@
 import { Platform, StatusBar } from 'react-native';
 import { showMessage as flashMessage } from 'react-native-flash-message';
+import { COLORS } from '../globalStyle/Theme';
 
+/**
+ * Top toast — parity with ClayMaster-App-UI `use-toast` / Sonner-style banners.
+ *
+ * @param {string} [message] - Primary line (or body when `title` is set)
+ * @param {string} [title] - Headline (web `toast({ title, description })`)
+ * @param {string} [description] - Secondary line
+ * @param {'default'|'success'|'danger'|'card'} [type] - `card` = white library toast
+ * @param {string} [bgColor] - Override background
+ * @param {string} [color] - Override text color
+ * @param {'top'|'bottom'|'center'} [position] - Defaults to `top` (web slides from top)
+ */
 export function showMessage({
   message = '',
+  title = '',
+  description = '',
   type = 'default',
   bgColor = '',
-  position = null,
+  color = '',
+  position = 'top',
   duration = 3000,
 }) {
-  const backgroundColor =
-    bgColor ||
-    (type === 'success'
-      ? '#38E54D'
-      : type === 'danger'
-        ? '#CD1818'
-        : '#999999');
+  const isCardToast = type === 'card';
+
+  const displayMessage = title || message;
+  const displayDescription = title ? description || message : description;
+
+  const backgroundColor = isCardToast
+    ? COLORS.surface
+    : bgColor ||
+      (type === 'success'
+        ? COLORS.primary
+        : type === 'danger'
+          ? '#CD1818'
+          : COLORS.textPrimary);
+
+  const textColor =
+    color ||
+    (isCardToast
+      ? COLORS.textPrimary
+      : type === 'success' || type === 'danger'
+        ? COLORS.white100
+        : COLORS.white100);
 
   flashMessage({
-    message: message,
-    type: type,
-    backgroundColor: backgroundColor,
+    message: displayMessage,
+    description: displayDescription || undefined,
+    type: isCardToast ? 'info' : type === 'default' ? 'info' : type,
+    backgroundColor,
+    color: textColor,
     statusBarHeight: StatusBar.currentHeight,
-    position: position || 'center',
-    duration: duration,
+    position,
+    duration,
+    style: isCardToast
+      ? {
+          borderWidth: 1,
+          borderColor: COLORS.borderMuted,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.12,
+          shadowRadius: 12,
+          elevation: 6,
+        }
+      : undefined,
+    titleStyle: isCardToast
+      ? { fontFamily: 'Barlow-SemiBold', fontSize: 15, color: COLORS.textPrimary }
+      : undefined,
+    textStyle: isCardToast
+      ? { fontFamily: 'Barlow-Regular', fontSize: 13, color: COLORS.textSecondary }
+      : undefined,
   });
 
-  if (Platform.OS == 'android') {
+  if (Platform.OS === 'android' && !isCardToast) {
     StatusBar.setBackgroundColor(backgroundColor);
-    StatusBar.setBarStyle('light-content');
+    StatusBar.setBarStyle(type === 'success' ? 'light-content' : 'light-content');
   }
+}
+
+/** Web-style `{ title, description }` toast shorthand */
+export function showToast({ title, description, type = 'card', duration = 3000 }) {
+  showMessage({ title, description, type, duration });
 }
 export const formatBackendErrors = errors => {
   const errObj = {};

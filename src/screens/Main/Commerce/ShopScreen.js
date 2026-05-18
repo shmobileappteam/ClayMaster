@@ -105,7 +105,12 @@ const ShopScreen = ({ navigation }) => {
                         <View key={product.id} style={styles.productCard}>
                             <TouchableOpacity 
                                 activeOpacity={0.8}
-                                onPress={() => setSelectedProduct(product)}
+                                onPress={() =>
+                                  navigation.navigate('ProductDetailScreen', {
+                                    id: product.id,
+                                  })
+                                }
+                                onLongPress={() => setSelectedProduct(product)}
                                 style={{ flex: 1 }}
                             >
                                 <View style={styles.imgPlaceholder}>
@@ -125,9 +130,10 @@ const ShopScreen = ({ navigation }) => {
                                 onPress={() => {
                                     dispatch(addToCart(product));
                                     showMessage({
-                                        message: 'Item added to cart',
+                                        message: 'Added to cart',
                                         type: 'success',
                                         bgColor: COLORS.primary,
+                                        color: COLORS.white100,
                                     });
                                 }}
                             >
@@ -181,9 +187,10 @@ const ShopScreen = ({ navigation }) => {
                                 onPress={() => {
                                     dispatch(addToCart(selectedProduct));
                                     showMessage({
-                                        message: 'Item added to cart',
+                                        message: 'Added to cart',
                                         type: 'success',
                                         bgColor: COLORS.primary,
+                                        color: COLORS.white100,
                                     });
                                     setSelectedProduct(null);
                                     navigation.navigate('CartScreen');
