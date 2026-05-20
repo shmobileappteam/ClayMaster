@@ -20,7 +20,7 @@ const SubscribtionSuccessScreen = ({ navigation }) => {
           navigation.dispatch(
             CommonActions.reset({
               index: 0,
-              routes: [{ name: 'BottomTabs' }],
+              routes: [{ name: 'ModeSelectScreen' }],
             }),
           );
         }}

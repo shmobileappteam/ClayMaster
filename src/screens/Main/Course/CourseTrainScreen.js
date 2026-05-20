@@ -61,7 +61,7 @@ const CourseTrainScreen = ({ navigation }) => {
                 }
               >
                 <View style={styles.drillIconBox}>
-                  <Icon name="fitness-outline" iconFamily="Ionicons" size={24} color={COLORS.primary} />
+                  <Icon name="locate-outline" iconFamily="Ionicons" size={24} color={COLORS.primary} />
                 </View>
                 <View style={styles.rowText}>
                   <Typography fFamily="barlowBold700" size={18} lineHeight={25} color={COLORS.white100}>

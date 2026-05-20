@@ -11,49 +11,17 @@ import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { Button } from '../../../components';
 import Icon from '../../../helpers/Icon';
-import { shopCap, shopGlasses } from '../../../assets/images';
 import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { getShopProduct } from '../../../constants/shopProducts';
 import { addToCart } from '../../../redux/slices/cartSlice';
 import { showMessage } from '../../../utils';
-
-const ALL_PRODUCTS = [
-  {
-    id: 1,
-    name: 'ClayMaster Cap',
-    price: 25,
-    image: shopCap,
-    desc: 'Premium quality cap with embroidered ClayMaster logo. Adjustable strap, breathable mesh back. Perfect for range days and competitions.',
-  },
-  {
-    id: 2,
-    name: 'Shooting Glasses',
-    price: 45,
-    image: shopGlasses,
-    desc: 'High-contrast polycarbonate lenses with UV400 protection. Lightweight frame with anti-slip nose pads for all-day comfort.',
-  },
-  {
-    id: 3,
-    name: 'Training Manual',
-    price: 35,
-    image: shopCap,
-    desc: 'Comprehensive 120-page training guide covering stance, mount, lead methods, and competition strategy by Kevin DeMichiel.',
-  },
-  {
-    id: 4,
-    name: 'Shell Pouch',
-    price: 30,
-    image: shopGlasses,
-    desc: 'Durable canvas shell pouch with belt clip. Holds 50+ shells. Water-resistant lining.',
-  },
-];
 
 const ProductDetailScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const { totalItems } = useSelector(state => state.cart || { totalItems: 0 });
   const productId = route?.params?.id ?? 1;
-  const product =
-    ALL_PRODUCTS.find(p => p.id === Number(productId)) || ALL_PRODUCTS[0];
+  const product = getShopProduct(productId);
 
   const cartBadge = (
     <TouchableOpacity

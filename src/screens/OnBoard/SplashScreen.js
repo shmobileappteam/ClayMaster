@@ -25,6 +25,7 @@ const SplashScreen = ({ navigation }) => {
         reqData,
         () => {},
         subscriptionEnabled,
+        { showModeSelect: false },
       );
     },
     onError: () => {

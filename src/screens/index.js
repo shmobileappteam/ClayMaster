@@ -27,15 +27,20 @@ import InAppSubscriptionScreen from './Main/Subscription/InAppSubscriptionScreen
 // ─── Milestone 2 ────────────────────────────────────────────────────────────
 import AnalyticsDashboard from './Main/Analytics/AnalyticsDashboard';
 import AnalyticsScheduleScreen from './Main/Analytics/AnalyticsScheduleScreen';
+import WorkbookDetailScreen from './Main/Analytics/WorkbookDetailScreen';
+import ManagedServiceScreen from './Main/Analytics/ManagedServiceScreen';
 import AcademyScreen from './Main/Academy/AcademyScreen';
 import InstructionalVideosScreen from './Main/Academy/InstructionalVideosScreen';
 import VideoDetailScreen from './Main/Academy/VideoDetailScreen';
 import WebcastScreen from './Main/Academy/WebcastScreen';
 import DrillsScreen from './Main/Academy/DrillsScreen';
+import DrillDetailScreen from './Main/Academy/DrillDetailScreen';
 import CoachingScreen from './Main/Coaching/CoachingScreen';
 import CommunityScreen from './Main/Community/CommunityScreen';
 import CommunityDetailScreen from './Main/Community/CommunityDetailScreen';
 import VirtualTournamentScreen from './Main/Community/VirtualTournamentScreen';
+import TournamentGuidelinesScreen from './Main/Community/TournamentGuidelinesScreen';
+import TournamentEntryScreen from './Main/Community/TournamentEntryScreen';
 import ShopScreen from './Main/Commerce/ShopScreen';
 import ProductDetailScreen from './Main/Commerce/ProductDetailScreen';
 import OrdersScreen from './Main/Commerce/OrdersScreen';
@@ -90,15 +95,20 @@ export {
   InAppSubscriptionScreen,
   AnalyticsDashboard,
   AnalyticsScheduleScreen,
+  WorkbookDetailScreen,
+  ManagedServiceScreen,
   AcademyScreen,
   InstructionalVideosScreen,
   VideoDetailScreen,
   WebcastScreen,
   DrillsScreen,
+  DrillDetailScreen,
   CoachingScreen,
   CommunityScreen,
   CommunityDetailScreen,
   VirtualTournamentScreen,
+  TournamentGuidelinesScreen,
+  TournamentEntryScreen,
   ShopScreen,
   ProductDetailScreen,
   OrdersScreen,

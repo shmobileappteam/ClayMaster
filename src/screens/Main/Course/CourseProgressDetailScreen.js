@@ -39,7 +39,7 @@ const CourseProgressDetailScreen = ({ navigation }) => (
     >
       <View style={styles.statGrid}>
         <View style={styles.statCard}>
-          <Icon name="radio-button-on" iconFamily="Ionicons" size={22} color={COLORS.primary} />
+          <Icon name="locate-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
           <Typography fFamily="barlowBold700" size={20} lineHeight={26} color={COLORS.white100} mT={4}>
             {ROUNDS.length}
           </Typography>

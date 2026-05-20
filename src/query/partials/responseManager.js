@@ -40,6 +40,7 @@ export const onLoginSuccess = async (
   { email, password },
   setIsLoading = () => {},
   subscriptionEnabled,
+  { showModeSelect = true } = {},
 ) => {
   try {
     if (response?.status) {
@@ -47,20 +48,22 @@ export const onLoginSuccess = async (
       storage.set(KEYS.ACCESS_TOKEN, response?.token);
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       await Prefetching();
-      // console.log('vresponse: ', response);
 
       if (response?.user?.email_verified_at) {
-        let rediredScreen = 'BottomTabs';
+        let redirectScreen = 'ModeSelectScreen';
 
-        if (subscriptionEnabled) {
-          if (response?.user?.subscription_status !== 'active') {
-            rediredScreen = 'SubscriptionScreen';
-          }
+        if (subscriptionEnabled && response?.user?.subscription_status !== 'active') {
+          redirectScreen = 'SubscriptionScreen';
+        } else if (!showModeSelect) {
+          const storedMode = storage.getString(KEYS.APP_MODE);
+          redirectScreen =
+            storedMode === 'course' ? 'CourseHomeScreen' : 'BottomTabs';
         }
+
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: rediredScreen }],
+            routes: [{ name: redirectScreen }],
           }),
         );
       } else {

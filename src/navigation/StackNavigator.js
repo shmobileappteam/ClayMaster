@@ -24,15 +24,20 @@ import {
   InAppSubscriptionScreen,
   AnalyticsDashboard,
   AnalyticsScheduleScreen,
+  WorkbookDetailScreen,
+  ManagedServiceScreen,
   AcademyScreen,
   InstructionalVideosScreen,
   VideoDetailScreen,
   WebcastScreen,
   DrillsScreen,
+  DrillDetailScreen,
   CoachingScreen,
   CommunityScreen,
   CommunityDetailScreen,
   VirtualTournamentScreen,
+  TournamentGuidelinesScreen,
+  TournamentEntryScreen,
   ShopScreen,
   ProductDetailScreen,
   OrdersScreen,
@@ -117,18 +122,23 @@ const StackNavigator = () => {
 
       <Stack.Screen name="AnalyticsDashboard" component={AnalyticsDashboard} />
       <Stack.Screen name="AnalyticsScheduleScreen" component={AnalyticsScheduleScreen} />
+      <Stack.Screen name="WorkbookDetailScreen" component={WorkbookDetailScreen} />
+      <Stack.Screen name="ManagedServiceScreen" component={ManagedServiceScreen} />
 
       <Stack.Screen name="AcademyScreen" component={AcademyScreen} />
       <Stack.Screen name="InstructionalVideosScreen" component={InstructionalVideosScreen} />
       <Stack.Screen name="VideoDetailScreen" component={VideoDetailScreen} />
       <Stack.Screen name="WebcastScreen" component={WebcastScreen} />
       <Stack.Screen name="DrillsScreen" component={DrillsScreen} />
+      <Stack.Screen name="DrillDetailScreen" component={DrillDetailScreen} />
 
       <Stack.Screen name="CoachingScreen" component={CoachingScreen} />
 
       <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
       <Stack.Screen name="CommunityDetailScreen" component={CommunityDetailScreen} />
       <Stack.Screen name="VirtualTournamentScreen" component={VirtualTournamentScreen} />
+      <Stack.Screen name="TournamentGuidelinesScreen" component={TournamentGuidelinesScreen} />
+      <Stack.Screen name="TournamentEntryScreen" component={TournamentEntryScreen} />
 
       <Stack.Screen name="ShopScreen" component={ShopScreen} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />

@@ -17,8 +17,10 @@ import {
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useAppMode } from '../../../context/AppModeContext';
-import { handleLogout } from '../../../redux/slices/appSlice';
-import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
+import {
+  navigateFromTabToStack,
+  performLogout,
+} from '../../../navigation/navigationHelpers';
 
 const MENU_ITEMS = [
   { icon: 'person-outline', label: 'My Account', screen: 'ProfileDetailsScreen' },
@@ -138,7 +140,7 @@ const ProfileScreen = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.fullWidthBtn, styles.destructiveOutlineBtn]}
           activeOpacity={0.88}
-          onPress={() => dispatch(handleLogout())}
+          onPress={() => performLogout(navigation, dispatch)}
         >
           <Icon name="log-out-outline" iconFamily="Ionicons" size={18} color={COLORS.destructive} />
           <Typography fFamily="barlowSemiBold600" size={14} lineHeight={21} color={COLORS.destructive} mL={8}>

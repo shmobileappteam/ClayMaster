@@ -61,7 +61,13 @@ const CourseMissDiagnosisScreen = ({ navigation }) => {
                 All Categories
               </Typography>
             </TouchableOpacity>
-            <View style={[styles.prompt, { borderColor: selectedCat.colorBorder, backgroundColor: selectedCat.colorBg }]}>
+            <View
+              style={[
+                styles.prompt,
+                styles.selectedHeader,
+                { borderColor: selectedCat.colorBorder, backgroundColor: selectedCat.colorBg },
+              ]}
+            >
               <Typography fFamily="barlowBold700" size={24} color={selectedCat.accent} textAlign="center">
                 {selectedCat.name}
               </Typography>
@@ -140,7 +146,10 @@ const styles = StyleSheet.create({
     borderColor: COLORS.courseBorder,
     padding: Sizer.hSize(20),
     alignItems: 'center',
-    marginBottom: Sizer.vSize(16),
+    marginBottom: Sizer.vSize(20),
+  },
+  selectedHeader: {
+    borderWidth: 2,
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Sizer.hSize(12), justifyContent: 'space-between' },
   catCard: {

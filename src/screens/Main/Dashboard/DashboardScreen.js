@@ -12,7 +12,7 @@ import { getMissCategory } from '../../../constants/missCategories';
 const CORE_SECTIONS = [
   { label: 'Analytics', desc: 'Trends & insights', icon: 'stats-chart-outline', screen: 'AnalyticsDashboard' },
   { label: 'Instructional Videos', desc: "Kevin & Bill's library", icon: 'play-circle-outline', screen: 'InstructionalVideosScreen' },
-  { label: 'Practice Drills', desc: 'Focused exercises', icon: 'fitness-outline', screen: 'DrillsScreen' },
+  { label: 'Practice Drills', desc: 'Focused exercises', icon: 'locate-outline', screen: 'DrillsScreen' },
   { label: 'On-line Coaching', desc: 'Book a session', icon: 'people-outline', screen: 'CoachingScreen' },
   { label: 'Private Community', desc: 'Connect & share', icon: 'chatbubbles-outline', screen: 'CommunityScreen' },
   { label: 'Monthly Webcasts', desc: 'Live sessions', icon: 'radio-outline', screen: 'WebcastScreen' },
@@ -29,8 +29,8 @@ const CONTINUE_TRAINING = [
   {
     label: 'Late Trigger Correction',
     desc: 'Drill in progress · 2 of 5 steps',
-    icon: 'fitness-outline',
-    screen: 'DrillsScreen',
+    icon: 'locate-outline',
+    screen: 'DrillDetailScreen',
   },
 ];
 

@@ -30,7 +30,7 @@ const ModeSelectScreen = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.logoBox}>
             <Icon
-              name="radio-button-on"
+              name="disc-outline"
               iconFamily="Ionicons"
               size={32}
               color={COLORS.white100}
@@ -50,23 +50,31 @@ const ModeSelectScreen = ({ navigation }) => {
           onPress={() => selectMode('course')}
         >
           <View style={styles.courseBody}>
-            <View style={styles.modeRow}>
-              <View style={styles.orangeCircle}>
-                <Icon
-                  name="locate"
-                  iconFamily="Ionicons"
-                  size={22}
-                  color={COLORS.white100}
-                />
+            <View style={styles.cardTopRow}>
+              <View style={styles.modeRow}>
+                <View style={styles.orangeCircle}>
+                  <Icon
+                    name="locate"
+                    iconFamily="Ionicons"
+                    size={22}
+                    color={COLORS.white100}
+                  />
+                </View>
+                <Typography
+                  size={11}
+                  color={COLORS.primary}
+                  fFamily="barlowSemiBold600"
+                  style={styles.uppercase}
+                >
+                  Active Mode
+                </Typography>
               </View>
-              <Typography
-                size={11}
-                color={COLORS.primary}
-                fFamily="barlowSemiBold600"
-                style={styles.uppercase}
-              >
-                Active Mode
-              </Typography>
+              <Icon
+                name="chevron-forward"
+                iconFamily="Ionicons"
+                size={24}
+                color="rgba(255,255,255,0.5)"
+              />
             </View>
             <Typography fFamily="barlowBold700" size={24} color={COLORS.white100} mT={12}>
               On the Course
@@ -99,23 +107,31 @@ const ModeSelectScreen = ({ navigation }) => {
           onPress={() => selectMode('library')}
         >
           <View style={styles.libraryBody}>
-            <View style={styles.modeRow}>
-              <View style={styles.lightCircle}>
-                <Icon
-                  name="library-outline"
-                  iconFamily="Ionicons"
-                  size={22}
+            <View style={styles.cardTopRow}>
+              <View style={styles.modeRow}>
+                <View style={styles.lightCircle}>
+                  <Icon
+                    name="library-outline"
+                    iconFamily="Ionicons"
+                    size={22}
+                    color={COLORS.primary}
+                  />
+                </View>
+                <Typography
+                  size={11}
                   color={COLORS.primary}
-                />
+                  fFamily="barlowSemiBold600"
+                  style={styles.uppercase}
+                >
+                  Full Portal
+                </Typography>
               </View>
-              <Typography
-                size={11}
-                color={COLORS.primary}
-                fFamily="barlowSemiBold600"
-                style={styles.uppercase}
-              >
-                Full Portal
-              </Typography>
+              <Icon
+                name="chevron-forward"
+                iconFamily="Ionicons"
+                size={24}
+                color={COLORS.textSecondary}
+              />
             </View>
             <Typography fFamily="barlowBold700" size={24} color={COLORS.textPrimary} mT={12}>
               Training Library
@@ -133,6 +149,12 @@ const ModeSelectScreen = ({ navigation }) => {
                 </View>
               ))}
             </View>
+          </View>
+          <View style={styles.libraryFooter}>
+            <Icon name="book-outline" iconFamily="Ionicons" size={14} color={COLORS.textSecondary} />
+            <Typography size={11} color={COLORS.textSecondary} mL={8} style={{ flex: 1 }}>
+              Content-rich · Structured learning · Full access
+            </Typography>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -194,10 +216,25 @@ const styles = StyleSheet.create({
   libraryBody: {
     padding: Sizer.hSize(24),
   },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
   modeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Sizer.hSize(8),
+    flex: 1,
+  },
+  libraryFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Sizer.hSize(24),
+    paddingVertical: Sizer.vSize(12),
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.borderMuted,
+    backgroundColor: COLORS.surface,
   },
   orangeCircle: {
     width: Sizer.hSize(40),

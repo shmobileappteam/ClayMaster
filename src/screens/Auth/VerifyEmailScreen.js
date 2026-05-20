@@ -56,7 +56,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 
   function handleRouting() {
     if (comeFromLogin) {
-      let rediredScreen = 'BottomTabs';
+      let rediredScreen = 'ModeSelectScreen';
 
       if (subscriptionEnabled) {
         if (user?.subscription_status !== 'active') {
