@@ -7,6 +7,7 @@ import Icon from '../../../helpers/Icon';
 import { COLORS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useAppMode } from '../../../context/AppModeContext';
+import { navigateToFieldMode } from '../../../navigation/navigationHelpers';
 import { MISS_CATEGORIES } from '../../../constants/missCategories';
 
 const CourseRoundScreen = ({ navigation }) => {
@@ -130,7 +131,7 @@ const CourseRoundScreen = ({ navigation }) => {
         </View>
         <TouchableOpacity
           style={styles.pauseBtn}
-          onPress={() => navigation.navigate('CourseHomeScreen')}
+          onPress={() => navigateToFieldMode(navigation, 'CourseHomeScreen')}
           accessibilityLabel="Pause round"
         >
           <Icon name="pause" iconFamily="Ionicons" size={18} color={COLORS.white100} />

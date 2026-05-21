@@ -16,6 +16,7 @@ const FieldBox = ({ children, style }) => (
   <View style={[styles.fieldBox, style]}>{children}</View>
 );
 
+/** @deprecated PAGE 17 — removed from app; not supported in Field or Library */
 const TournamentEntryScreen = ({ navigation }) => (
   <Container isPadding={false} backgroundColor={COLORS.mainBg}>
     <LibraryHeader

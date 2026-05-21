@@ -25,6 +25,7 @@ const appSlice = createSlice({
       storage.delete(KEYS.ACCESS_TOKEN);
       storage.delete(KEYS.SOCIAL_TOKEN);
       storage.delete(KEYS.LOGIN_TYPE);
+      storage.delete(KEYS.ACTIVE_ROUND);
 
       state.user = null;
       state.isLogged = false;

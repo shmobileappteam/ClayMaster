@@ -1,128 +1,244 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
+import CourseLayout from '../../../components/course/CourseLayout';
+import CourseHeader from '../../../components/course/CourseHeader';
 import Icon from '../../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { estimateDrillSizeMb } from '../../../constants/practiceDrills';
+import {
+  isDrillDownloaded,
+  removeDownloadedDrill,
+  saveDownloadedDrill,
+} from '../../../utils/downloadedDrills';
+import { useModeSwitch } from '../../../hooks/useModeSwitch';
+import { showMessage } from '../../../utils';
 
-/** ClayMaster-App-UI `DrillDetail.tsx` — static drill detail (web uses same page for all drill links) */
 const STEPS = [
-  {
-    step: 1,
-    title: 'Set Up Station',
-    desc: 'Position yourself at station 3 with a clear view of the high tower.',
-  },
-  {
-    step: 2,
-    title: 'Focus on Hold Point',
-    desc: 'Place your muzzle at the correct hold point, 1/3 from the trap.',
-  },
-  {
-    step: 3,
-    title: 'Track the Target',
-    desc: 'Follow the clay with smooth gun movement, maintain lead.',
-  },
-  {
-    step: 4,
-    title: 'Execute the Shot',
-    desc: 'Pull trigger when sight picture aligns. Follow through.',
-  },
-  {
-    step: 5,
-    title: 'Review & Repeat',
-    desc: 'Analyze your hit/miss and adjust accordingly.',
-  },
+  { step: 1, title: 'Review PDF', desc: 'Read the 2–4 page drill sheet (saved on device when downloaded).' },
+  { step: 2, title: 'Set Up Station', desc: 'Position yourself with a clear view of the target line.' },
+  { step: 3, title: 'Run the Sequence', desc: 'Follow each step on the PDF at the range.' },
+  { step: 4, title: 'Execute Shots', desc: 'Apply the drill with live targets or dry mounts.' },
+  { step: 5, title: 'Review & Repeat', desc: 'Note hits/misses and repeat as needed.' },
 ];
 
-const DrillDetailScreen = ({ navigation }) => (
-  <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-    <LibraryHeader
-      title="Drill Detail"
-      showBack
-      showNotification={false}
-      onBack={() => navigation.goBack()}
-    />
+const DrillDetailScreen = ({ navigation, route }) => {
+  const fieldMode = route?.params?.fieldMode === true;
+  const drill = route?.params?.drill;
+  const { canUseLibrary } = useModeSwitch();
+  const [saved, setSaved] = useState(() => (drill ? isDrillDownloaded(drill.id) : false));
+
+  useFocusEffect(
+    useCallback(() => {
+      if (drill?.id) {
+        setSaved(isDrillDownloaded(drill.id));
+      }
+    }, [drill?.id]),
+  );
+
+  if (!drill) {
+    return null;
+  }
+
+  const sizeMb = drill.sizeMb ?? estimateDrillSizeMb(drill.pages);
+  const savedOnDevice = saved;
+
+  const handleDownload = () => {
+    if (savedOnDevice) {
+      removeDownloadedDrill(drill.id);
+      setSaved(false);
+      showMessage({
+        type: 'default',
+        title: 'Removed from device',
+        message: `"${drill.title}" PDF removed from offline drills.`,
+        duration: 3000,
+      });
+      return;
+    }
+    if (!canUseLibrary && !fieldMode) {
+      showMessage({
+        type: 'danger',
+        title: 'Connection required',
+        message: 'Download drill PDFs when you have a stable connection.',
+        duration: 4000,
+      });
+      return;
+    }
+    saveDownloadedDrill(drill);
+    setSaved(true);
+    showMessage({
+      type: 'success',
+      title: 'PDF saved',
+      message: `~${sizeMb} MB · Available offline in Field Mode → Practice Drills.`,
+      duration: 3500,
+    });
+  };
+
+  const handleViewPdf = () => {
+    if (!savedOnDevice && !canUseLibrary) {
+      showMessage({
+        type: 'danger',
+        title: 'Download first',
+        message: 'Save this drill PDF while online to view it at the range.',
+        duration: 4000,
+      });
+      return;
+    }
+    showMessage({
+      type: 'default',
+      title: 'PDF viewer',
+      message: `Opening "${drill.title}" (${drill.pages} pages) when the document API is connected.`,
+      duration: 3000,
+    });
+  };
+
+  const handleStart = () => {
+    const params = {
+      drill: {
+        title: drill.title,
+        duration: drill.duration,
+        level: drill.level,
+      },
+    };
+    navigation.navigate('CourseTrainDetailScreen', params);
+  };
+
+  const body = (
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-      <View style={[GLOBALSTYLE.screenCard, styles.headerCard]}>
+      <View style={[GLOBALSTYLE.screenCard, fieldMode ? styles.headerCardField : styles.headerCard]}>
         <View style={styles.headerTop}>
-          <View style={styles.iconCircle}>
+          <View style={[styles.iconCircle, fieldMode && styles.iconCircleField]}>
             <Icon name="locate-outline" iconFamily="Ionicons" size={24} color={COLORS.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary}>
-              Advanced Shot Analysis
+            <Typography
+              fFamily="barlowSemiBold600"
+              size={20}
+              lineHeight={26}
+              color={fieldMode ? COLORS.white100 : COLORS.textPrimary}
+            >
+              {drill.title}
             </Typography>
-            <Typography size={14} color={COLORS.textSecondary} lineHeight={21} mT={4}>
-              Break down complex shot patterns and improve consistency.
+            <Typography
+              size={14}
+              color={fieldMode ? COLORS.courseTextMuted : COLORS.textSecondary}
+              lineHeight={21}
+              mT={4}
+            >
+              {drill.desc}
             </Typography>
           </View>
         </View>
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
-            <Icon name="time-outline" iconFamily="Ionicons" size={16} color={COLORS.textSecondary} />
-            <Typography size={12} color={COLORS.textSecondary} mL={6}>
-              20 min
+            <Icon name="document-text-outline" iconFamily="Ionicons" size={16} color={COLORS.textSecondary} />
+            <Typography size={12} color={fieldMode ? COLORS.courseTextMuted : COLORS.textSecondary} mL={6}>
+              {drill.pages} pages · ~{sizeMb} MB PDF
             </Typography>
           </View>
           <View style={styles.metaItem}>
-            <Icon name="checkmark-circle-outline" iconFamily="Ionicons" size={16} color={COLORS.textSecondary} />
-            <Typography size={12} color={COLORS.textSecondary} mL={6}>
-              Intermediate
+            <Icon name="time-outline" iconFamily="Ionicons" size={16} color={COLORS.textSecondary} />
+            <Typography size={12} color={fieldMode ? COLORS.courseTextMuted : COLORS.textSecondary} mL={6}>
+              {drill.duration}
             </Typography>
           </View>
         </View>
+        {savedOnDevice ? (
+          <Typography size={12} color={COLORS.primary} mB={8}>
+            Saved on this device — works offline
+          </Typography>
+        ) : null}
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.startBtn} activeOpacity={0.88}>
+          <TouchableOpacity style={styles.startBtn} activeOpacity={0.88} onPress={handleStart}>
             <Icon name="play" iconFamily="Ionicons" size={18} color={COLORS.white100} />
             <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.white100} mL={8}>
               Start Drill
             </Typography>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.88}>
-            <Icon name="download-outline" iconFamily="Ionicons" size={20} color={COLORS.textSecondary} />
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.88} onPress={handleDownload}>
+            <Icon
+              name={savedOnDevice ? 'checkmark-circle' : 'download-outline'}
+              iconFamily="Ionicons"
+              size={20}
+              color={savedOnDevice ? COLORS.primary : COLORS.textSecondary}
+            />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.88}>
+          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.88} onPress={handleViewPdf}>
             <Icon name="print-outline" iconFamily="Ionicons" size={20} color={COLORS.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <Typography fFamily="barlowSemiBold600" size={20} color={COLORS.textPrimary} mB={12}>
+      <Typography
+        fFamily="barlowSemiBold600"
+        size={20}
+        color={fieldMode ? COLORS.white100 : COLORS.textPrimary}
+        mB={12}
+      >
         Steps
       </Typography>
       <View style={styles.stepsGroup}>
         {STEPS.map(s => (
-          <View key={s.step} style={[GLOBALSTYLE.screenCard, styles.stepCard]}>
+          <View
+            key={s.step}
+            style={[
+              GLOBALSTYLE.screenCard,
+              styles.stepCard,
+              fieldMode && styles.stepCardField,
+            ]}
+          >
             <View style={styles.stepNum}>
               <Typography size={12} color={COLORS.white100} fFamily="barlowBold700">
                 {s.step}
               </Typography>
             </View>
             <View style={{ flex: 1 }}>
-              <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
+              <Typography
+                fFamily="barlowSemiBold600"
+                size={14}
+                color={fieldMode ? COLORS.white100 : COLORS.textPrimary}
+              >
                 {s.title}
               </Typography>
-              <Typography size={12} color={COLORS.textSecondary} mT={2} lineHeight={17}>
+              <Typography
+                size={12}
+                color={fieldMode ? COLORS.courseTextMuted : COLORS.textSecondary}
+                mT={2}
+                lineHeight={17}
+              >
                 {s.desc}
               </Typography>
             </View>
           </View>
         ))}
       </View>
-
-      <View style={styles.tipCard}>
-        <Typography fFamily="barlowSemiBold600" size={18} color={COLORS.textPrimary} mB={8}>
-          💡 Pro Tip
-        </Typography>
-        <Typography size={14} color={COLORS.textSecondary} lineHeight={21}>
-          Focus on smooth gun movement rather than speed. Consistent tempo leads to higher hit
-          rates on complex targets.
-        </Typography>
-      </View>
     </ScrollView>
-  </Container>
-);
+  );
+
+  if (fieldMode) {
+    return (
+      <CourseLayout showTabs={false}>
+        <CourseHeader title="Drill" showBack onBack={() => navigation.goBack()} />
+        {body}
+      </CourseLayout>
+    );
+  }
+
+  return (
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+      <LibraryHeader
+        title="Drill Detail"
+        showBack
+        showNotification={false}
+        onBack={() => navigation.goBack()}
+      />
+      {body}
+    </Container>
+  );
+};
 
 export default DrillDetailScreen;
 
@@ -134,7 +250,19 @@ const styles = StyleSheet.create({
     gap: Sizer.vSize(SPACING.section),
   },
   headerCard: { padding: Sizer.hSize(SPACING.cardP), ...SHADOWS.card },
-  headerTop: { flexDirection: 'row', alignItems: 'flex-start', gap: Sizer.hSize(12), marginBottom: Sizer.vSize(12) },
+  headerCardField: {
+    padding: Sizer.hSize(SPACING.cardP),
+    backgroundColor: COLORS.courseSurface,
+    borderRadius: Sizer.hSize(12),
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.courseBorder,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Sizer.hSize(12),
+    marginBottom: Sizer.vSize(12),
+  },
   iconCircle: {
     width: Sizer.hSize(48),
     height: Sizer.hSize(48),
@@ -143,7 +271,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  metaRow: { flexDirection: 'row', gap: Sizer.hSize(16), marginBottom: Sizer.vSize(16) },
+  iconCircleField: {
+    backgroundColor: 'rgba(235,108,15,0.2)',
+  },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Sizer.hSize(12), marginBottom: Sizer.vSize(12) },
   metaItem: { flexDirection: 'row', alignItems: 'center' },
   actions: { flexDirection: 'row', gap: Sizer.hSize(8) },
   startBtn: {
@@ -163,6 +294,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderMuted,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.surface,
   },
   stepsGroup: { gap: Sizer.vSize(SPACING.component) },
   stepCard: {
@@ -172,6 +304,13 @@ const styles = StyleSheet.create({
     gap: Sizer.hSize(12),
     ...SHADOWS.card,
   },
+  stepCardField: {
+    backgroundColor: COLORS.courseSurface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.courseBorder,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
   stepNum: {
     width: Sizer.hSize(32),
     height: Sizer.hSize(32),
@@ -179,10 +318,5 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  tipCard: {
-    backgroundColor: COLORS.primaryLight,
-    borderRadius: Sizer.hSize(12),
-    padding: Sizer.hSize(SPACING.cardP),
   },
 });

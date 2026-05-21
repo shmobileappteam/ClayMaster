@@ -1,72 +1,39 @@
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
 import { Typography } from '../../atomComponents';
 import Icon from '../../helpers/Icon';
 import { COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
-import { useAppMode } from '../../context/AppModeContext';
+import { FIELD_MODE_TABS } from '../../constants/modeSections';
 
-const TABS = [
-  {
-    label: 'Score',
-    icon: 'radio-button-on',
-    screen: 'CourseHomeScreen',
-  },
-  {
-    label: 'Miss Fix',
-    icon: 'warning-outline',
-    screen: 'CourseMissDiagnosisScreen',
-  },
-  {
-    label: 'Train',
-    icon: 'barbell-outline',
-    screen: 'CourseTrainScreen',
-  },
-  {
-    label: 'Progress',
-    icon: 'trending-up-outline',
-    screen: 'CourseProgressScreen',
-  },
-  {
-    label: 'Go Deeper',
-    icon: 'library-outline',
-    screen: 'BottomTabs',
-    isLibrary: true,
-  },
-];
+/**
+ * Custom tab bar for FieldModeNavigator — never touches library BottomTabs.
+ */
+const CourseTabBar = ({ state, navigation }) => {
+  const onTabPress = (routeName, isFocused) => {
+    const event = navigation.emit({
+      type: 'tabPress',
+      target: state.routes.find(r => r.name === routeName)?.key,
+      canPreventDefault: true,
+    });
 
-const CourseTabBar = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
-  const { setMode } = useAppMode();
-
-  const onTabPress = tab => {
-    if (tab.isLibrary) {
-      setMode('library');
-      navigation.navigate('BottomTabs');
-      return;
-    }
-    if (route.name !== tab.screen) {
-      navigation.navigate(tab.screen);
+    if (!isFocused && !event.defaultPrevented) {
+      navigation.navigate(routeName);
     }
   };
 
   return (
     <View style={styles.bar}>
-      {TABS.map(tab => {
-        const isActive = route.name === tab.screen;
-        const isGoDeeper = tab.isLibrary;
-        const color = isActive
-          ? COLORS.primary
-          : isGoDeeper
-            ? '#666666'
-            : '#888888';
+      {FIELD_MODE_TABS.map(tab => {
+        const routeIndex = state.routes.findIndex(r => r.name === tab.screen);
+        const isActive = state.index === routeIndex;
+        const color = isActive ? COLORS.primary : '#888888';
+
         return (
           <TouchableOpacity
-            key={tab.label}
+            key={tab.screen}
             style={styles.tab}
-            onPress={() => onTabPress(tab)}
+            onPress={() => onTabPress(tab.screen, isActive)}
             activeOpacity={0.88}
           >
             <Icon

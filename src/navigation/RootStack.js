@@ -9,7 +9,7 @@ import FlashMessage from 'react-native-flash-message';
 //----
 import StackNavigator from './StackNavigator';
 import { COLORS } from '../globalStyle/Theme';
-import NetworkStateMonitor from "../utils/NetworkStateMonitor"
+import NetworkStateMonitor from '../utils/NetworkStateMonitor';
 import { storage } from '../api/api';
 
 const RootStack = () => {
@@ -36,7 +36,7 @@ const RootStack = () => {
 
   const handleStatusBar = () => {
     const route = navigationRef.getCurrentRoute();
-
+``
     if (authScreens.includes(route.name)) {
       setAppBarStyle({
         bgColor: COLORS.mainBg,
@@ -58,8 +58,11 @@ const RootStack = () => {
     }
   };
 
-  useEffect(async() => {
-    // await storage.clearAll()
+  useEffect(() => {
+    async()=>{
+      await storage.clearAll()
+
+    }
     // (async () => {
     //   let fcmToken = await AsyncStorage.getItem(KEYS.FCM_TOKEN);
     //   __DEV__ && console.log(' RootStack:83 ~ fcmToken:', !!fcmToken);
@@ -70,6 +73,8 @@ const RootStack = () => {
     //   notificationListener(dispatch);
     // })();
   }, []);
+
+
 
   return (
     <NavigationContainer

@@ -10,6 +10,7 @@ import {
   navigateFromTabToStack,
   openDrawerFromTabNavigation,
 } from '../../navigation/navigationHelpers';
+import ModeIndicatorBar from './ModeIndicatorBar';
 
 /**
  * Web AppHeader parity — sticky library-mode header with menu + notifications.
@@ -19,6 +20,7 @@ const LibraryHeader = ({
   showBack,
   showMenu,
   showNotification = true,
+  showModeIndicator = true,
   onBack,
   rightSlot,
 }) => {
@@ -87,6 +89,7 @@ const LibraryHeader = ({
             ) : null}
           </View>
         </View>
+      {showModeIndicator ? <ModeIndicatorBar variant="library" /> : null}
     </View>
   );
 };

@@ -5,25 +5,26 @@ import { Container, Typography } from '../../atomComponents';
 import Icon from '../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, RADIUS, SHADOWS, SPACING, TYPE } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
-import { useAppMode } from '../../context/AppModeContext';
-
-const COURSE_TAGS = ['Scorecard', 'Miss Diagnosis', 'Quick Drills', 'Progress'];
-const LIBRARY_TAGS = ['Videos', 'Coaching', 'Analytics', 'Community', 'Shop'];
+import {
+  FIELD_MODE_SELECT_TAGS,
+  LIBRARY_MODE_SELECT_TAGS,
+  MODE_LABELS,
+} from '../../constants/modeSections';
+import { useModeSwitch } from '../../hooks/useModeSwitch';
 
 /**
  * ClayMaster-App-UI `ModeSelect.tsx` — uses `px-screen-px` (16) like rest of app
  */
 const ModeSelectScreen = ({ navigation }) => {
   const insets = useSafeAreaInsets();
-  const { setMode } = useAppMode();
+  const { switchToFieldMode, switchToLibraryMode, canUseLibrary } = useModeSwitch();
 
-  const selectMode = mode => {
-    setMode(mode);
+  const selectMode = async mode => {
     if (mode === 'course') {
-      navigation.replace('CourseHomeScreen');
-    } else {
-      navigation.replace('BottomTabs');
+      switchToFieldMode('CourseHomeScreen');
+      return;
     }
+    await switchToLibraryMode('Home');
   };
 
   return (
@@ -83,7 +84,7 @@ const ModeSelectScreen = ({ navigation }) => {
                   fFamily="barlowSemiBold600"
                   style={styles.uppercase}
                 >
-                  Active Mode
+                  {MODE_LABELS.field}
                 </Typography>
               </View>
               <Icon
@@ -99,7 +100,7 @@ const ModeSelectScreen = ({ navigation }) => {
               color={COLORS.white100}
               mT={12}
             >
-              On the Course
+              {MODE_LABELS.field}
             </Typography>
             <Typography
               size={TYPE.body.size}
@@ -107,11 +108,11 @@ const ModeSelectScreen = ({ navigation }) => {
               mT={8}
               lineHeight={TYPE.body.lineHeight}
             >
-              Real-time tools for the range. Scorecard, miss diagnosis, quick drills —
-              designed for outdoor use.
+              Digital scorecard, miss diagnostics, practice drills, and downloaded videos —
+              built for the range.
             </Typography>
             <View style={styles.tags}>
-              {COURSE_TAGS.map(tag => (
+              {FIELD_MODE_SELECT_TAGS.map(tag => (
                 <View key={tag} style={styles.tagDark}>
                   <Typography size={TYPE.caption.size} color="rgba(255,255,255,0.8)">
                     {tag}
@@ -129,9 +130,14 @@ const ModeSelectScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[GLOBALSTYLE.screenCard, styles.libraryCard]}
+          style={[
+            GLOBALSTYLE.screenCard,
+            styles.libraryCard,
+            !canUseLibrary && styles.libraryCardDisabled,
+          ]}
           activeOpacity={0.95}
           onPress={() => selectMode('library')}
+          disabled={!canUseLibrary}
         >
           <View style={styles.libraryBody}>
             <View style={styles.cardTopRow}>
@@ -150,7 +156,7 @@ const ModeSelectScreen = ({ navigation }) => {
                   fFamily="barlowSemiBold600"
                   style={styles.uppercase}
                 >
-                  Full Portal
+                  {MODE_LABELS.library}
                 </Typography>
               </View>
               <Icon
@@ -166,7 +172,7 @@ const ModeSelectScreen = ({ navigation }) => {
               color={COLORS.textPrimary}
               mT={12}
             >
-              Training Library
+              {MODE_LABELS.library}
             </Typography>
             <Typography
               size={TYPE.body.size}
@@ -174,11 +180,11 @@ const ModeSelectScreen = ({ navigation }) => {
               mT={8}
               lineHeight={TYPE.body.lineHeight}
             >
-              Full training system. Videos, coaching, analytics, community, shop —
-              everything to improve your game.
+              The full ClayMaster portal on your phone — same core training order, plus
+              analytics, coaching, community, shop, and more.
             </Typography>
             <View style={styles.tags}>
-              {LIBRARY_TAGS.map(tag => (
+              {LIBRARY_MODE_SELECT_TAGS.map(tag => (
                 <View key={tag} style={styles.tagLight}>
                   <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
                     {tag}
@@ -188,9 +194,16 @@ const ModeSelectScreen = ({ navigation }) => {
             </View>
           </View>
           <View style={styles.libraryFooter}>
-            <Icon name="book-outline" iconFamily="Ionicons" size={14} color={COLORS.textSecondary} />
+            <Icon
+              name={canUseLibrary ? 'book-outline' : 'cloud-offline-outline'}
+              iconFamily="Ionicons"
+              size={14}
+              color={COLORS.textSecondary}
+            />
             <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mL={8} style={{ flex: 1 }}>
-              Content-rich · Structured learning · Full access
+              {canUseLibrary
+                ? 'Content-rich · Structured learning · Full access'
+                : 'Requires stable internet — connect to use Full Library Mode'}
             </Typography>
           </View>
         </TouchableOpacity>
@@ -251,6 +264,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     padding: 0,
     ...SHADOWS.card,
+  },
+  libraryCardDisabled: {
+    opacity: 0.55,
   },
   libraryBody: {
     paddingHorizontal: Sizer.hSize(SPACING.sm),

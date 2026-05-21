@@ -9,6 +9,7 @@ import Label from './customFields/Label';
 import Header from './header/Header';
 import ScreenBanner from './ScreenBanner';
 import LibraryHeader from './layout/LibraryHeader';
+import ModeIndicatorBar from './layout/ModeIndicatorBar';
 
 import ImagePicker from './imagePicker/ImagePicker';
 
@@ -25,6 +26,7 @@ export {
   Header,
   ScreenBanner,
   LibraryHeader,
+  ModeIndicatorBar,
   ImagePicker,
   Accordion,
   Label,

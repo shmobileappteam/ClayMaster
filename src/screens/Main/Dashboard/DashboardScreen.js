@@ -5,51 +5,36 @@ import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { COLORS, RADIUS, SHADOWS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import Icon from '../../../helpers/Icon';
-import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
+import {
+  navigateFromTabToStack,
+  navigateFromTabToTab,
+} from '../../../navigation/navigationHelpers';
+import { useModeSwitch } from '../../../hooks/useModeSwitch';
 import { useAppMode } from '../../../context/AppModeContext';
 import { getMissCategory } from '../../../constants/missCategories';
-
-const CORE_SECTIONS = [
-  { label: 'Analytics', desc: 'Trends & insights', icon: 'stats-chart-outline', screen: 'AnalyticsDashboard' },
-  { label: 'Instructional Videos', desc: "Kevin & Bill's library", icon: 'play-circle-outline', screen: 'InstructionalVideosScreen' },
-  { label: 'Practice Drills', desc: 'Focused exercises', icon: 'locate-outline', screen: 'DrillsScreen' },
-  { label: 'On-line Coaching', desc: 'Book a session', icon: 'people-outline', screen: 'CoachingScreen' },
-  { label: 'Private Community', desc: 'Connect & share', icon: 'chatbubbles-outline', screen: 'CommunityScreen' },
-  { label: 'Monthly Webcasts', desc: 'Live sessions', icon: 'radio-outline', screen: 'WebcastScreen' },
-];
-
-const CONTINUE_TRAINING = [
-  {
-    label: 'Mastering the Tower Shot',
-    desc: 'Last watched · 4:12 of 12:30',
-    icon: 'play',
-    screen: 'VideoDetailScreen',
-    iconFilled: true,
-  },
-  {
-    label: 'Late Trigger Correction',
-    desc: 'Drill in progress · 2 of 5 steps',
-    icon: 'locate-outline',
-    screen: 'DrillDetailScreen',
-  },
-];
+import {
+  LIBRARY_CORE_SECTIONS,
+  LIBRARY_PORTAL_SECTIONS,
+  MODE_LABELS,
+} from '../../../constants/modeSections';
 
 /**
  * CONTENT INVENTORY — ClayMaster-App-UI `Home.tsx`
  * Header: 1 (title "Library", showMenu, showNotification — no back)
  * CTAs: 1 course-switch row
- * Section labels: 3 ("Your Game Right Now", "Continue Training", "Training Library")
- * Continue Training rows: 2
- * Training Library grid cards: 6
+ * Section labels: 2 ("Your Game Right Now", "Core Training" + portal)
+ * Training Library grid cards: 6+
  * Conditional issue card: 1 (when primary miss exists) OR empty-state card: 1
+ * Continue Training → Field Mode Practice Drills tab (PAGE 7.1.1)
  */
 const DashboardScreen = ({ navigation }) => {
-  const { setMode, activeRound, lastPrimaryMiss } = useAppMode();
+  const { activeRound, lastPrimaryMiss } = useAppMode();
+  const { switchToFieldMode } = useModeSwitch();
   const primary = getMissCategory(lastPrimaryMiss);
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <LibraryHeader title="Library" showMenu showNotification />
+      <LibraryHeader title={MODE_LABELS.library} showMenu showNotification />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -60,12 +45,12 @@ const DashboardScreen = ({ navigation }) => {
           style={styles.courseSwitch}
           activeOpacity={0.88}
           onPress={() => {
-            setMode('course');
-            const target =
-              activeRound && !activeRound.finished
-                ? 'CourseRoundScreen'
-                : 'CourseHomeScreen';
-            navigateFromTabToStack(navigation, target);
+            if (activeRound && !activeRound.finished) {
+              switchToFieldMode('CourseHomeScreen');
+              navigateFromTabToStack(navigation, 'CourseRoundScreen');
+            } else {
+              switchToFieldMode('CourseHomeScreen');
+            }
           }}
         >
           <View style={styles.courseSwitchIcon}>
@@ -73,12 +58,12 @@ const DashboardScreen = ({ navigation }) => {
           </View>
           <View style={styles.courseSwitchText}>
             <Typography fFamily="barlowBold700" size={14} lineHeight={21} color={COLORS.white100}>
-              {activeRound && !activeRound.finished ? 'Resume Round' : 'On the Course'}
+              {activeRound && !activeRound.finished ? 'Resume Round' : MODE_LABELS.field}
             </Typography>
             <Typography size={12} lineHeight={17} color="rgba(255,255,255,0.7)" mT={2}>
               {activeRound && !activeRound.finished
                 ? `Station ${activeRound.currentStation}`
-                : 'Switch to Field Mode'}
+                : `Switch to ${MODE_LABELS.field}`}
             </Typography>
           </View>
           <Icon name="chevron-forward" iconFamily="Ionicons" size={20} color="rgba(255,255,255,0.6)" />
@@ -151,13 +136,10 @@ const DashboardScreen = ({ navigation }) => {
           ) : (
             <View style={styles.issueEmptyCard}>
               <Typography size={14} lineHeight={21} color={COLORS.textSecondary} textAlign="center">
-                Log a round in Field Mode to see your personalized fix here.
+                Use the digital scorecard to record your 100-target practice round.
               </Typography>
               <TouchableOpacity
-                onPress={() => {
-                  setMode('course');
-                  navigateFromTabToStack(navigation, 'CourseHomeScreen');
-                }}
+                onPress={() => switchToFieldMode('CourseHomeScreen')}
                 activeOpacity={0.88}
                 style={styles.startRoundLink}
               >
@@ -170,34 +152,35 @@ const DashboardScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.section}>
-          <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary} mB={12}>
-            Continue Training
+          <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary} mB={4}>
+            Core Training
           </Typography>
-          <View style={styles.continueList}>
-            {CONTINUE_TRAINING.map(item => (
+          <Typography size={12} lineHeight={17} color={COLORS.textSecondary} mB={12}>
+            Same order as {MODE_LABELS.field}
+          </Typography>
+          <View style={styles.grid}>
+            {LIBRARY_CORE_SECTIONS.map(s => (
               <TouchableOpacity
-                key={item.label}
-                style={styles.continueRow}
-                onPress={() => navigateFromTabToStack(navigation, item.screen)}
+                key={s.label}
+                style={styles.gridCard}
+                onPress={() => {
+                  if (s.action === 'tab' && s.tab) {
+                    navigateFromTabToTab(navigation, s.tab);
+                  } else {
+                    navigateFromTabToStack(navigation, s.screen);
+                  }
+                }}
                 activeOpacity={0.88}
               >
-                <View style={styles.continueIcon}>
-                  <Icon
-                    name={item.icon}
-                    iconFamily="Ionicons"
-                    size={20}
-                    color={COLORS.primary}
-                  />
+                <View style={styles.gridIcon}>
+                  <Icon name={s.icon} iconFamily="Ionicons" size={20} color={COLORS.primary} />
                 </View>
-                <View style={styles.continueText}>
-                  <Typography fFamily="barlowSemiBold600" size={14} lineHeight={21} color={COLORS.textPrimary}>
-                    {item.label}
-                  </Typography>
-                  <Typography size={12} lineHeight={17} color={COLORS.textSecondary} mT={2}>
-                    {item.desc}
-                  </Typography>
-                </View>
-                <Icon name="chevron-forward" iconFamily="Ionicons" size={20} color={COLORS.textSecondary} />
+                <Typography fFamily="barlowSemiBold600" size={14} lineHeight={18} color={COLORS.textPrimary}>
+                  {s.label}
+                </Typography>
+                <Typography size={12} lineHeight={17} color={COLORS.textSecondary} mT={2}>
+                  {s.desc}
+                </Typography>
               </TouchableOpacity>
             ))}
           </View>
@@ -205,14 +188,20 @@ const DashboardScreen = ({ navigation }) => {
 
         <View style={styles.section}>
           <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary} mB={12}>
-            Training Library
+            Portal
           </Typography>
           <View style={styles.grid}>
-            {CORE_SECTIONS.map(s => (
+            {LIBRARY_PORTAL_SECTIONS.map(s => (
               <TouchableOpacity
                 key={s.label}
                 style={styles.gridCard}
-                onPress={() => navigateFromTabToStack(navigation, s.screen)}
+                onPress={() => {
+                  if (s.action === 'tab' && s.tab) {
+                    navigateFromTabToTab(navigation, s.tab);
+                  } else {
+                    navigateFromTabToStack(navigation, s.screen);
+                  }
+                }}
                 activeOpacity={0.88}
               >
                 <View style={styles.gridIcon}>
@@ -323,31 +312,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   startRoundLink: { marginTop: Sizer.vSize(12) },
-  // space-y-component (12) between full-width rows
-  continueList: { gap: Sizer.vSize(SPACING.component) },
-  // w-full bg-card rounded-lg p-card-p border flex-row gap-3
-  continueRow: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: Sizer.hSize(RADIUS.md),
-    padding: Sizer.hSize(SPACING.cardP),
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.borderMuted,
-    gap: Sizer.hSize(12),
-    ...SHADOWS.card,
-  },
-  // w-11 h-11 rounded-full bg-cm-orange-light
-  continueIcon: {
-    width: Sizer.hSize(44),
-    height: Sizer.hSize(44),
-    borderRadius: Sizer.hSize(22),
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  continueText: { flex: 1, minWidth: 0 },
   // grid grid-cols-2 gap-component (12)
   grid: {
     flexDirection: 'row',

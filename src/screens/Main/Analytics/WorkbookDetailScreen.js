@@ -5,6 +5,7 @@ import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
 const CHAPTERS = [
   { title: 'Introduction to Clay Shooting', pages: 12, completed: true },
@@ -19,7 +20,12 @@ const CHAPTERS = [
 const completedCount = CHAPTERS.filter(c => c.completed).length;
 const progress = Math.round((completedCount / CHAPTERS.length) * 100);
 
-const WorkbookDetailScreen = ({ navigation }) => (
+const WorkbookDetailScreen = ({ navigation }) => {
+  if (useRequireLibraryMode()) {
+    return null;
+  }
+
+  return (
   <Container isPadding={false} backgroundColor={COLORS.mainBg}>
     <LibraryHeader
       title="Classic Workbook"
@@ -103,7 +109,8 @@ const WorkbookDetailScreen = ({ navigation }) => (
       </View>
     </ScrollView>
   </Container>
-);
+  );
+};
 
 export default WorkbookDetailScreen;
 

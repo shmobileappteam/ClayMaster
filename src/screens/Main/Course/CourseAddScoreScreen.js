@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Typography } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
+import { navigateToFieldMode } from '../../../navigation/navigationHelpers';
 import CourseHeader from '../../../components/course/CourseHeader';
 import Icon from '../../../helpers/Icon';
 import { COLORS, SPACING } from '../../../globalStyle/Theme';
@@ -173,7 +174,7 @@ const CourseAddScoreScreen = ({ navigation }) => {
         <TouchableOpacity
           style={styles.saveBtn}
           activeOpacity={0.88}
-          onPress={() => navigation.navigate('CourseHomeScreen')}
+          onPress={() => navigateToFieldMode(navigation, 'CourseHomeScreen')}
         >
           <Typography fFamily="barlowBold700" size={20} lineHeight={26} color={COLORS.white100}>
             Save Score

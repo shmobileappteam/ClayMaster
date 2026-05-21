@@ -7,6 +7,7 @@ import Icon from '../../../helpers/Icon';
 import { COLORS } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { MISS_CATEGORIES } from '../../../constants/missCategories';
+import { navigateFromFieldToStack } from '../../../navigation/navigationHelpers';
 
 /**
  * CONTENT INVENTORY — ClayMaster-App-UI `CourseMissDiagnosis.tsx`
@@ -21,7 +22,7 @@ const CourseMissDiagnosisScreen = ({ navigation }) => {
 
   return (
     <CourseLayout>
-      <CourseHeader title="Miss Diagnosis" showAudio />
+      <CourseHeader title="Miss Diagnostics" showAudio />
       <ScrollView contentContainerStyle={styles.scroll}>
         {!selected ? (
           <>
@@ -111,7 +112,11 @@ const CourseMissDiagnosisScreen = ({ navigation }) => {
               <TouchableOpacity
                 key={item.screen}
                 style={styles.fixCard}
-                onPress={() => navigation.navigate(item.screen, { categoryId: selected })}
+                onPress={() =>
+                  navigateFromFieldToStack(navigation, item.screen, {
+                    categoryId: selected,
+                  })
+                }
                 activeOpacity={0.9}
               >
                 <View style={[styles.fixIcon, { backgroundColor: item.iconBg }]}>

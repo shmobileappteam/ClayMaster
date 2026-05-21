@@ -1,8 +1,7 @@
 import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
-import Icon from '../../../helpers/Icon';
 import {
   COLORS,
   GLOBALSTYLE,
@@ -10,7 +9,7 @@ import {
   SPACING,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
-import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
 const LEADERBOARD = [
   { rank: 1, name: 'John Smith', score: 96 },
@@ -27,11 +26,13 @@ const rankBadgeColor = rank => {
 };
 
 /**
- * CONTENT INVENTORY — ClayMaster-App-UI `Tournament.tsx`
- * Action grid (2), Leaderboard table (5 rows)
+ * PAGE 15 — Virtual Tournament (Full Library only; requires stable internet).
+ * Guidelines and Submit Entry removed (PAGE 16–17).
  */
-const VirtualTournamentScreen = ({ navigation }) => {
-  const go = screen => navigateFromTabToStack(navigation, screen);
+const VirtualTournamentScreen = () => {
+  if (useRequireLibraryMode()) {
+    return null;
+  }
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -40,32 +41,9 @@ const VirtualTournamentScreen = ({ navigation }) => {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.actionGrid}>
-          <TouchableOpacity
-            style={[GLOBALSTYLE.screenCard, styles.actionCard]}
-            onPress={() => go('TournamentGuidelinesScreen')}
-            activeOpacity={0.88}
-          >
-            <View style={styles.actionIcon}>
-              <Icon name="document-text-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
-            </View>
-            <Typography fFamily="barlowMedium500" size={14} color={COLORS.textPrimary}>
-              Guidelines
-            </Typography>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[GLOBALSTYLE.screenCard, styles.actionCard]}
-            onPress={() => go('TournamentEntryScreen')}
-            activeOpacity={0.88}
-          >
-            <View style={styles.actionIcon}>
-              <Icon name="cloud-upload-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
-            </View>
-            <Typography fFamily="barlowMedium500" size={14} color={COLORS.textPrimary}>
-              Submit Entry
-            </Typography>
-          </TouchableOpacity>
-        </View>
+        <Typography size={14} color={COLORS.textSecondary} lineHeight={21} mB={4}>
+          Full Library Mode — live leaderboard and portal features need a reliable connection.
+        </Typography>
 
         <View>
           <Typography
@@ -140,25 +118,6 @@ const styles = StyleSheet.create({
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(100),
     gap: Sizer.vSize(SPACING.section),
-  },
-  actionGrid: {
-    flexDirection: 'row',
-    gap: Sizer.hSize(SPACING.component),
-  },
-  actionCard: {
-    flex: 1,
-    alignItems: 'center',
-    padding: Sizer.hSize(SPACING.cardP),
-    gap: Sizer.vSize(8),
-    ...SHADOWS.card,
-  },
-  actionIcon: {
-    width: Sizer.hSize(44),
-    height: Sizer.hSize(44),
-    borderRadius: Sizer.hSize(22),
-    backgroundColor: COLORS.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   table: { padding: 0, overflow: 'hidden' },
   tableHeader: {

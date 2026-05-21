@@ -43,8 +43,6 @@ import CommunityScreen from './Main/Community/CommunityScreen';
 import CommunityDetailScreen from './Main/Community/CommunityDetailScreen';
 import CreatePostScreen from './Main/Community/CreatePostScreen';
 import VirtualTournamentScreen from './Main/Community/VirtualTournamentScreen';
-import TournamentGuidelinesScreen from './Main/Community/TournamentGuidelinesScreen';
-import TournamentEntryScreen from './Main/Community/TournamentEntryScreen';
 import ShopScreen from './Main/Commerce/ShopScreen';
 import ProductDetailScreen from './Main/Commerce/ProductDetailScreen';
 import OrdersScreen from './Main/Commerce/OrdersScreen';
@@ -62,6 +60,7 @@ import CourseMissFixVideoScreen from './Main/Course/CourseMissFixVideoScreen';
 import CourseMissFixAudioScreen from './Main/Course/CourseMissFixAudioScreen';
 import CourseMissFixDrillScreen from './Main/Course/CourseMissFixDrillScreen';
 import CourseTrainScreen from './Main/Course/CourseTrainScreen';
+import CourseDownloadedVideosScreen from './Main/Course/CourseDownloadedVideosScreen';
 import CourseTrainDetailScreen from './Main/Course/CourseTrainDetailScreen';
 import CourseAudioTipScreen from './Main/Course/CourseAudioTipScreen';
 import CourseProgressScreen from './Main/Course/CourseProgressScreen';
@@ -115,8 +114,6 @@ export {
   CommunityDetailScreen,
   CreatePostScreen,
   VirtualTournamentScreen,
-  TournamentGuidelinesScreen,
-  TournamentEntryScreen,
   ShopScreen,
   ProductDetailScreen,
   OrdersScreen,
@@ -132,6 +129,7 @@ export {
   CourseMissFixAudioScreen,
   CourseMissFixDrillScreen,
   CourseTrainScreen,
+  CourseDownloadedVideosScreen,
   CourseTrainDetailScreen,
   CourseAudioTipScreen,
   CourseProgressScreen,

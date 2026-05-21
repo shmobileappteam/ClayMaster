@@ -39,8 +39,6 @@ import {
   CommunityScreen,
   CommunityDetailScreen,
   CreatePostScreen,
-  TournamentGuidelinesScreen,
-  TournamentEntryScreen,
   ProductDetailScreen,
   OrdersScreen,
   ReviewsScreen,
@@ -50,12 +48,9 @@ import {
   DashboardScreen,
   CartScreen,
   CheckoutScreen,
-  CourseHomeScreen,
-  CourseMissDiagnosisScreen,
   CourseMissFixVideoScreen,
   CourseMissFixAudioScreen,
   CourseMissFixDrillScreen,
-  CourseTrainScreen,
   CourseTrainDetailScreen,
   CourseAudioTipScreen,
   CourseProgressScreen,
@@ -68,6 +63,7 @@ import {
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
 import MainDrawer from './MainDrawer';
+import FieldModeNavigator from './FieldModeNavigator';
 
 const StackNavigator = () => {
   const Stack = createNativeStackNavigator();
@@ -142,8 +138,6 @@ const StackNavigator = () => {
       <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
       <Stack.Screen name="CommunityDetailScreen" component={CommunityDetailScreen} />
       <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
-      <Stack.Screen name="TournamentGuidelinesScreen" component={TournamentGuidelinesScreen} />
-      <Stack.Screen name="TournamentEntryScreen" component={TournamentEntryScreen} />
 
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
       <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
@@ -159,13 +153,11 @@ const StackNavigator = () => {
       <Stack.Screen name="AdditionalVideosScreen" component={AdditionalVideosScreen} />
       <Stack.Screen name="MoreHubScreen" component={MoreHubScreen} />
 
-      {/* On the Course mode */}
-      <Stack.Screen name="CourseHomeScreen" component={CourseHomeScreen} />
-      <Stack.Screen name="CourseMissDiagnosisScreen" component={CourseMissDiagnosisScreen} />
+      {/* Field Mode — 4 tabs (isolated from library BottomTabs) */}
+      <Stack.Screen name="FieldMode" component={FieldModeNavigator} />
       <Stack.Screen name="CourseMissFixVideoScreen" component={CourseMissFixVideoScreen} />
       <Stack.Screen name="CourseMissFixAudioScreen" component={CourseMissFixAudioScreen} />
       <Stack.Screen name="CourseMissFixDrillScreen" component={CourseMissFixDrillScreen} />
-      <Stack.Screen name="CourseTrainScreen" component={CourseTrainScreen} />
       <Stack.Screen name="CourseTrainDetailScreen" component={CourseTrainDetailScreen} />
       <Stack.Screen name="CourseAudioTipScreen" component={CourseAudioTipScreen} />
       <Stack.Screen name="CourseProgressScreen" component={CourseProgressScreen} />

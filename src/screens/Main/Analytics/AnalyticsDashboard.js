@@ -15,6 +15,7 @@ import {
   navigateFromTabToStack,
   navigateFromTabToTab,
 } from '../../../navigation/navigationHelpers';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
 /** ClayMaster-App-UI `Analytics.tsx` — Explore, workbooks, schedule row */
 const EXPLORE_ITEMS = [
@@ -45,6 +46,10 @@ const EXPLORE_ITEMS = [
 ];
 
 const AnalyticsDashboard = ({ navigation }) => {
+  if (useRequireLibraryMode()) {
+    return null;
+  }
+
   const go = screen => navigateFromTabToStack(navigation, screen);
 
   const onExplorePress = item => {

@@ -3,15 +3,19 @@ import { queryClient } from '../api/api';
 // import { logout as logoutApi } from '../api/userService';
 import { handleLogout } from '../redux/slices/appSlice';
 
+const STACK_ROUTE = 'BottomTabs';
+const TAB_CONTAINER = 'MainTabs';
+export const FIELD_MODE_ROUTE = 'FieldMode';
+
 /**
  * Stack → Drawer (BottomTabs) → Tabs → Screen.
- * Walk up until we find the navigator that owns `BottomTabs`.
+ * Walk up until we find the navigator that owns `BottomTabs` or `FieldMode`.
  */
 export function getStackNavigation(navigation) {
   let current = navigation;
   while (current?.getState) {
     const routeNames = current.getState()?.routeNames ?? [];
-    if (routeNames.includes('BottomTabs')) {
+    if (routeNames.includes('BottomTabs') || routeNames.includes(FIELD_MODE_ROUTE)) {
       return current;
     }
     current = current.getParent?.() ?? null;
@@ -28,8 +32,65 @@ export function navigateFromTabToStack(navigation, screenName, params) {
   stack?.navigate(screenName, params);
 }
 
-const STACK_ROUTE = 'BottomTabs';
-const TAB_CONTAINER = 'MainTabs';
+/** Open Field Mode tab shell (scorecard / miss / drills / downloaded videos). */
+export function navigateToFieldMode(navigation, tabScreen = 'CourseHomeScreen') {
+  const stack = getStackNavigation(navigation) ?? navigation;
+  stack.navigate(FIELD_MODE_ROUTE, { screen: tabScreen });
+}
+
+/** Reset root stack to Field Mode (e.g. after mode select). */
+export function resetToFieldMode(navigation, tabScreen = 'CourseHomeScreen') {
+  const stack = getStackNavigation(navigation) ?? navigation;
+  stack.dispatch(
+    CommonActions.reset({
+      index: 0,
+      routes: [
+        {
+          name: FIELD_MODE_ROUTE,
+          state: {
+            routes: [{ name: tabScreen }],
+            index: 0,
+          },
+        },
+      ],
+    }),
+  );
+}
+
+/** Push a stack overlay from inside Field Mode (round, miss fix, etc.). */
+export function navigateFromFieldToStack(navigation, screenName, params) {
+  const stack = getStackNavigation(navigation);
+  stack?.navigate(screenName, params);
+}
+
+/**
+ * Reset stack to drawer + bottom tab (nested state required — avoids blank screen).
+ */
+export function resetToBottomTab(navigation, tabName = 'Home') {
+  const stack = getStackNavigation(navigation) ?? navigation;
+  stack.dispatch(
+    CommonActions.reset({
+      index: 0,
+      routes: [
+        {
+          name: STACK_ROUTE,
+          state: {
+            routes: [
+              {
+                name: TAB_CONTAINER,
+                state: {
+                  routes: [{ name: tabName }],
+                  index: 0,
+                },
+              },
+            ],
+            index: 0,
+          },
+        },
+      ],
+    }),
+  );
+}
 
 /** Switch bottom tab and return to tab shell (pops stack overlays like duplicate ShopScreen). */
 export function navigateToBottomTab(navigation, tabName) {

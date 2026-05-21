@@ -14,6 +14,7 @@ import {
 import { COLORS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { showMessage } from '../../../utils';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
 const TABS = [
   { key: 'book', label: 'Book New' },
@@ -25,6 +26,10 @@ const TABS = [
  * ClayMaster-App-UI `/book-session` — opened from Analytics "Schedule Analytics Session"
  */
 const AnalyticsScheduleScreen = ({ navigation, route }) => {
+  if (useRequireLibraryMode()) {
+    return null;
+  }
+
   const initialTab = route?.params?.tab;
   const [activeTab, setActiveTab] = useState(
     TABS.some(t => t.key === initialTab) ? initialTab : 'book',

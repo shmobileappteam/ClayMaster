@@ -7,6 +7,8 @@ import { AUTH_APIS_DISABLED, KEYS } from '../../constants';
 import { getClasses, getCourses, getRounds } from '../../api/roundService';
 import { getTraps } from '../../api/stationService';
 import { getPackages } from '../../api/packageService';
+import { resetToBottomTab, resetToFieldMode } from '../../navigation/navigationHelpers';
+import { fetchNetworkStatus } from '../../utils/networkStatus';
 
 async function Prefetching() {
   await Promise.all([
@@ -58,8 +60,25 @@ export const onLoginSuccess = async (
           redirectScreen = 'SubscriptionScreen';
         } else if (!showModeSelect) {
           const storedMode = storage.getString(KEYS.APP_MODE);
-          redirectScreen =
-            storedMode === 'course' ? 'CourseHomeScreen' : 'BottomTabs';
+          if (storedMode === 'course') {
+            resetToFieldMode(navigation, 'CourseHomeScreen');
+            return;
+          }
+          const net = await fetchNetworkStatus();
+          if (!net.isStable) {
+            storage.set(KEYS.APP_MODE, 'course');
+            showMessage({
+              type: 'default',
+              title: 'Field Mode',
+              message:
+                'No stable internet — opening Field Mode. Full Library is available when you are online.',
+              duration: 3500,
+            });
+            resetToFieldMode(navigation, 'CourseHomeScreen');
+            return;
+          }
+          resetToBottomTab(navigation, 'Home');
+          return;
         }
 
         navigation.dispatch(

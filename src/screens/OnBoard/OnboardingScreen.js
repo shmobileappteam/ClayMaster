@@ -13,29 +13,22 @@ import { storage } from '../../api/api';
 import { KEYS } from '../../constants';
 import { Button } from '../../components';
 
-/**
- * CONTENT INVENTORY — ClayMaster-App-UI `Onboarding.tsx`
- * Slides: 3 (image + title + body each)
- * Skip button: 1 (hidden on last slide)
- * Page dots: 3
- * Primary CTA: 1 (Next / Get Started)
- * No stack header
- */
 const SLIDES = [
   {
     image: onboarding1,
-    title: 'Master Your Shooting Skills',
-    text: 'Improve your clay shooting performance with structured analytics and expert coaching.',
+    tagline: 'Train Smarter. Shoot Better.',
+    title: 'Analytics',
+    text: 'Turn scorecards into performance trends and know exactly what to work on next.',
   },
   {
     image: onboarding2,
-    title: 'Learn from Experts',
-    text: 'Access exclusive training videos by Kevin DeMichiel anytime, anywhere.',
+    title: 'Online Coaching',
+    text: 'Book live sessions with top instructors and get personalized feedback between events.',
   },
   {
     image: onboarding3,
-    title: 'Track. Analyze. Improve.',
-    text: 'Use scorecards and analytics to elevate your game to the next level.',
+    title: 'Instructional Videos',
+    text: 'Watch target-specific lessons from Kevin DeMichiel anytime — at home or on the range.',
   },
 ];
 
@@ -66,11 +59,22 @@ const OnboardingScreen = ({ navigation }) => {
             )}
           </View>
           <View style={styles.bottom}>
+            {slide.tagline ? (
+              <Typography
+                fFamily="barlowBold700"
+                size={22}
+                color={COLORS.primary}
+                lineHeight={28}
+              >
+                {slide.tagline}
+              </Typography>
+            ) : null}
             <Typography
               fFamily="barlowBold700"
               size={28}
               color={COLORS.white100}
               lineHeight={34}
+              mT={slide.tagline ? 10 : 0}
             >
               {slide.title}
             </Typography>

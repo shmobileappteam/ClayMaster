@@ -5,6 +5,7 @@ import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
 const SERVICES = [
   {
@@ -41,7 +42,12 @@ const FEATURES = [
   'Competition preparation',
 ];
 
-const ManagedServiceScreen = ({ navigation }) => (
+const ManagedServiceScreen = ({ navigation }) => {
+  if (useRequireLibraryMode()) {
+    return null;
+  }
+
+  return (
   <Container isPadding={false} backgroundColor={COLORS.mainBg}>
     <LibraryHeader
       title="Managed Service"
@@ -129,7 +135,8 @@ const ManagedServiceScreen = ({ navigation }) => (
       </TouchableOpacity>
     </ScrollView>
   </Container>
-);
+  );
+};
 
 export default ManagedServiceScreen;
 

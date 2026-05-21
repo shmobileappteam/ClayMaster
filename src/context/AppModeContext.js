@@ -9,7 +9,11 @@ import React, {
 import { storage } from '../api/api';
 import { KEYS } from '../constants';
 
-/** @typedef {'course' | 'library'} AppMode */
+/**
+ * @typedef {'course' | 'library'} AppMode
+ * - `course` — Field Mode (scorecard, miss, drills, downloaded videos)
+ * - `library` — Full Library Mode (portal on mobile)
+ */
 
 /**
  * @typedef {'visual-discipline'|'timing-breakdown'|'speed-mismatch'|'target-line-misread'|'pressure-seq-breakdown'|'planning-error'} MissCategoryId

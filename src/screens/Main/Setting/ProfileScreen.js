@@ -16,7 +16,7 @@ import {
   SPACING,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
-import { useAppMode } from '../../../context/AppModeContext';
+import { useModeSwitch } from '../../../hooks/useModeSwitch';
 import {
   navigateFromTabToStack,
   performLogout,
@@ -35,7 +35,7 @@ const MENU_ITEMS = [
 const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.app);
-  const { setMode } = useAppMode();
+  const { switchToFieldMode } = useModeSwitch();
 
   const displayName =
     user?.first_name || user?.last_name
@@ -118,10 +118,7 @@ const ProfileScreen = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.fullWidthBtn, styles.darkBtn]}
           activeOpacity={0.88}
-          onPress={() => {
-            setMode('course');
-            navigateFromTabToStack(navigation, 'CourseHomeScreen');
-          }}
+          onPress={() => switchToFieldMode('CourseHomeScreen')}
         >
           <Icon name="locate" iconFamily="Ionicons" size={18} color={COLORS.white100} />
           <Typography fFamily="barlowSemiBold600" size={14} lineHeight={21} color={COLORS.white100} mL={8}>

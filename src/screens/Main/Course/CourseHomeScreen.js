@@ -11,6 +11,7 @@ import Icon from '../../../helpers/Icon';
 import { COLORS } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useAppMode } from '../../../context/AppModeContext';
+import { navigateFromFieldToStack } from '../../../navigation/navigationHelpers';
 
 /**
  * CONTENT INVENTORY — ClayMaster-App-UI `CourseHome.tsx`
@@ -31,38 +32,11 @@ const CourseHomeScreen = ({ navigation }) => {
 
   const handleStart = () => {
     startRound();
-    navigation.navigate('CourseRoundScreen');
+    navigateFromFieldToStack(navigation, 'CourseRoundScreen');
   };
 
   return (
     <CourseLayout>
-      <View style={styles.topBar}>
-        <View style={styles.fieldRow}>
-          <Icon name="locate" iconFamily="Ionicons" size={20} color={COLORS.primary} />
-          <Typography
-            size={11}
-            color={COLORS.courseTextMuted}
-            fFamily="barlowBold700"
-            mL={8}
-            style={styles.uppercase}
-          >
-            Field Mode
-          </Typography>
-        </View>
-        <TouchableOpacity
-          onPress={() => {
-            setMode('library');
-            navigation.navigate('BottomTabs');
-          }}
-          style={styles.libraryBtn}
-        >
-          <Icon name="book-outline" iconFamily="Ionicons" size={14} color={COLORS.courseTextMuted} />
-          <Typography size={12} color={COLORS.courseTextMuted} mL={4}>
-            Library
-          </Typography>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -70,7 +44,7 @@ const CourseHomeScreen = ({ navigation }) => {
         {activeRound && !activeRound.finished ? (
           <TouchableOpacity
             style={styles.resumeCard}
-            onPress={() => navigation.navigate('CourseRoundScreen')}
+            onPress={() => navigateFromFieldToStack(navigation, 'CourseRoundScreen')}
             activeOpacity={0.9}
           >
             <View>
@@ -110,7 +84,7 @@ const CourseHomeScreen = ({ navigation }) => {
           <TouchableOpacity
             key={s.date}
             style={styles.roundCard}
-            onPress={() => navigation.navigate('CourseScorecardScreen')}
+            onPress={() => navigateFromFieldToStack(navigation, 'CourseScorecardScreen')}
             activeOpacity={0.9}
           >
             <View>
@@ -141,19 +115,6 @@ const CourseHomeScreen = ({ navigation }) => {
 export default CourseHomeScreen;
 
 const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Sizer.hSize(16),
-    paddingVertical: Sizer.vSize(16),
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.courseBorder,
-    backgroundColor: COLORS.courseBg,
-  },
-  fieldRow: { flexDirection: 'row', alignItems: 'center' },
-  libraryBtn: { flexDirection: 'row', alignItems: 'center' },
-  uppercase: { letterSpacing: 1, textTransform: 'uppercase' },
   scroll: { padding: Sizer.hSize(16), paddingBottom: Sizer.vSize(32) },
   resumeCard: {
     flexDirection: 'row',

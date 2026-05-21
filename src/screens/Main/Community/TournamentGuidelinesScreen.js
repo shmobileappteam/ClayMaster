@@ -24,6 +24,7 @@ const DATES = [
   { label: 'Results Announced', date: 'May 5, 2026' },
 ];
 
+/** @deprecated PAGE 16 — removed from app; not supported */
 const TournamentGuidelinesScreen = ({ navigation }) => (
   <Container isPadding={false} backgroundColor={COLORS.mainBg}>
     <LibraryHeader

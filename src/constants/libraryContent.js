@@ -1,44 +1,47 @@
 import { videoThumb1, videoThumb2 } from '../assets/images';
 
-/** ClayMaster-App-UI `AdditionalVideos.tsx` */
+/**
+ * PAGE 12 — Placeholder supplementary videos (ClayMaster-App-UI `AdditionalVideos.tsx`).
+ * Real titles/files will come from the API; use Download for Field Mode while online.
+ */
 export const ADDITIONAL_VIDEOS = [
   {
-    id: 1,
+    id: 'additional-gun-fit',
     title: 'Gun Fit & Setup Essentials',
     coach: 'Kevin DeMichiel',
     duration: '14:20',
     image: videoThumb1,
   },
   {
-    id: 2,
+    id: 'additional-wind',
     title: 'Reading Wind Conditions',
     coach: 'Kevin DeMichiel',
     duration: '11:05',
     image: videoThumb2,
   },
   {
-    id: 3,
+    id: 'additional-mental-game',
     title: 'Mental Game & Focus',
     coach: 'Kevin DeMichiel',
     duration: '16:30',
     image: videoThumb1,
   },
   {
-    id: 4,
+    id: 'additional-competition-prep',
     title: 'Competition Day Preparation',
     coach: 'Kevin DeMichiel',
     duration: '09:45',
     image: videoThumb2,
   },
   {
-    id: 5,
+    id: 'additional-eye-dominance',
     title: 'Eye Dominance & Correction',
     coach: 'Kevin DeMichiel',
     duration: '12:10',
     image: videoThumb1,
   },
   {
-    id: 6,
+    id: 'additional-maintenance',
     title: 'Shotgun Maintenance Tips',
     coach: 'Kevin DeMichiel',
     duration: '08:55',

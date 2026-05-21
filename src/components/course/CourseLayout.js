@@ -3,10 +3,13 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../../globalStyle/Theme';
 import CourseTabBar from './CourseTabBar';
+import ModeIndicatorBar from '../layout/ModeIndicatorBar';
 
-const CourseLayout = ({ children, showTabs = true }) => {
+/** Field tab screens use FieldModeNavigator tab bar — pass showTabs={false}. */
+const CourseLayout = ({ children, showTabs = false, showModeIndicator = true }) => {
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
+      {showModeIndicator ? <ModeIndicatorBar variant="field" /> : null}
       <View style={[styles.content, showTabs && styles.contentWithTabs]}>
         {children}
       </View>

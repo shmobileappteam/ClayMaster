@@ -7,6 +7,7 @@ import Icon from '../../../helpers/Icon';
 import { COLORS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useAppMode } from '../../../context/AppModeContext';
+import { navigateToFieldMode } from '../../../navigation/navigationHelpers';
 import { MISS_CATEGORIES, getMissCategory } from '../../../constants/missCategories';
 
 /**
@@ -28,7 +29,7 @@ const BAR_FILL = {
 };
 
 const CourseRoundSummaryScreen = ({ navigation }) => {
-  const { activeRound, lastPrimaryMiss, clearRound, setMode } = useAppMode();
+  const { activeRound, lastPrimaryMiss, clearRound } = useAppMode();
   const primary = getMissCategory(lastPrimaryMiss);
 
   const round = activeRound;
@@ -62,19 +63,17 @@ const CourseRoundSummaryScreen = ({ navigation }) => {
   const totalMisses = breakdown.reduce((a, b) => a + b.count, 0);
 
   const fixThisNow = () => {
+    clearRound();
     if (!primary) {
-      setMode('library');
-      navigation.navigate('BottomTabs');
+      navigateToFieldMode(navigation, 'CourseTrainScreen');
       return;
     }
-    setMode('library');
-    clearRound();
-    navigation.navigate('DrillsScreen');
+    navigateToFieldMode(navigation, 'CourseTrainScreen');
   };
 
   const closeAndHome = () => {
     clearRound();
-    navigation.navigate('CourseHomeScreen');
+    navigateToFieldMode(navigation, 'CourseHomeScreen');
   };
 
   return (

@@ -11,18 +11,33 @@ import {
   TYPE,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
-/** ClayMaster-App-UI `Videos.tsx` — category list, not academy tabs */
+/** Full Library catalog (ClayMaster-App-UI `Videos.tsx`). Requires stable internet. */
 const CATEGORIES = [
-  { name: 'Chandelle', count: 8 },
-  { name: 'Crosser', count: 12 },
-  { name: 'Tower', count: 6 },
-  { name: 'Battue', count: 5 },
-  { name: 'Rabbit', count: 4 },
-  { name: 'Teal', count: 7 },
+  { name: 'Chandelle', count: 8, videoId: 'chandelle-intro' },
+  { name: 'Crosser', count: 12, videoId: 'crosser-fundamentals' },
+  { name: 'Tower', count: 6, videoId: 'tower-shot-mastery' },
+  { name: 'Battue', count: 5, videoId: 'battue-basics' },
+  { name: 'Rabbit', count: 4, videoId: 'rabbit-ground' },
+  { name: 'Teal', count: 7, videoId: 'teal-rising' },
 ];
 
-const InstructionalVideosScreen = ({ navigation }) => {
+const categoryVideo = cat => ({
+  id: cat.videoId,
+  title: cat.name === 'Tower' ? 'Tower Shot Mastery' : `${cat.name} — Fundamentals`,
+  instructor: 'Kevin DeMichiel',
+  duration: cat.name === 'Tower' ? '12:30' : '8:45',
+  size: '72 MB',
+});
+
+const InstructionalVideosScreen = ({ navigation, route }) => {
+  const fieldOnlineAccess = route?.params?.fieldOnlineAccess === true;
+
+  if (useRequireLibraryMode({ allowOnlineInField: fieldOnlineAccess })) {
+    return null;
+  }
+
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
@@ -35,6 +50,16 @@ const InstructionalVideosScreen = ({ navigation }) => {
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {fieldOnlineAccess ? (
+          <Typography
+            size={TYPE.caption.size}
+            color={COLORS.primary}
+            lineHeight={TYPE.caption.lineHeight}
+            mB={12}
+          >
+            Streaming over your current connection. Downloads remain available offline in Field Mode.
+          </Typography>
+        ) : null}
         <Typography
           size={TYPE.body.size}
           color={COLORS.textSecondary}
@@ -48,7 +73,12 @@ const InstructionalVideosScreen = ({ navigation }) => {
             <TouchableOpacity
               key={cat.name}
               style={[GLOBALSTYLE.screenCard, styles.categoryCard]}
-              onPress={() => navigation.navigate('VideoDetailScreen')}
+              onPress={() =>
+                navigation.navigate('VideoDetailScreen', {
+                  fieldOnlineAccess,
+                  video: categoryVideo(cat),
+                })
+              }
               activeOpacity={0.88}
             >
               <View>

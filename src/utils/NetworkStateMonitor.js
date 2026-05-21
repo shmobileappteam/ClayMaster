@@ -53,6 +53,7 @@ const NetworkStateMonitor = () => {
     checkNetworkState();
 
     const unsubscribe = NetInfo.addEventListener(state => {
+    console.log("🔍 ~ useEffect() callback ~ src/utils/NetworkStateMonitor.js:55 ~ state:", state);
       const newState = {
         isWifiEnabled: state.type === 'wifi',
         isConnected: state.isConnected,

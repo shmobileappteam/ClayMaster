@@ -10,7 +10,7 @@ import {
   navigateFromMenuItem,
   navigateFromTabToStack,
 } from '../../../navigation/navigationHelpers';
-import { useAppMode } from '../../../context/AppModeContext';
+import { useModeSwitch } from '../../../hooks/useModeSwitch';
 
 /**
  * CONTENT INVENTORY — ClayMaster-App-UI `MoreMenu.tsx`
@@ -20,7 +20,7 @@ import { useAppMode } from '../../../context/AppModeContext';
  * Bottom CTA: 1 ("Switch to On the Course")
  */
 const MoreHubScreen = ({ navigation }) => {
-  const { setMode } = useAppMode();
+  const { switchToFieldMode } = useModeSwitch();
 
   const go = item => navigateFromMenuItem(navigation, item);
 
@@ -85,10 +85,7 @@ const MoreHubScreen = ({ navigation }) => {
         <TouchableOpacity
           style={styles.courseBtn}
           activeOpacity={0.88}
-          onPress={() => {
-            setMode('course');
-            navigateFromTabToStack(navigation, 'CourseHomeScreen');
-          }}
+          onPress={() => switchToFieldMode('CourseHomeScreen')}
         >
           <Icon name="locate" iconFamily="Ionicons" size={18} color={COLORS.white100} />
           <Typography

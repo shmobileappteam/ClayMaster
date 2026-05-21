@@ -106,6 +106,7 @@ const SignupScreen = ({ navigation }) => {
                     setFieldValue,
                 } = props;
 
+
                 return (
                     <>
                         <TextField
