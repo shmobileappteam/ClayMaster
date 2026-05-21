@@ -11,20 +11,19 @@ import {
   TYPE,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
-import { COACHING_PACKAGES } from '../../../constants/libraryContent';
 import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
 
-const STATS = [
-  { icon: 'calendar-outline', label: 'Total', value: '10' },
-  { icon: 'checkmark-circle-outline', label: 'Used', value: '7' },
-  { icon: 'time-outline', label: 'Remaining', value: '3' },
+const RECENT = [
+  { date: 'Apr 5, 2026', score: '22/25', pct: '88%' },
+  { date: 'Apr 1, 2026', score: '19/25', pct: '76%' },
+  { date: 'Mar 28, 2026', score: '20/25', pct: '80%' },
 ];
 
-/** ClayMaster-App-UI `Coaching.tsx` */
-const CoachingScreen = ({ navigation }) => (
+/** ClayMaster-App-UI `Scoring.tsx` — web path /scoring, title "My Scores" */
+const ScoringScreen = ({ navigation }) => (
   <Container isPadding={false} backgroundColor={COLORS.mainBg}>
     <LibraryHeader
-      title="Coaching"
+      title="My Scores"
       showBack
       showNotification={false}
       onBack={() => navigation.goBack()}
@@ -34,30 +33,38 @@ const CoachingScreen = ({ navigation }) => (
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.statsRow}>
-        {STATS.map(stat => (
-          <View key={stat.label} style={[GLOBALSTYLE.screenCard, styles.statCard]}>
-            <View style={styles.statIcon}>
-              <Icon name={stat.icon} iconFamily="Ionicons" size={18} color={COLORS.primary} />
-            </View>
-            <Typography fFamily="barlowBold700" size={TYPE.h2.size} color={COLORS.textPrimary} mT={8}>
-              {stat.value}
-            </Typography>
-            <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
-              {stat.label}
-            </Typography>
+        <View style={[GLOBALSTYLE.screenCard, styles.statCard]}>
+          <View style={styles.statIcon}>
+            <Icon name="locate-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
           </View>
-        ))}
+          <Typography fFamily="barlowBold700" size={TYPE.h1.size} color={COLORS.textPrimary} mT={8}>
+            25
+          </Typography>
+          <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+            Total Rounds
+          </Typography>
+        </View>
+        <View style={[GLOBALSTYLE.screenCard, styles.statCard]}>
+          <View style={styles.statIcon}>
+            <Icon name="trending-up-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
+          </View>
+          <Typography fFamily="barlowBold700" size={TYPE.h1.size} color={COLORS.primary} mT={8}>
+            78%
+          </Typography>
+          <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+            Avg Score
+          </Typography>
+        </View>
       </View>
 
       <TouchableOpacity
-        style={styles.bookBtn}
+        style={styles.addBtn}
         activeOpacity={0.88}
-        onPress={() =>
-          navigateFromTabToStack(navigation, 'AnalyticsScheduleScreen', { tab: 'book' })
-        }
+        onPress={() => navigateFromTabToStack(navigation, 'NewRoundScreen')}
       >
-        <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.white100}>
-          Book Session
+        <Icon name="add" iconFamily="Ionicons" size={22} color={COLORS.white100} />
+        <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.white100} mL={8}>
+          Add New Score
         </Typography>
       </TouchableOpacity>
 
@@ -68,25 +75,23 @@ const CoachingScreen = ({ navigation }) => (
         mT={SPACING.section}
         mB={SPACING.component}
       >
-        Buy Sessions
+        Recent Scores
       </Typography>
 
-      <View style={styles.packages}>
-        {COACHING_PACKAGES.map(pkg => (
-          <View key={pkg.sessions} style={[GLOBALSTYLE.screenCard, styles.packageCard]}>
-            <View style={{ flex: 1, paddingRight: 12 }}>
+      <View style={styles.recentList}>
+        {RECENT.map(item => (
+          <View key={item.date} style={[GLOBALSTYLE.screenCard, styles.recentCard]}>
+            <View>
               <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
-                {pkg.sessions}
+                {item.score}
               </Typography>
               <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
-                {pkg.desc}
+                {item.date}
               </Typography>
             </View>
-            <TouchableOpacity style={styles.priceBtn} activeOpacity={0.88}>
-              <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.white100}>
-                {pkg.price}
-              </Typography>
-            </TouchableOpacity>
+            <Typography fFamily="barlowBold700" size={TYPE.h2.size} color={COLORS.primary}>
+              {item.pct}
+            </Typography>
           </View>
         ))}
       </View>
@@ -94,13 +99,13 @@ const CoachingScreen = ({ navigation }) => (
   </Container>
 );
 
-export default CoachingScreen;
+export default ScoringScreen;
 
 const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingTop: Sizer.vSize(16),
-    paddingBottom: Sizer.vSize(100),
+    paddingBottom: Sizer.vSize(40),
   },
   statsRow: {
     flexDirection: 'row',
@@ -113,36 +118,30 @@ const styles = StyleSheet.create({
     ...SHADOWS.card,
   },
   statIcon: {
-    width: Sizer.hSize(36),
-    height: Sizer.hSize(36),
-    borderRadius: Sizer.hSize(18),
+    width: Sizer.hSize(44),
+    height: Sizer.hSize(44),
+    borderRadius: Sizer.hSize(22),
     backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bookBtn: {
+  addBtn: {
     height: Sizer.vSize(48),
     backgroundColor: COLORS.primary,
     borderRadius: Sizer.hSize(12),
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: Sizer.vSize(SPACING.section),
   },
-  packages: {
+  recentList: {
     gap: Sizer.vSize(SPACING.component),
   },
-  packageCard: {
+  recentCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: Sizer.hSize(SPACING.cardP),
     ...SHADOWS.card,
-  },
-  priceBtn: {
-    height: Sizer.vSize(40),
-    paddingHorizontal: Sizer.hSize(20),
-    backgroundColor: COLORS.primary,
-    borderRadius: Sizer.hSize(12),
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

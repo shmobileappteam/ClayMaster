@@ -4,7 +4,7 @@ import { QueryClient } from '@tanstack/react-query';
 //----
 import { API_DOMAIN } from './endpoints';
 import { showMessage } from '../utils';
-import { KEYS } from '../constants';
+import { AUTH_APIS_DISABLED, KEYS } from '../constants';
 
 // Query Constructor:
 export const queryClient = new QueryClient();
@@ -46,10 +46,12 @@ api.interceptors.response.use(
     }
 
     if (error?.status === 400 || error?.status === 401) {
-      showMessage({
-        type: 'danger',
-        message: error?.data?.message || 'Something went wrong! Bad Request',
-      });
+      if (!AUTH_APIS_DISABLED) {
+        showMessage({
+          type: 'danger',
+          message: error?.data?.message || 'Something went wrong! Bad Request',
+        });
+      }
     }
 
     if (error?.status === 404) {
@@ -60,10 +62,12 @@ api.interceptors.response.use(
     }
 
     if (error?.status === 403) {
-      showMessage({
-        type: 'danger',
-        message: error?.data?.message || 'Forbidden!',
-      });
+      if (!AUTH_APIS_DISABLED) {
+        showMessage({
+          type: 'danger',
+          message: error?.data?.message || 'Forbidden!',
+        });
+      }
     }
 
     return Promise.reject(err);

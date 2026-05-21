@@ -1,6 +1,9 @@
 /**
  * Menu structure — parity with ClayMaster-App-UI `menuSections.ts`.
  * Used by the side drawer (AppMenuSheet) and More screen (MoreMenu).
+ *
+ * action: 'tab' → switch bottom tab (keeps tab bar visible)
+ * screen → push stack screen (full-screen, no tabs — matches web showTabs={false})
  */
 export const MENU_SECTIONS = [
   {
@@ -17,28 +20,33 @@ export const MENU_SECTIONS = [
   {
     title: 'Analytics & Scoring',
     items: [
-      { label: 'Analytics', screen: 'AnalyticsDashboard', icon: 'stats-chart-outline' },
-      { label: 'Managed Service', screen: 'AnalyticsDashboard', icon: 'headset-outline' },
-      { label: 'Scorecard', action: 'tab', tab: 'Home', icon: 'clipboard-outline' },
-      { label: 'My Rounds', screen: 'NewRoundScreen', icon: 'clipboard-outline' },
+      { label: 'Analytics', action: 'tab', tab: 'Analytics', icon: 'stats-chart-outline' },
+      { label: 'Managed Service', screen: 'ManagedServiceScreen', icon: 'headset-outline' },
+      { label: 'Scorecard', screen: 'LibraryScorecardScreen', icon: 'clipboard-outline' },
+      { label: 'My Rounds', screen: 'ScoringScreen', icon: 'list-outline' },
     ],
   },
   {
     title: 'Compete & Shop',
     items: [
-      { label: 'Virtual Tournament', screen: 'VirtualTournamentScreen', icon: 'trophy-outline' },
+      { label: 'Virtual Tournament', action: 'tab', tab: 'Tournament', icon: 'trophy-outline' },
       { label: 'Community Forum', screen: 'CommunityScreen', icon: 'people-outline' },
       { label: 'Reviews', screen: 'ReviewsScreen', icon: 'star-outline' },
-      { label: 'Shop', screen: 'ShopScreen', icon: 'bag-outline' },
+      { label: 'Shop', action: 'tab', tab: 'Shop', icon: 'bag-outline' },
       { label: 'My Orders', screen: 'OrdersScreen', icon: 'receipt-outline' },
     ],
   },
   {
     title: 'Account',
     items: [
-      { label: 'Membership', screen: 'SubscriptionScreen', icon: 'card-outline' },
+      {
+        label: 'Membership',
+        screen: 'SubscriptionScreen',
+        params: { fromProfile: true },
+        icon: 'card-outline',
+      },
       { label: 'Notifications', screen: 'NotificationScreen', icon: 'notifications-outline' },
-      { label: 'Account Settings', screen: 'ProfileDetailsScreen', icon: 'settings-outline' },
+      { label: 'Settings', screen: 'SettingsScreen', icon: 'settings-outline' },
     ],
   },
 ];

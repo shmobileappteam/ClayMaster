@@ -35,8 +35,8 @@ export const moreMenus = [
     label: 'ClayMaster Shop',
     icon: 'cart-outline',
     family: 'Ionicons',
-    navLink: 'ShopScreen',
-    stack: null,
+    navLink: 'Shop',
+    stack: 'BottomTabs',
   },
   {
     label: 'Private Forum',
@@ -49,7 +49,8 @@ export const moreMenus = [
     label: 'Virtual Tournament',
     icon: 'trophy-outline',
     family: 'Ionicons',
-    navLink: 'VirtualTournamentScreen',
+    navLink: 'Tournament',
+    stack: 'BottomTabs',
     stack: null,
   },
   {

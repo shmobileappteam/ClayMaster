@@ -9,8 +9,11 @@ import {
   ForgotPasswordScreen,
   LoginScreen,
   NewRoundScreen,
+  LibraryScorecardScreen,
+  ScoringScreen,
   NotificationScreen,
   ProfileDetailsScreen,
+  SettingsScreen,
   ResetPasswordScreen,
   SavedScoredcardSuccessScreen,
   ScorecardDetailsScreen,
@@ -35,10 +38,9 @@ import {
   CoachingScreen,
   CommunityScreen,
   CommunityDetailScreen,
-  VirtualTournamentScreen,
+  CreatePostScreen,
   TournamentGuidelinesScreen,
   TournamentEntryScreen,
-  ShopScreen,
   ProductDetailScreen,
   OrdersScreen,
   ReviewsScreen,
@@ -96,6 +98,8 @@ const StackNavigator = () => {
       <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
 
       <Stack.Screen name="NewRoundScreen" component={NewRoundScreen} />
+      <Stack.Screen name="LibraryScorecardScreen" component={LibraryScorecardScreen} />
+      <Stack.Screen name="ScoringScreen" component={ScoringScreen} />
       <Stack.Screen name="CompleteRoundScreen" component={CompleteRoundScreen} />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
       <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
@@ -105,6 +109,7 @@ const StackNavigator = () => {
       />
       <Stack.Screen name="ScorecardDetailsScreen" component={ScorecardDetailsScreen} />
       <Stack.Screen name="ProfileDetailsScreen" component={ProfileDetailsScreen} />
+      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
       <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
       <Stack.Screen name="AboutUsScreen" component={AboutUsScreen} />
@@ -136,11 +141,10 @@ const StackNavigator = () => {
 
       <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
       <Stack.Screen name="CommunityDetailScreen" component={CommunityDetailScreen} />
-      <Stack.Screen name="VirtualTournamentScreen" component={VirtualTournamentScreen} />
+      <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
       <Stack.Screen name="TournamentGuidelinesScreen" component={TournamentGuidelinesScreen} />
       <Stack.Screen name="TournamentEntryScreen" component={TournamentEntryScreen} />
 
-      <Stack.Screen name="ShopScreen" component={ShopScreen} />
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
       <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
       <Stack.Screen

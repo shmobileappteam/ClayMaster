@@ -7,27 +7,13 @@ import { COLORS, RADIUS, SHADOWS, SPACING } from '../globalStyle/Theme';
 import Icon from '../helpers/Icon';
 import Sizer from '../helpers/Sizer';
 import { MENU_SECTIONS } from './menuSections';
-
-const STACK_ROUTE = 'BottomTabs';
-const TAB_CONTAINER = 'MainTabs';
+import { navigateFromMenuItem } from './navigationHelpers';
 
 export function navigateFromDrawer(drawerNav, item) {
-  const stackNav = drawerNav.getParent();
   if (typeof drawerNav.closeDrawer === 'function') {
     drawerNav.closeDrawer();
   }
-  const go = () => {
-    if (item.action === 'tab') {
-      stackNav?.navigate(STACK_ROUTE, {
-        screen: TAB_CONTAINER,
-        params: { screen: item.tab },
-      });
-      return;
-    }
-    if (item.screen) {
-      stackNav?.navigate(item.screen);
-    }
-  };
+  const go = () => navigateFromMenuItem(drawerNav, item);
   if (Platform.OS === 'ios') {
     requestAnimationFrame(go);
   } else {
@@ -132,17 +118,18 @@ export default CustomDrawerContent;
 const styles = StyleSheet.create({
   shell: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.mainBg,
   },
   header: {
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingBottom: Sizer.vSize(16),
+    backgroundColor: COLORS.surface,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.borderMuted,
   },
   scroll: {
     flex: 1,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.mainBg,
   },
   scrollContent: {
     paddingHorizontal: Sizer.hSize(16),

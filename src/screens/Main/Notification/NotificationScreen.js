@@ -20,6 +20,10 @@ import {
   INITIAL_NOTIFICATIONS,
 } from '../../../constants/notifications';
 import { showToast } from '../../../utils';
+import {
+  navigateFromTabToStack,
+  navigateFromTabToTab,
+} from '../../../navigation/navigationHelpers';
 
 /**
  * CONTENT INVENTORY — ClayMaster-App-UI `Notifications.tsx`
@@ -38,8 +42,10 @@ const NotificationScreen = ({ navigation }) => {
     setNotifications(current =>
       current.map(n => (n.id === item.id ? { ...n, unread: false } : n)),
     );
-    if (item.screen) {
-      navigation.navigate(item.screen);
+    if (item.tab) {
+      navigateFromTabToTab(navigation, item.tab);
+    } else if (item.screen) {
+      navigateFromTabToStack(navigation, item.screen);
     }
   };
 

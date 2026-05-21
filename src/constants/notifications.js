@@ -18,7 +18,7 @@ export const INITIAL_NOTIFICATIONS = [
     desc: 'Virtual Tournament 2026 registration is live!',
     time: '2h ago',
     unread: true,
-    screen: 'VirtualTournamentScreen',
+    tab: 'Tournament',
   },
   {
     id: 2,

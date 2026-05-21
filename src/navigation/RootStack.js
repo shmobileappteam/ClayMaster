@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
 import {
   NavigationContainer,
@@ -10,6 +10,7 @@ import FlashMessage from 'react-native-flash-message';
 import StackNavigator from './StackNavigator';
 import { COLORS } from '../globalStyle/Theme';
 import NetworkStateMonitor from "../utils/NetworkStateMonitor"
+import { storage } from '../api/api';
 
 const RootStack = () => {
   const navigationRef = useNavigationContainerRef();
@@ -57,17 +58,18 @@ const RootStack = () => {
     }
   };
 
-  // useEffect(() => {
-  //   (async () => {
-  //     let fcmToken = await AsyncStorage.getItem(KEYS.FCM_TOKEN);
-  //     __DEV__ && console.log(' RootStack:83 ~ fcmToken:', !!fcmToken);
+  useEffect(async() => {
+    // await storage.clearAll()
+    // (async () => {
+    //   let fcmToken = await AsyncStorage.getItem(KEYS.FCM_TOKEN);
+    //   __DEV__ && console.log(' RootStack:83 ~ fcmToken:', !!fcmToken);
 
-  //     if (!fcmToken) {
-  //       requestNotificationPermission();
-  //     }
-  //     notificationListener(dispatch);
-  //   })();
-  // }, []);
+    //   if (!fcmToken) {
+    //     requestNotificationPermission();
+    //   }
+    //   notificationListener(dispatch);
+    // })();
+  }, []);
 
   return (
     <NavigationContainer

@@ -84,7 +84,7 @@ const DashboardScreen = ({ navigation }) => {
           <Icon name="chevron-forward" iconFamily="Ionicons" size={20} color="rgba(255,255,255,0.6)" />
         </TouchableOpacity>
 
-        <View style={styles.section}>
+        <View style={[styles.section, styles.gameSection]}>
           <View style={styles.sectionHeadingRow}>
             <Icon name="sparkles-outline" iconFamily="Ionicons" size={16} color={COLORS.primary} />
             <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary} mL={8}>
@@ -244,6 +244,11 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: Sizer.vSize(SPACING.section),
+  },
+  /** Extra space above "Your Game Right Now" after course switch (web space-y-section) */
+  gameSection: {
+    marginTop: Sizer.vSize(SPACING.md),
+    paddingTop: Sizer.vSize(SPACING.component),
   },
   suggestedFixRow: {
     flexDirection: 'row',

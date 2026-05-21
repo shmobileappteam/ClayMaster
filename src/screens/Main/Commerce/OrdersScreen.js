@@ -1,53 +1,71 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Container, Flex, Typography } from '../../../atomComponents';
-import { Header, ScreenBanner } from '../../../components';
-import { BASEOPACITY, COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
-import Sizer from '../../../helpers/Sizer';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Container, Typography } from '../../../atomComponents';
+import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
+import {
+  COLORS,
+  GLOBALSTYLE,
+  SHADOWS,
+  SPACING,
+  TYPE,
+} from '../../../globalStyle/Theme';
+import Sizer from '../../../helpers/Sizer';
 
+/** ClayMaster-App-UI `OrderHistory.tsx` */
 const ORDERS = [
-    { id: '10024', vendor: 'PRINTIFY', date: '03/15/26', status: 'SHIPPED' },
-    { id: '09842', vendor: 'PRINTIFY', date: '02/10/26', status: 'DELIVERED' },
-    { id: '09711', vendor: 'PRINTIFY', date: '01/12/26', status: 'PROCESSING' },
+  { id: '#CM-2061', date: 'Apr 3, 2026', total: '$25.00', status: 'Shipped', items: 'ClayMaster Cap' },
+  { id: '#CM-2058', date: 'Mar 20, 2026', total: '$45.00', status: 'Delivered', items: 'Shooting Glasses' },
+  { id: '#CM-2045', date: 'Mar 5, 2026', total: '$35.00', status: 'Delivered', items: 'Training Manual' },
+  { id: '#CM-2032', date: 'Feb 18, 2026', total: '$30.00', status: 'Delivered', items: 'Shell Pouch' },
 ];
 
 const OrdersScreen = ({ navigation }) => (
   <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-    <Header type="app" title="Shop" isBackVisible={true} onPresBack={() => navigation.goBack()} />
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 110 }}>
-        <ScreenBanner 
-            title="ORDERS & SHIPMENTS"
-            subtitle="Track the status of your ClayMaster gear orders and review your shipment history."
-        />
-
-        <View style={[GLOBALSTYLE.paddingHor, { marginTop: Sizer.vSize(24) }]}>
-            <Typography fFamily="barlowBold700" size={16} color={COLORS.black300} mB={16}>ORDER STATUS / SHIPMENT HISTORY:</Typography>
-            
-            <View style={styles.orderTable}>
-                <View style={styles.tableHead}>
-                    <Typography size={11} fFamily="barlowBold700" flex={1.5} color={COLORS.black400}>ORDER #</Typography>
-                    <Typography size={11} fFamily="barlowBold700" flex={2} color={COLORS.black400}>VENDOR</Typography>
-                    <Typography size={11} fFamily="barlowBold700" flex={2} color={COLORS.black400}>DATE</Typography>
-                    <Typography size={11} fFamily="barlowBold700" flex={2} color={COLORS.black400}>STATUS</Typography>
-                </View>
-                {ORDERS.map((item, idx) => (
-                    <View key={idx} style={[styles.tableRow, idx === ORDERS.length - 1 && { borderBottomWidth: 0 }]}>
-                        <Typography size={12} fFamily="barlowBold700" flex={1.5} color={COLORS.black300}>#{item.id}</Typography>
-                        <Typography size={12} flex={2} color={COLORS.black400}>{item.vendor}</Typography>
-                        <Typography size={12} flex={2} color={COLORS.black500}>{item.date}</Typography>
-                        <View style={{ flex: 2 }}>
-                            <View style={[
-                                styles.statusBadge, 
-                                { backgroundColor: item.status === 'SHIPPED' ? '#2E7D32' : item.status === 'PROCESSING' ? '#F9A825' : '#757575' }
-                            ]}>
-                                <Typography color={COLORS.white100} size={10} fFamily="barlowBold700">{item.status}</Typography>
-                            </View>
-                        </View>
-                    </View>
-                ))}
+    <LibraryHeader
+      title="Orders"
+      showBack
+      showNotification={false}
+      onBack={() => navigation.goBack()}
+    />
+    <ScrollView
+      contentContainerStyle={styles.scroll}
+      showsVerticalScrollIndicator={false}
+    >
+      {ORDERS.map(order => (
+        <TouchableOpacity
+          key={order.id}
+          style={[GLOBALSTYLE.screenCard, styles.orderCard]}
+          activeOpacity={0.88}
+        >
+          <View style={styles.orderIcon}>
+            <Icon name="cube-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
+          </View>
+          <View style={styles.orderBody}>
+            <View style={styles.orderTop}>
+              <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
+                {order.items}
+              </Typography>
+              <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.primary}>
+                {order.total}
+              </Typography>
             </View>
-        </View>
+            <View style={styles.orderBottom}>
+              <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
+                {order.id} · {order.date}
+              </Typography>
+              <Typography
+                size={TYPE.caption.size}
+                color={order.status === 'Shipped' ? COLORS.primary : COLORS.textSecondary}
+                fFamily="barlowMedium500"
+              >
+                {order.status}
+              </Typography>
+            </View>
+          </View>
+          <Icon name="chevron-forward" iconFamily="Ionicons" size={18} color={COLORS.textSecondary} />
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   </Container>
 );
@@ -55,36 +73,36 @@ const OrdersScreen = ({ navigation }) => (
 export default OrdersScreen;
 
 const styles = StyleSheet.create({
-    orderTable: {
-        backgroundColor: COLORS.white100,
-        borderRadius: Sizer.hSize(12),
-        overflow: 'hidden',
-        borderWidth: 1,
-        borderColor: '#F0F0F0',
-        elevation: 2,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-    },
-    tableHead: {
-        flexDirection: 'row',
-        backgroundColor: '#FAFAFA',
-        padding: Sizer.hSize(16),
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-    },
-    tableRow: {
-        flexDirection: 'row',
-        padding: Sizer.hSize(16),
-        borderBottomWidth: 1,
-        borderBottomColor: '#F0F0F0',
-        alignItems: 'center',
-    },
-    statusBadge: {
-        alignSelf: 'flex-start',
-        paddingHorizontal: Sizer.hSize(8),
-        paddingVertical: Sizer.vSize(4),
-        borderRadius: Sizer.hSize(4),
-    }
+  scroll: {
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+    paddingTop: Sizer.vSize(16),
+    paddingBottom: Sizer.vSize(40),
+    gap: Sizer.vSize(SPACING.component),
+  },
+  orderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Sizer.hSize(SPACING.cardP),
+    gap: Sizer.hSize(12),
+    ...SHADOWS.card,
+  },
+  orderIcon: {
+    width: Sizer.hSize(44),
+    height: Sizer.hSize(44),
+    borderRadius: Sizer.hSize(22),
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  orderBody: { flex: 1 },
+  orderTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  orderBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: Sizer.vSize(4),
+  },
 });

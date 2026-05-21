@@ -120,7 +120,7 @@ const ManagedServiceScreen = ({ navigation }) => (
 
       <TouchableOpacity
         style={styles.cta}
-        onPress={() => navigation.navigate('AnalyticsScheduleScreen')}
+        onPress={() => navigation.navigate('AnalyticsScheduleScreen', { tab: 'book' })}
         activeOpacity={0.88}
       >
         <Typography fFamily="barlowSemiBold600" size={16} color={COLORS.white100}>

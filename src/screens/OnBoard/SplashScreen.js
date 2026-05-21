@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useDispatch, useSelector } from 'react-redux';
 import { cmLogo } from '../../assets/images';
 import { useAppMode } from '../../context/AppModeContext';
@@ -10,6 +11,9 @@ import { handleLogout } from '../../redux/slices/appSlice';
 import { KEYS } from '../../constants';
 import { storage } from '../../api/api';
 
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+
+/** Web `Splash.tsx` — `.cm-gradient` linear-gradient(180deg, #000000 0%, #974000 100%) */
 const SplashScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { subscriptionEnabled } = useSelector(state => state.app);
@@ -74,10 +78,16 @@ const SplashScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.gradientOverlay} />
-      <View style={styles.logoWrap}>
-        <Image source={cmLogo} style={styles.logo} resizeMode="contain" />
-      </View>
+      <Svg width={SCREEN_W} height={SCREEN_H} style={StyleSheet.absoluteFill}>
+        <Defs>
+          <LinearGradient id="splashGradient" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#000000" />
+            <Stop offset="1" stopColor="#974000" />
+          </LinearGradient>
+        </Defs>
+        <Rect x="0" y="0" width={SCREEN_W} height={SCREEN_H} fill="url(#splashGradient)" />
+      </Svg>
+      <Image source={cmLogo} style={styles.logo} resizeMode="contain" />
     </View>
   );
 };
@@ -88,15 +98,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#000000',
-  },
-  gradientOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#974000',
-    opacity: 0.45,
-  },
-  logoWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   logo: {
     width: 200,

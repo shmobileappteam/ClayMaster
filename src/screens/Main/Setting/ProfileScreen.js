@@ -26,7 +26,7 @@ const MENU_ITEMS = [
   { icon: 'person-outline', label: 'My Account', screen: 'ProfileDetailsScreen' },
   { icon: 'card-outline', label: 'Subscription', screen: 'SubscriptionScreen' },
   { icon: 'cube-outline', label: 'Orders', screen: 'OrdersScreen' },
-  { icon: 'settings-outline', label: 'Settings', screen: 'ProfileDetailsScreen' },
+  { icon: 'settings-outline', label: 'Settings', screen: 'SettingsScreen' },
 ];
 
 /**
@@ -80,7 +80,11 @@ const ProfileScreen = ({ navigation }) => {
                 styles.menuRow,
                 i < MENU_ITEMS.length - 1 && styles.menuBorder,
               ]}
-              onPress={() => navigateFromTabToStack(navigation, item.screen)}
+              onPress={() =>
+                navigateFromTabToStack(navigation, item.screen, {
+                  fromProfile: true,
+                })
+              }
               activeOpacity={0.88}
             >
               <View style={styles.menuIcon}>

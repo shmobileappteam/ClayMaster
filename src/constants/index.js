@@ -1,3 +1,7 @@
+/** TEMP: set false when re-enabling backend auth */
+export const AUTH_APIS_DISABLED = true;
+export const DEV_STUB_TOKEN = 'dev-stub-token';
+
 export const KEYS = {
   ACCESS_TOKEN: '@access_token',
   CREDENTIALS: '@credentials',

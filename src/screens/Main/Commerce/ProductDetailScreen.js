@@ -15,7 +15,7 @@ import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { getShopProduct } from '../../../constants/shopProducts';
 import { addToCart } from '../../../redux/slices/cartSlice';
-import { showMessage } from '../../../utils';
+import { showToast } from '../../../utils';
 
 const ProductDetailScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
@@ -49,16 +49,11 @@ const ProductDetailScreen = ({ navigation, route }) => {
       addToCart({
         id: product.id,
         name: product.name,
-        price: `$${product.price.toFixed(2)}`,
+        price: product.price,
         image: product.image,
       }),
     );
-    showMessage({
-      type: 'success',
-      message: 'Added to cart',
-      bgColor: COLORS.primary,
-      color: COLORS.white100,
-    });
+    showToast({ title: 'Added to cart' });
   };
 
   return (

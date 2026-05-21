@@ -1,143 +1,345 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, Modal } from 'react-native';
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Container, Flex, Typography } from '../../../atomComponents';
-import { Header, Button, TextField } from '../../../components';
-import { BASEOPACITY, COLORS, GLOBALSTYLE, SHADOWS } from '../../../globalStyle/Theme';
-import Sizer from '../../../helpers/Sizer';
+import { Container, Typography } from '../../../atomComponents';
+import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
+import {
+  COLORS,
+  GLOBALSTYLE,
+  SHADOWS,
+  SPACING,
+  TYPE,
+} from '../../../globalStyle/Theme';
+import Sizer from '../../../helpers/Sizer';
 import { clearCart } from '../../../redux/slices/cartSlice';
+import {
+  formatPrice,
+  resolveProductImage,
+} from '../../../utils/shopHelpers';
+const SHIPPING = 5;
 
+/**
+ * ClayMaster-App-UI `Checkout.tsx`
+ */
 const CheckoutScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { items, totalAmount } = useSelector(state => state.cart);
-  const { user } = useSelector(state => state.app);
+  const [placed, setPlaced] = useState(false);
 
-  const [shippingInfo, setShippingInfo] = useState({
-    name: user ? `${user.first_name} ${user.last_name}` : '',
-    address: user?.address_1 || '',
-    city: '',
-    zip: '',
-    phone: user?.contact || '',
-  });
-
-  const [successVisible, setSuccessVisible] = useState(false);
+  const tax = 0;
+  const total = totalAmount + SHIPPING + tax;
 
   const handlePlaceOrder = () => {
-    // Logic for placing order (simulated)
-    setSuccessVisible(true);
-    setTimeout(() => {
-        setSuccessVisible(false);
-        dispatch(clearCart());
-        navigation.navigate('OrdersScreen');
-    }, 2500);
+    dispatch(clearCart());
+    setPlaced(true);
   };
+
+  if (placed) {
+    return (
+      <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+        <View style={styles.successWrap}>
+          <View style={styles.successIcon}>
+            <Icon name="checkmark-circle" iconFamily="Ionicons" size={40} color="#16A34A" />
+          </View>
+          <Typography fFamily="barlowBold700" size={TYPE.h1.size} color={COLORS.textPrimary} mT={24}>
+            Order Placed!
+          </Typography>
+          <Typography
+            size={TYPE.body.size}
+            color={COLORS.textSecondary}
+            textAlign="center"
+            mT={8}
+            lineHeight={22}
+          >
+            Your order #CM-2075 has been placed successfully.
+          </Typography>
+          <Typography size={TYPE.caption.size} color={COLORS.textSecondary} textAlign="center" mT={4} mB={32}>
+            You'll receive a confirmation email shortly.
+          </Typography>
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={() => navigation.navigate('OrdersScreen')}
+            activeOpacity={0.88}
+          >
+            <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.white100}>
+              View Orders
+            </Typography>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.outlineBtn}
+            onPress={() => {
+              navigation.navigate('BottomTabs', {
+                screen: 'MainTabs',
+                params: { screen: 'Home' },
+              });
+            }}
+            activeOpacity={0.88}
+          >
+            <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.primary}>
+              Back to Home
+            </Typography>
+          </TouchableOpacity>
+        </View>
+      </Container>
+    );
+  }
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <Header type="app" title="Checkout" isBackVisible={true} onPresBack={() => navigation.goBack()} />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        <View style={[GLOBALSTYLE.paddingHor, { marginTop: 20 }]}>
-          <Typography fFamily="barlowBold700" size={16} mB={16}>SHIPPING INFORMATION</Typography>
-          <View style={styles.sectionCard}>
-            <TextField label="Full Name" placeholder="John Doe" value={shippingInfo.name} />
-            <TextField label="Shipping Address" placeholder="123 Street Ave" value={shippingInfo.address} mT={12} />
-            <Flex direction="row" gap={12} mT={12}>
-                <View style={{ flex: 1.5 }}><TextField label="City" placeholder="City" /></View>
-                <View style={{ flex: 1 }}><TextField label="ZIP Code" placeholder="00000" /></View>
-            </Flex>
+      <LibraryHeader
+        title="Checkout"
+        showBack
+        showNotification={false}
+        onBack={() => navigation.goBack()}
+      />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.section}>
+          <Typography
+            fFamily={TYPE.h2.fFamily}
+            size={TYPE.h2.size}
+            color={COLORS.textPrimary}
+            mB={SPACING.component}
+          >
+            Shipping Address
+          </Typography>
+          <View style={[GLOBALSTYLE.screenCard, styles.addressCard]}>
+            <View style={styles.iconCircle}>
+              <Icon name="location-outline" iconFamily="Ionicons" size={18} color={COLORS.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
+                John Smith
+              </Typography>
+              <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+                123 Shooting Range Rd
+              </Typography>
+              <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
+                Dallas, TX 75201
+              </Typography>
+              <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
+                +1 (555) 123-4567
+              </Typography>
+            </View>
+            <TouchableOpacity>
+              <Typography size={TYPE.caption.size} color={COLORS.primary} fFamily="barlowMedium500">
+                Edit
+              </Typography>
+            </TouchableOpacity>
           </View>
-
-          <Typography fFamily="barlowBold700" size={16} mT={32} mB={16}>ORDER SUMMARY</Typography>
-          <View style={styles.sectionCard}>
-            {items.map(item => (
-                <Flex key={item.id} direction="row" algItems="center" jusContent="space-between" mB={12}>
-                    <Typography size={14} color={COLORS.black400}>{item.name} x {item.quantity}</Typography>
-                    <Typography size={14} fFamily="barlowBold700" color={COLORS.black300}>${(parseFloat(item.price.replace('$', '')) * item.quantity).toFixed(2)}</Typography>
-                </Flex>
-            ))}
-            <View style={styles.divider} />
-            <Flex direction="row" jusContent="space-between" algItems="center">
-                <Typography size={16} fFamily="barlowBold700">TOTAL AMOUNT</Typography>
-                <Typography size={22} fFamily="barlowBold700" color={COLORS.primary}>${totalAmount.toFixed(2)}</Typography>
-            </Flex>
-          </View>
-
-          <View style={styles.shippingNotice}>
-                <Icon name="logo-paypal" iconFamily="Ionicons" size={24} color="#003087" />
-                <Typography size={13} color={COLORS.black400} mL={10} style={{ flex: 1 }} lineHeight={18}>
-                    Payment powered by PayPal. Secure and encrypted transaction.
-                </Typography>
-          </View>
-
-          <Button 
-            label="PLACE ORDER" 
-            mt={40} 
-            onPress={handlePlaceOrder} 
-            btnStyle={{ width: '100%' }}
-          />
         </View>
-      </ScrollView>
 
-      {/* Order Success Modal */}
-      <Modal visible={successVisible} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-              <View style={styles.successBox}>
-                  <View style={styles.checkIcon}>
-                    <Icon name="checkmark" iconFamily="Ionicons" size={48} color={COLORS.white100} />
-                  </View>
-                  <Typography size={22} fFamily="barlowBold700" color={COLORS.black300} mT={24}>Order Successful!</Typography>
-                  <Typography size={14} color={COLORS.textMuted} textAlign="center" mT={10}>Your ClayMaster gear is on its way. You'll receive a confirmation email shortly.</Typography>
-              </View>
+        <View style={styles.section}>
+          <Typography
+            fFamily={TYPE.h2.fFamily}
+            size={TYPE.h2.size}
+            color={COLORS.textPrimary}
+            mB={SPACING.component}
+          >
+            Payment Method
+          </Typography>
+          <View style={[GLOBALSTYLE.screenCard, styles.addressCard]}>
+            <View style={styles.iconCircle}>
+              <Icon name="card-outline" iconFamily="Ionicons" size={18} color={COLORS.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
+                •••• •••• •••• 4242
+              </Typography>
+              <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+                Visa · Expires 08/28
+              </Typography>
+            </View>
+            <TouchableOpacity>
+              <Typography size={TYPE.caption.size} color={COLORS.primary} fFamily="barlowMedium500">
+                Edit
+              </Typography>
+            </TouchableOpacity>
           </View>
-      </Modal>
+        </View>
+
+        <View style={styles.section}>
+          <Typography
+            fFamily={TYPE.h2.fFamily}
+            size={TYPE.h2.size}
+            color={COLORS.textPrimary}
+            mB={SPACING.component}
+          >
+            Order Items ({items.length})
+          </Typography>
+          <View style={styles.itemsGroup}>
+            {items.map(item => (
+              <View key={item.id} style={[GLOBALSTYLE.screenCard, styles.orderLine]}>
+                {resolveProductImage(item.image) ? (
+                  <Image
+                    source={resolveProductImage(item.image)}
+                    style={styles.orderThumb}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.orderThumb, styles.thumbPlaceholder]} />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Typography fFamily="barlowMedium500" size={TYPE.body.size} color={COLORS.textPrimary}>
+                    {item.name}
+                  </Typography>
+                  <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+                    Qty: {item.quantity}
+                  </Typography>
+                </View>
+                <Typography fFamily="barlowBold700" size={TYPE.body.size} color={COLORS.primary}>
+                  {formatPrice(item.price * item.quantity)}
+                </Typography>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={[GLOBALSTYLE.screenCard, styles.summary]}>
+          <View style={styles.summaryRow}>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>Subtotal</Typography>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
+              {formatPrice(totalAmount)}
+            </Typography>
+          </View>
+          <View style={styles.summaryRow}>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>Shipping</Typography>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
+              {formatPrice(SHIPPING)}
+            </Typography>
+          </View>
+          <View style={styles.summaryRow}>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>Tax</Typography>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
+              {formatPrice(tax)}
+            </Typography>
+          </View>
+          <View style={styles.summaryTotal}>
+            <Typography fFamily={TYPE.h2.fFamily} size={TYPE.h2.size} color={COLORS.textPrimary}>
+              Total
+            </Typography>
+            <Typography fFamily={TYPE.h2.fFamily} size={TYPE.h2.size} color={COLORS.primary}>
+              {formatPrice(total)}
+            </Typography>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.placeBtn} onPress={handlePlaceOrder} activeOpacity={0.88}>
+          <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.white100}>
+            Place Order · {formatPrice(total)}
+          </Typography>
+        </TouchableOpacity>
+      </ScrollView>
     </Container>
   );
 };
 
-const styles = StyleSheet.create({
-    sectionCard: {
-        backgroundColor: COLORS.white100,
-        borderRadius: 16,
-        padding: 20,
-        borderWidth: 1,
-        borderColor: '#EFEFEF',
-        ...SHADOWS.card,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: '#F0F0F0',
-        marginVertical: 16,
-    },
-    shippingNotice: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#F7F9FC',
-        padding: Sizer.hSize(16),
-        borderRadius: Sizer.hSize(12),
-        marginTop: Sizer.vSize(24),
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    successBox: {
-        width: '85%',
-        backgroundColor: COLORS.white100,
-        borderRadius: 24,
-        padding: 40,
-        alignItems: 'center',
-    },
-    checkIcon: {
-        width: 100,
-        height: 100,
-        borderRadius: 50,
-        backgroundColor: '#2E7D32',
-        justifyContent: 'center',
-        alignItems: 'center',
-    }
-});
-
 export default CheckoutScreen;
+
+const styles = StyleSheet.create({
+  scroll: {
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+    paddingTop: Sizer.vSize(16),
+    paddingBottom: Sizer.vSize(40),
+    gap: Sizer.vSize(SPACING.section),
+  },
+  section: {},
+  addressCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Sizer.hSize(12),
+    padding: Sizer.hSize(SPACING.cardP),
+    ...SHADOWS.card,
+  },
+  iconCircle: {
+    width: Sizer.hSize(40),
+    height: Sizer.hSize(40),
+    borderRadius: Sizer.hSize(20),
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  itemsGroup: { gap: Sizer.vSize(SPACING.component) },
+  orderLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Sizer.hSize(12),
+    padding: Sizer.hSize(12),
+    ...SHADOWS.card,
+  },
+  orderThumb: {
+    width: Sizer.hSize(56),
+    height: Sizer.hSize(56),
+    borderRadius: Sizer.hSize(12),
+  },
+  thumbPlaceholder: {
+    backgroundColor: COLORS.surfaceMuted,
+  },
+  summary: {
+    padding: Sizer.hSize(SPACING.cardP),
+    gap: Sizer.vSize(8),
+    ...SHADOWS.card,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  summaryTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.borderMuted,
+    paddingTop: Sizer.vSize(8),
+    marginTop: Sizer.vSize(4),
+  },
+  placeBtn: {
+    height: Sizer.vSize(48),
+    backgroundColor: COLORS.primary,
+    borderRadius: Sizer.hSize(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  successWrap: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+    paddingBottom: Sizer.vSize(40),
+  },
+  successIcon: {
+    width: Sizer.hSize(80),
+    height: Sizer.hSize(80),
+    borderRadius: Sizer.hSize(40),
+    backgroundColor: '#DCFCE7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryBtn: {
+    width: '100%',
+    height: Sizer.vSize(48),
+    backgroundColor: COLORS.primary,
+    borderRadius: Sizer.hSize(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Sizer.vSize(12),
+  },
+  outlineBtn: {
+    width: '100%',
+    height: Sizer.hSize(48),
+    borderRadius: Sizer.hSize(12),
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+});

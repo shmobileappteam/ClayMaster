@@ -1,104 +1,118 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Container, Flex, Typography } from '../../../atomComponents';
-import { Header, ScreenBanner } from '../../../components';
-import { COLORS, GLOBALSTYLE, SHADOWS } from '../../../globalStyle/Theme';
-import Sizer from '../../../helpers/Sizer';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Container, Typography } from '../../../atomComponents';
+import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
+import {
+  COLORS,
+  GLOBALSTYLE,
+  SHADOWS,
+  SPACING,
+  TYPE,
+} from '../../../globalStyle/Theme';
+import Sizer from '../../../helpers/Sizer';
+import { LIBRARY_DOCUMENTS } from '../../../constants/libraryContent';
 
-const DOCUMENTS = [
-    { name: 'My path to sporting clays', size: '250.00 KB', type: 'pdf' },
-    { name: 'Sporting clay fundamentals', size: '180.20 KB', type: 'pdf' },
-    { name: 'Customer onboarding – beginning shooter', size: '310.45 KB', type: 'excel' },
-    { name: 'Three primary lead methods illustrations', size: '215.10 KB', type: 'pdf' },
-    { name: 'Classic plan automated onboarding checklist', size: '410.00 KB', type: 'excel' },
-    { name: 'Pro plan automated onboarding checklist', size: '290.40 KB', type: 'excel' },
-];
-
-const AdditionalDocumentsScreen = () => {
-    return (
-        <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-            <Header type="app" title="Academy" />
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-                <ScreenBanner 
-                    title="Additional documents"
-                    subtitle="Access a library of important documents, onboarding checklists, and training fundamentals."
-                />
-
-                <View style={styles.sectionHeader}>
-                    <Typography fFamily="barlowBold700" size={16} lineHeight={22} color={COLORS.textPrimary}>Documents list</Typography>
-                </View>
-
-                <View style={[GLOBALSTYLE.paddingHor, { marginTop: Sizer.vSize(16), paddingHorizontal: Sizer.hSize(20) }]}>
-                    {DOCUMENTS.map((doc, index) => (
-                        <TouchableOpacity 
-                            key={index} 
-                            style={styles.docRow}
-                            activeOpacity={0.88}
-                        >
-                            <View style={[styles.iconBox, { backgroundColor: doc.type === 'excel' ? 'rgba(46, 125, 50, 0.1)' : 'rgba(232, 93, 4, 0.1)' }]}>
-                                <Icon 
-                                    name={doc.type === 'excel' ? "stats-chart" : "document-text"} 
-                                    iconFamily="Ionicons" 
-                                    size={24} 
-                                    color={doc.type === 'excel' ? "#2E7D32" : COLORS.primary} 
-                                />
-                            </View>
-                            <View style={{ flex: 1, marginLeft: Sizer.hSize(16), marginRight: Sizer.hSize(12) }}>
-                                <Typography fFamily="barlowBold700" size={15} color={COLORS.textPrimary} lineHeight={20}>{doc.name}</Typography>
-                                <Typography size={13} color={COLORS.textMuted} mT={6}>Size: {doc.size}</Typography>
-                            </View>
-                            <Flex direction="row" algItems="center" gap={12}>
-                                <TouchableOpacity style={styles.actionBtn} activeOpacity={0.88}>
-                                    <Icon name="eye-outline" iconFamily="Ionicons" size={20} color={COLORS.primary} />
-                                </TouchableOpacity>
-                                <TouchableOpacity style={styles.actionBtn} activeOpacity={0.88}>
-                                    <Icon name="download-outline" iconFamily="Ionicons" size={20} color={COLORS.primary} />
-                                </TouchableOpacity>
-                            </Flex>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-            </ScrollView>
-        </Container>
-    );
-};
+/** ClayMaster-App-UI `AdditionalDocuments.tsx` */
+const AdditionalDocumentsScreen = ({ navigation }) => (
+  <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+    <LibraryHeader
+      title="Documents"
+      showBack
+      showNotification={false}
+      onBack={() => navigation.goBack()}
+    />
+    <ScrollView
+      contentContainerStyle={styles.scroll}
+      showsVerticalScrollIndicator={false}
+    >
+      <Typography size={TYPE.body.size} color={COLORS.textSecondary} mB={SPACING.component}>
+        Reference materials, guides & templates
+      </Typography>
+      {LIBRARY_DOCUMENTS.map(doc => (
+        <View key={doc.title} style={[GLOBALSTYLE.screenCard, styles.docCard]}>
+          <View style={styles.docHeader}>
+            <View style={styles.docIcon}>
+              <Icon name="document-text-outline" iconFamily="Ionicons" size={20} color={COLORS.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
+                {doc.title}
+              </Typography>
+              <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+                {doc.type} · {doc.size} · {doc.category}
+              </Typography>
+            </View>
+          </View>
+          <View style={styles.docActions}>
+            <TouchableOpacity style={styles.viewBtn} activeOpacity={0.88}>
+              <Icon name="eye-outline" iconFamily="Ionicons" size={14} color={COLORS.white100} />
+              <Typography fFamily="barlowSemiBold600" size={TYPE.caption.size} color={COLORS.white100} mL={6}>
+                View
+              </Typography>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.downloadBtn} activeOpacity={0.88}>
+              <Icon name="download-outline" iconFamily="Ionicons" size={14} color={COLORS.textPrimary} />
+              <Typography fFamily="barlowSemiBold600" size={TYPE.caption.size} color={COLORS.textPrimary} mL={6}>
+                Download
+              </Typography>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+    </ScrollView>
+  </Container>
+);
 
 export default AdditionalDocumentsScreen;
 
 const styles = StyleSheet.create({
-    sectionHeader: {
-        backgroundColor: COLORS.mainBg,
-        paddingHorizontal: Sizer.hSize(20),
-        paddingVertical: Sizer.vSize(16),
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: COLORS.borderSubtle,
-        marginBottom: Sizer.vSize(8),
-    },
-    docRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: Sizer.hSize(16),
-        marginBottom: Sizer.vSize(12),
-        backgroundColor: COLORS.surface,
-        borderRadius: Sizer.hSize(14),
-        ...SHADOWS.card,
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: COLORS.borderSubtle,
-    },
-    iconBox: {
-        width: Sizer.hSize(52),
-        height: Sizer.hSize(52),
-        borderRadius: Sizer.hSize(12),
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    actionBtn: {
-        width: Sizer.hSize(38),
-        height: Sizer.hSize(38),
-        borderRadius: Sizer.hSize(10),
-        backgroundColor: COLORS.surfaceMuted,
-        justifyContent: 'center',
-        alignItems: 'center',
-    }
+  scroll: {
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+    paddingTop: Sizer.vSize(16),
+    paddingBottom: Sizer.vSize(100),
+    gap: Sizer.vSize(SPACING.component),
+  },
+  docCard: {
+    padding: Sizer.hSize(SPACING.cardP),
+    ...SHADOWS.card,
+  },
+  docHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Sizer.hSize(12),
+  },
+  docIcon: {
+    width: Sizer.hSize(40),
+    height: Sizer.hSize(40),
+    borderRadius: Sizer.hSize(20),
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  docActions: {
+    flexDirection: 'row',
+    gap: Sizer.hSize(12),
+    marginTop: Sizer.vSize(12),
+  },
+  viewBtn: {
+    flex: 1,
+    height: Sizer.vSize(36),
+    backgroundColor: COLORS.primary,
+    borderRadius: Sizer.hSize(12),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  downloadBtn: {
+    flex: 1,
+    height: Sizer.vSize(36),
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.borderMuted,
+    borderRadius: Sizer.hSize(12),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+  },
 });

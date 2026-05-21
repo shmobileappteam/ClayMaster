@@ -9,6 +9,8 @@ import ForgotPasswordScreen from './Auth/ForgotPasswordScreen';
 import ResetPasswordScreen from './Auth/ResetPasswordScreen';
 import CustomScoreCard from './Main/Score/CustomScoreCard';
 import NewRoundScreen from './Main/Score/NewRoundScreen';
+import LibraryScorecardScreen from './Main/Score/LibraryScorecardScreen';
+import ScoringScreen from './Main/Score/ScoringScreen';
 import CompleteRoundScreen from './Main/Score/CompleteRoundScreen';
 import NotificationScreen from './Main/Notification/NotificationScreen';
 import SubscriptionScreen from './Main/Subscription/SubscriptionScreen';
@@ -16,6 +18,7 @@ import SavedScoredcardSuccessScreen from './Main/Score/SavedScoredcardSuccessScr
 import ScorecardDetailsScreen from './Main/Score/ScorecardDetailsScreen';
 import ProfileDetailsScreen from './Main/Setting/ProfileDetailsScreen';
 import ProfileScreen from './Main/Setting/ProfileScreen';
+import SettingsScreen from './Main/Setting/SettingsScreen';
 import ChangePasswordScreen from './Main/Setting/ChangePasswordScreen';
 import DeleteAccountScreen from './Main/Setting/DeleteAccountScreen';
 import AboutUsScreen from './Main/Setting/AboutUsScreen';
@@ -38,6 +41,7 @@ import DrillDetailScreen from './Main/Academy/DrillDetailScreen';
 import CoachingScreen from './Main/Coaching/CoachingScreen';
 import CommunityScreen from './Main/Community/CommunityScreen';
 import CommunityDetailScreen from './Main/Community/CommunityDetailScreen';
+import CreatePostScreen from './Main/Community/CreatePostScreen';
 import VirtualTournamentScreen from './Main/Community/VirtualTournamentScreen';
 import TournamentGuidelinesScreen from './Main/Community/TournamentGuidelinesScreen';
 import TournamentEntryScreen from './Main/Community/TournamentEntryScreen';
@@ -79,6 +83,8 @@ export {
   ResetPasswordScreen,
   CustomScoreCard,
   NewRoundScreen,
+  LibraryScorecardScreen,
+  ScoringScreen,
   CompleteRoundScreen,
   NotificationScreen,
   SubscriptionScreen,
@@ -86,6 +92,7 @@ export {
   ScorecardDetailsScreen,
   ProfileDetailsScreen,
   ProfileScreen,
+  SettingsScreen,
   ChangePasswordScreen,
   DeleteAccountScreen,
   AboutUsScreen,
@@ -106,6 +113,7 @@ export {
   CoachingScreen,
   CommunityScreen,
   CommunityDetailScreen,
+  CreatePostScreen,
   VirtualTournamentScreen,
   TournamentGuidelinesScreen,
   TournamentEntryScreen,

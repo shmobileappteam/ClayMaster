@@ -1,136 +1,240 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Container, Flex, Typography } from '../../../atomComponents';
-import { Header, ScreenBanner, Button } from '../../../components';
-import { COLORS, GLOBALSTYLE, SHADOWS } from '../../../globalStyle/Theme';
-import Sizer from '../../../helpers/Sizer';
+import React from 'react';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Container, Typography } from '../../../atomComponents';
+import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
+import {
+  COLORS,
+  GLOBALSTYLE,
+  SHADOWS,
+  SPACING,
+  TYPE,
+} from '../../../globalStyle/Theme';
+import Sizer from '../../../helpers/Sizer';
+import {
+  getReviewInitials,
+  LIBRARY_REVIEWS,
+  REVIEW_STATS,
+} from '../../../constants/libraryContent';
 
-const REVIEWS = [
-    { author: 'Marc Bravo', date: 'March 24, 2026', stars: 5, content: 'Excellent support from Kevin and the team. The analytics are a game changer for my performance.' },
-    { author: 'Steve Hooper', date: 'March 20, 2026', stars: 4, content: 'Great app, very professional. I love the new practice drills section.' },
-];
+const StarRow = ({ count, filled, size = 14 }) => (
+  <View style={{ flexDirection: 'row', gap: 2 }}>
+    {[1, 2, 3, 4, 5].map(s => (
+      <Icon
+        key={s}
+        name={s <= filled ? 'star' : 'star-outline'}
+        iconFamily="Ionicons"
+        size={size}
+        color={COLORS.primary}
+      />
+    ))}
+  </View>
+);
 
-const ReviewsScreen = () => {
-    const [rating, setRating] = useState(5);
+/** ClayMaster-App-UI `Reviews.tsx` */
+const ReviewsScreen = ({ navigation }) => {
+  const distribution = [
+    { stars: 5, count: REVIEW_STATS.five },
+    { stars: 4, count: REVIEW_STATS.four },
+    { stars: 3, count: REVIEW_STATS.three },
+    { stars: 2, count: REVIEW_STATS.two },
+    { stars: 1, count: REVIEW_STATS.one },
+  ];
 
-    return (
-        <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-            <Header type="app" title="Reviews" isBackVisible={true} />
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-                <ScreenBanner 
-                    title="Reviews & feedback"
-                    subtitle="We value your feedback. Share your experience with ClayMaster and help us improve our services for you."
-                />
-
-                <View style={[GLOBALSTYLE.paddingHor, { marginTop: Sizer.vSize(24), paddingHorizontal: Sizer.hSize(20) }]}>
-                    <Typography fFamily="barlowBold700" size={16} lineHeight={22} color={COLORS.textPrimary} mB={12}>YOUR FEEDBACK MATTERS</Typography>
-                    
-                    {/* Rating Summary */}
-                    <View style={styles.ratingSummary}>
-                        <View style={{ alignItems: 'center' }}>
-                           <Typography fFamily="barlowBold700" size={38} color={COLORS.textPrimary}>4.9</Typography>
-                           <Flex direction="row" mT={10} gap={6}>
-                                {[1,2,3,4,5].map(i => <Icon key={i} name="star" iconFamily="Ionicons" size={22} color="#FFD700" />)}
-                           </Flex>
-                           <Typography size={12} color={COLORS.textMuted} mT={14} fFamily="barlowBold700" letterSpacing={1}>TOTAL REVIEWS: 124</Typography>
-                        </View>
-                    </View>
-
-                    {/* Submit Review Form */}
-                    <View style={styles.whiteCard}>
-                        <Typography fFamily="barlowBold700" size={16} color={COLORS.textPrimary} mB={16}>TELL US WHAT YOU THINK</Typography>
-                        
-                        <Typography size={13} color={COLORS.textPrimary} fFamily="barlowSemiBold600" mB={10}>Your rating *</Typography>
-                        <Flex direction="row" mB={24} gap={12}>
-                            {[1, 2, 3, 4, 5].map(star => (
-                                <TouchableOpacity key={star} onPress={() => setRating(star)} activeOpacity={0.88}>
-                                    <Icon
-                                        name={star <= rating ? 'star' : 'star-outline'}
-                                        iconFamily="Ionicons"
-                                        size={34}
-                                        color={star <= rating ? "#FFD700" : COLORS.borderMuted}
-                                    />
-                                </TouchableOpacity>
-                            ))}
-                        </Flex>
-
-                        <Typography size={13} color={COLORS.textPrimary} fFamily="barlowSemiBold600" mB={10}>Note / witness *</Typography>
-                        <TextInput 
-                            style={styles.textArea} 
-                            placeholder="Share your thoughts..." 
-                            multiline 
-                            numberOfLines={4}
-                            placeholderTextColor={COLORS.textMuted}
-                        />
-
-                        <Button label="Submit review" mt={24} btnStyle={{ width: '100%' }} />
-                    </View>
-
-                    {/* Review List */}
-                    <Typography fFamily="barlowBold700" size={16} color={COLORS.textPrimary} mT={32} mB={16}>Recent reviews</Typography>
-                    {REVIEWS.map((review, idx) => (
-                        <View key={idx} style={styles.reviewCard}>
-                            <Flex direction="row" algItems="center" jusContent="space-between">
-                                <Flex direction="row" gap={4}>
-                                    {[1, 2, 3, 4, 5].map(i => (
-                                        <Icon key={i} name="star" iconFamily="Ionicons" size={16} color={i <= review.stars ? "#FFD700" : COLORS.borderMuted} />
-                                    ))}
-                                </Flex>
-                                <Typography size={12} color={COLORS.textMuted} fFamily="barlowBold700">{review.date}</Typography>
-                            </Flex>
-                            <Typography fFamily="barlowBold700" size={15} color={COLORS.textPrimary} mT={14}>BY: {review.author}</Typography>
-                            <Typography size={14} color={COLORS.textSecondary} mT={6} lineHeight={20}>
-                                {review.content}
-                            </Typography>
-                        </View>
-                    ))}
+  return (
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+      <LibraryHeader
+        title="Reviews"
+        showBack
+        showNotification={false}
+        onBack={() => navigation.goBack()}
+      />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[GLOBALSTYLE.screenCard, styles.summaryCard]}>
+          <View style={styles.summaryLeft}>
+            <Typography fFamily="barlowBold700" size={40} color={COLORS.textPrimary}>
+              {REVIEW_STATS.avg}
+            </Typography>
+            <StarRow count={5} filled={Math.round(REVIEW_STATS.avg)} size={14} />
+            <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={4}>
+              {REVIEW_STATS.total} reviews
+            </Typography>
+          </View>
+          <View style={styles.bars}>
+            {distribution.map(row => (
+              <View key={row.stars} style={styles.barRow}>
+                <Typography size={TYPE.caption.size} color={COLORS.textSecondary} style={styles.barLabel}>
+                  {row.stars}
+                </Typography>
+                <View style={styles.barTrack}>
+                  <View
+                    style={[
+                      styles.barFill,
+                      { width: `${(row.count / REVIEW_STATS.total) * 100}%` },
+                    ]}
+                  />
                 </View>
-            </ScrollView>
-        </Container>
-    );
+                <Typography size={TYPE.caption.size} color={COLORS.textSecondary} style={styles.barCount}>
+                  {row.count}
+                </Typography>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <Typography
+          fFamily={TYPE.h2.fFamily}
+          size={TYPE.h2.size}
+          color={COLORS.textPrimary}
+          mB={SPACING.component}
+        >
+          Recent Reviews
+        </Typography>
+
+        <View style={styles.reviewList}>
+          {LIBRARY_REVIEWS.map((review, i) => (
+            <View key={i} style={[GLOBALSTYLE.screenCard, styles.reviewCard]}>
+              <View style={styles.reviewTop}>
+                <View style={styles.reviewAuthor}>
+                  <View style={styles.avatar}>
+                    <Typography size={TYPE.caption.size} color={COLORS.white100} fFamily="barlowSemiBold600">
+                      {getReviewInitials(review.name)}
+                    </Typography>
+                  </View>
+                  <View>
+                    <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
+                      {review.name}
+                    </Typography>
+                    <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
+                      {review.date}
+                    </Typography>
+                  </View>
+                </View>
+                <StarRow count={5} filled={review.rating} size={12} />
+              </View>
+              <Typography size={TYPE.body.size} color={COLORS.textPrimary} lineHeight={22} mT={8}>
+                {review.text}
+              </Typography>
+              <View style={styles.reviewActions}>
+                <TouchableOpacity style={styles.reviewAction} activeOpacity={0.88}>
+                  <Icon name="thumbs-up-outline" iconFamily="Ionicons" size={14} color={COLORS.textSecondary} />
+                  <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mL={6}>
+                    {review.likes}
+                  </Typography>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.reviewAction} activeOpacity={0.88}>
+                  <Icon name="chatbubble-outline" iconFamily="Ionicons" size={14} color={COLORS.textSecondary} />
+                  <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mL={6}>
+                    Reply
+                  </Typography>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+        </View>
+
+        <TouchableOpacity style={styles.writeBtn} activeOpacity={0.88}>
+          <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.primary}>
+            Write a Review
+          </Typography>
+        </TouchableOpacity>
+      </ScrollView>
+    </Container>
+  );
 };
 
 export default ReviewsScreen;
 
 const styles = StyleSheet.create({
-    ratingSummary: {
-        backgroundColor: COLORS.surface,
-        borderRadius: Sizer.hSize(14),
-        padding: Sizer.hSize(24),
-        alignItems: 'center',
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: COLORS.borderSubtle,
-        marginBottom: Sizer.vSize(24),
-        ...SHADOWS.card,
-    },
-    whiteCard: {
-        backgroundColor: COLORS.surface,
-        borderRadius: Sizer.hSize(14),
-        padding: Sizer.hSize(24),
-        ...SHADOWS.card,
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: COLORS.borderSubtle,
-    },
-    textArea: {
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: COLORS.borderSubtle,
-        borderRadius: Sizer.hSize(12),
-        padding: Sizer.hSize(16),
-        height: Sizer.vSize(120),
-        textAlignVertical: 'top',
-        fontFamily: 'barlowSemiBold600',
-        fontSize: 14,
-        color: COLORS.textPrimary,
-        backgroundColor: COLORS.surfaceMuted,
-    },
-    reviewCard: {
-        backgroundColor: COLORS.surface,
-        borderRadius: Sizer.hSize(14),
-        padding: Sizer.hSize(20),
-        marginBottom: Sizer.vSize(16),
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: COLORS.borderSubtle,
-        ...SHADOWS.card,
-    }
+  scroll: {
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+    paddingTop: Sizer.vSize(16),
+    paddingBottom: Sizer.vSize(100),
+    gap: Sizer.vSize(SPACING.section),
+  },
+  summaryCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Sizer.hSize(SPACING.cardP),
+    gap: Sizer.hSize(20),
+    ...SHADOWS.card,
+  },
+  summaryLeft: {
+    alignItems: 'center',
+  },
+  bars: {
+    flex: 1,
+    gap: Sizer.vSize(6),
+  },
+  barRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Sizer.hSize(8),
+  },
+  barLabel: {
+    width: Sizer.hSize(12),
+  },
+  barTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: COLORS.surfaceMuted,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    backgroundColor: COLORS.primary,
+    borderRadius: 4,
+  },
+  barCount: {
+    width: Sizer.hSize(28),
+    textAlign: 'right',
+  },
+  reviewList: {
+    gap: Sizer.vSize(SPACING.component),
+  },
+  reviewCard: {
+    padding: Sizer.hSize(SPACING.cardP),
+    ...SHADOWS.card,
+  },
+  reviewTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  reviewAuthor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Sizer.hSize(8),
+    flex: 1,
+  },
+  avatar: {
+    width: Sizer.hSize(36),
+    height: Sizer.hSize(36),
+    borderRadius: Sizer.hSize(18),
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  reviewActions: {
+    flexDirection: 'row',
+    gap: Sizer.hSize(16),
+    marginTop: Sizer.vSize(12),
+  },
+  reviewAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  writeBtn: {
+    height: Sizer.vSize(48),
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: Sizer.hSize(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.surface,
+  },
 });

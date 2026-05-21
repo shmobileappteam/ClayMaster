@@ -1,256 +1,264 @@
+import React, { useEffect } from 'react';
 import {
   BackHandler,
+  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Avatar } from 'react-native-paper';
-//----------
-import {
-  Container,
-  Flex,
-  FormController,
-  Typography,
-} from '../../../atomComponents';
-import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
-import Sizer from '../../../helpers/Sizer';
-import { Button, Header, TextField } from '../../../components';
+import { Container, Typography } from '../../../atomComponents';
+import LibraryHeader from '../../../components/layout/LibraryHeader';
+import ProfileField from '../../../components/profile/ProfileField';
 import Icon from '../../../helpers/Icon';
+import { COLORS, SPACING, TYPE } from '../../../globalStyle/Theme';
+import Sizer from '../../../helpers/Sizer';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { editProfile } from '../../../api/userService';
 import { setUser } from '../../../redux/slices/appSlice';
-import { maskPhoneNumber, showMessage } from '../../../utils';
+import { maskPhoneNumber, showToast } from '../../../utils';
 import useImagePicker from '../../../hooks/useImagePicker';
 import { BASE_URL } from '../../../api/endpoints';
+import { FormController } from '../../../atomComponents';
 
+/**
+ * ClayMaster-App-UI `EditProfile.tsx` — keeps existing editProfile API.
+ */
 const ProfileDetailsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.app);
-
   const { openGallery, imageUri, clearImage } = useImagePicker();
 
-  const [edit, setIsEdit] = useState(false);
-
-  //Edit Profile Mutation:
   const { mutate: editProf, isPending } = useCustomMutation({
     mutationFn: editProfile,
     onSuccess: response => {
       if (response?.status) {
         dispatch(setUser({ ...response?.user }));
-        setIsEdit(false);
-        showMessage({
-          type: 'success',
-          message: response?.message,
-        });
+        showToast({ title: response?.message || 'Profile updated' });
+        navigation.goBack();
       }
     },
-    onSettled: () => {
-      clearImage();
-    },
+    onSettled: () => clearImage(),
   });
 
-  //Handle Edit Profile:
-  const handleEditProfile = values => {
+  const displayName =
+    `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim() || 'Member';
+  const initials = displayName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const avatarUri = imageUri?.uri
+    ? imageUri.uri
+    : user?.profile_image
+      ? `${BASE_URL}${user.profile_image}`
+      : null;
+
+  const handleSubmit = values => {
+    const parts = (values.full_name || '').trim().split(/\s+/);
+    const payload = {
+      email: user?.email,
+      first_name: parts[0] || '',
+      last_name: parts.slice(1).join(' ') || '',
+      address: values.location || '',
+      contact: (values.phone || '').replace(/\D/g, ''),
+    };
     if (imageUri?.uri) {
-      values.profile_image = {
-        uri: imageUri?.uri,
-        fileName: imageUri?.fileName,
-        type: imageUri?.type,
+      payload.profile_image = {
+        uri: imageUri.uri,
+        fileName: imageUri.fileName,
+        type: imageUri.type,
       };
-    } else {
-      delete values.profile_image;
     }
-
-    editProf({ id: user?.id, ...values });
-  };
-
-  const initialValues = {
-    email: user?.email || '',
-    first_name: user?.first_name || '',
-    last_name: user?.last_name || '',
-    address: user?.address_1 || '',
-    contact: user?.contact || '',
-    profile_image: user?.profile_image || null,
+    editProf({ id: user?.id, ...payload });
   };
 
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      () => {
-        if (edit) {
-          setIsEdit(false);
-          return true;
-        } else {
-          return false;
-        }
-      },
-    );
-
-    return () => backHandler.remove();
-  }, [edit]);
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      navigation.goBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [navigation]);
 
   return (
-    <Container keyboardAvoiding isPadding={false}>
-      <Header
-        type="app"
-        title="Account Settings"
-        onPresBack={() => (edit ? setIsEdit(false) : navigation.goBack())}
+    <Container keyboardAvoiding isPadding={false} backgroundColor={COLORS.mainBg}>
+      <LibraryHeader
+        title="Edit Profile"
+        showBack
+        showNotification={false}
+        onBack={() => navigation.goBack()}
       />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: Sizer.hSize(100),
-          paddingHorizontal: Sizer.hSize(20),
+      <FormController
+        initialValues={{
+          full_name: displayName,
+          email: user?.email || '',
+          phone: user?.contact || '',
+          location: user?.address_1 || '',
+          bio: 'Passionate clay shooter. Pro member since 2024.',
         }}
+        onSubmit={handleSubmit}
       >
-        <Flex algItems={'center'} direction={'column'} mT={40} mB={32}>
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={openGallery}
-            style={styles.avatarContainer}
+        {({ handleSubmit: submit, handleChange, handleBlur, values, errors }) => (
+          <ScrollView
+            contentContainerStyle={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <Avatar.Image
-              source={{ uri: imageUri?.uri || `${BASE_URL}${user?.profile_image}` }}
-              size={Sizer.hSize(120)}
-              style={{ backgroundColor: COLORS.white200 }}
-            />
-            <View style={styles.editBadge}>
-              <Icon name="camera" size={18} color={COLORS.white100} iconFamily="Ionicons" />
+            <View style={styles.avatarSection}>
+              <View style={styles.avatarWrap}>
+                {avatarUri ? (
+                  <Image source={{ uri: avatarUri }} style={styles.avatarImg} />
+                ) : (
+                  <View style={styles.avatar}>
+                    <Typography
+                      fFamily="barlowBold700"
+                      size={32}
+                      color={COLORS.white100}
+                    >
+                      {initials || 'CM'}
+                    </Typography>
+                  </View>
+                )}
+                <TouchableOpacity
+                  style={styles.cameraBtn}
+                  onPress={openGallery}
+                  activeOpacity={0.88}
+                >
+                  <Icon
+                    name="camera"
+                    iconFamily="Ionicons"
+                    size={16}
+                    color={COLORS.primary}
+                  />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity onPress={openGallery} activeOpacity={0.88}>
+                <Typography
+                  size={TYPE.caption.size}
+                  color={COLORS.primary}
+                  fFamily="barlowMedium500"
+                  mT={8}
+                >
+                  Change Photo
+                </Typography>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
-        </Flex>
 
-        <FormController
-          initialValues={initialValues}
-          onSubmit={handleEditProfile}
-        >
-          {props => {
-            const { handleSubmit, handleChange, handleBlur, values, errors } = props;
-            return (
-              <>
-                <InputLabel title="First Name" />
-                <TextField
-                  placeholder="First Name"
-                  value={values?.first_name}
-                  error={errors?.first_name}
-                  handleChange={handleChange('first_name')}
-                  handleBlur={handleBlur('first_name')}
-                  mT={0}
-                />
+            <ProfileField
+              label="Full Name"
+              value={values.full_name}
+              onChangeText={handleChange('full_name')}
+              onBlur={handleBlur('full_name')}
+              error={errors.full_name}
+              placeholder="John Smith"
+            />
+            <ProfileField
+              label="Email"
+              value={values.email}
+              editable={false}
+              placeholder="john.smith@email.com"
+            />
+            <ProfileField
+              label="Phone"
+              value={maskPhoneNumber(values.phone)}
+              onChangeText={t => handleChange('phone')(t.replace(/\D/g, ''))}
+              onBlur={handleBlur('phone')}
+              error={errors.phone}
+              placeholder="+1 (555) 123-4567"
+              keyboardType="phone-pad"
+            />
+            <ProfileField
+              label="Location"
+              value={values.location}
+              onChangeText={handleChange('location')}
+              onBlur={handleBlur('location')}
+              error={errors.location}
+              placeholder="Dallas, TX"
+            />
+            <ProfileField
+              label="Bio"
+              value={values.bio}
+              onChangeText={handleChange('bio')}
+              multiline
+              placeholder="Tell us about yourself"
+            />
 
-                <InputLabel title="Last Name" />
-                <TextField
-                  placeholder="Last Name"
-                  value={values?.last_name}
-                  error={errors?.last_name}
-                  handleChange={handleChange('last_name')}
-                  handleBlur={handleBlur('last_name')}
-                  mT={0}
-                />
-
-                <InputLabel title="Address" />
-                <TextField
-                  placeholder="Address"
-                  value={values?.address}
-                  error={errors?.address}
-                  handleChange={handleChange('address')}
-                  handleBlur={handleBlur('address')}
-                  mT={0}
-                />
-
-                <InputLabel title="Email" />
-                <TextField
-                  placeholder="Email"
-                  value={values?.email}
-                  error={errors?.email}
-                  handleChange={handleChange('email')}
-                  handleBlur={handleBlur('email')}
-                  disable={true}
-                  mT={0}
-                />
-
-                <InputLabel title="Contact" />
-                <TextField
-                  placeholder="Contact"
-                  value={maskPhoneNumber(values?.contact)}
-                  error={errors?.contact}
-                  handleChange={number => handleChange('contact')(number?.replace(/\D/g, ''))}
-                  handleBlur={handleBlur('contact')}
-                  mT={0}
-                  maxLength={12}
-                />
-
-                <Button
-                  label="Update Profile"
-                  mt={32}
-                  onPress={handleSubmit}
-                  loader={isPending}
-                />
-              </>
-            );
-          }}
-        </FormController>
-
-        <View style={styles.divider} />
-
-        <Button
-            label="Change Password"
-            mt={16}
-            onPress={() => navigation.navigate('ChangePasswordScreen')}
-            type="border"
-            btnStyle={{ borderColor: COLORS.primary }}
-            textStyle={{ color: COLORS.primary }}
-        />
-
-        <TouchableOpacity 
-            style={styles.deleteBtn}
-            onPress={() => navigation.navigate('DeleteAccountScreen')}
-        >
-            <Typography color={COLORS.red200} size={14} fFamily="barlowBold700" textAlign="center">
-                Delete My Account
-            </Typography>
-        </TouchableOpacity>
-      </ScrollView>
+            <TouchableOpacity
+              style={[styles.saveBtn, isPending && styles.saveBtnDisabled]}
+              onPress={submit}
+              disabled={isPending}
+              activeOpacity={0.88}
+            >
+              <Typography
+                fFamily="barlowSemiBold600"
+                size={TYPE.h3.size}
+                color={COLORS.white100}
+              >
+                {isPending ? 'Saving...' : 'Save Changes'}
+              </Typography>
+            </TouchableOpacity>
+          </ScrollView>
+        )}
+      </FormController>
     </Container>
   );
 };
 
-const InputLabel = ({ title = '' }) => (
-    <Typography size={13} color={COLORS.primary} fFamily="barlowSemiBold600" mT={16} mB={6}>
-        {title}
-    </Typography>
-);
-
 export default ProfileDetailsScreen;
 
 const styles = StyleSheet.create({
-  avatarContainer: {
+  scroll: {
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+    paddingTop: Sizer.vSize(16),
+    paddingBottom: Sizer.vSize(40),
+  },
+  avatarSection: {
+    alignItems: 'center',
+    marginBottom: Sizer.vSize(SPACING.section),
+  },
+  avatarWrap: {
     position: 'relative',
   },
-  editBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
+  avatar: {
+    width: Sizer.hSize(96),
+    height: Sizer.hSize(96),
+    borderRadius: Sizer.hSize(48),
     backgroundColor: COLORS.primary,
-    width: Sizer.hSize(36),
-    height: Sizer.hSize(36),
-    borderRadius: Sizer.hSize(18),
-    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
-    borderColor: COLORS.white100,
+    justifyContent: 'center',
   },
-  divider: {
-    height: Sizer.vSize(1),
-    backgroundColor: COLORS.borderSubtle,
-    marginVertical: Sizer.vSize(32),
+  avatarImg: {
+    width: Sizer.hSize(96),
+    height: Sizer.hSize(96),
+    borderRadius: Sizer.hSize(48),
+    backgroundColor: COLORS.surfaceMuted,
   },
-  deleteBtn: {
-    marginTop: Sizer.vSize(40),
-    paddingBottom: Sizer.vSize(40),
-  }
+  cameraBtn: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: Sizer.hSize(32),
+    height: Sizer.hSize(32),
+    borderRadius: Sizer.hSize(16),
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.borderMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveBtn: {
+    height: Sizer.vSize(48),
+    backgroundColor: COLORS.primary,
+    borderRadius: Sizer.hSize(12),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Sizer.vSize(8),
+  },
+  saveBtnDisabled: {
+    opacity: 0.6,
+  },
 });

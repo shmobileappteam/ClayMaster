@@ -3,7 +3,7 @@ import { setUser } from '../../redux/slices/appSlice';
 import { CommonActions } from '@react-navigation/native';
 //-------
 import { queryClient, storage } from '../../api/api';
-import { KEYS } from '../../constants';
+import { AUTH_APIS_DISABLED, KEYS } from '../../constants';
 import { getClasses, getCourses, getRounds } from '../../api/roundService';
 import { getTraps } from '../../api/stationService';
 import { getPackages } from '../../api/packageService';
@@ -47,7 +47,9 @@ export const onLoginSuccess = async (
       dispatch(setUser(response?.user));
       storage.set(KEYS.ACCESS_TOKEN, response?.token);
       storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
-      await Prefetching();
+      if (!AUTH_APIS_DISABLED) {
+        await Prefetching();
+      }
 
       if (response?.user?.email_verified_at) {
         let redirectScreen = 'ModeSelectScreen';

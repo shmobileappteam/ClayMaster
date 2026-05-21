@@ -62,7 +62,7 @@ const ShopScreen = ({ navigation }) => {
                     {product.name}
                   </Typography>
                   <Typography fFamily="barlowBold700" size={14} color={COLORS.primary} mT={4}>
-                    ${product.price}
+                    ${product.price.toFixed(2)}
                   </Typography>
                 </View>
               </TouchableOpacity>
@@ -75,7 +75,7 @@ const ShopScreen = ({ navigation }) => {
                       addToCart({
                         id: product.id,
                         name: product.name,
-                        price: `$${product.price.toFixed(2)}`,
+                        price: product.price,
                         image: product.image,
                       }),
                     );

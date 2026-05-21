@@ -6,7 +6,10 @@ import { COLORS, RADIUS, SHADOWS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import Icon from '../../../helpers/Icon';
 import { MENU_SECTIONS } from '../../../navigation/menuSections';
-import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
+import {
+  navigateFromMenuItem,
+  navigateFromTabToStack,
+} from '../../../navigation/navigationHelpers';
 import { useAppMode } from '../../../context/AppModeContext';
 
 /**
@@ -19,15 +22,7 @@ import { useAppMode } from '../../../context/AppModeContext';
 const MoreHubScreen = ({ navigation }) => {
   const { setMode } = useAppMode();
 
-  const go = item => {
-    if (item.action === 'tab') {
-      navigation.navigate(item.tab);
-      return;
-    }
-    if (item.screen) {
-      navigateFromTabToStack(navigation, item.screen);
-    }
-  };
+  const go = item => navigateFromMenuItem(navigation, item);
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>

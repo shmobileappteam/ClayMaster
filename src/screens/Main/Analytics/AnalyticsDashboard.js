@@ -8,10 +8,15 @@ import {
   GLOBALSTYLE,
   SHADOWS,
   SPACING,
+  TYPE,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
-import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
+import {
+  navigateFromTabToStack,
+  navigateFromTabToTab,
+} from '../../../navigation/navigationHelpers';
 
+/** ClayMaster-App-UI `Analytics.tsx` — Explore, workbooks, schedule row */
 const EXPLORE_ITEMS = [
   {
     label: 'Video Tutorials',
@@ -35,31 +40,37 @@ const EXPLORE_ITEMS = [
     label: 'Tournament Analytics',
     desc: 'Competition stats & rankings',
     icon: 'trophy-outline',
-    screen: 'VirtualTournamentScreen',
+    tab: 'Tournament',
   },
 ];
 
-/**
- * CONTENT INVENTORY — ClayMaster-App-UI `Analytics.tsx`
- * Explore list (4), Classic workbook card, Pro workbook (locked), Schedule session row
- */
 const AnalyticsDashboard = ({ navigation }) => {
   const go = screen => navigateFromTabToStack(navigation, screen);
+
+  const onExplorePress = item => {
+    if (item.tab) {
+      navigateFromTabToTab(navigation, item.tab);
+      return;
+    }
+    go(item.screen);
+  };
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader title="Analytics" />
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {/* Explore */}
         <View style={styles.section}>
           <Typography
-            fFamily="barlowSemiBold600"
-            size={20}
-            lineHeight={26}
+            fFamily={TYPE.h2.fFamily}
+            size={TYPE.h2.size}
+            lineHeight={TYPE.h2.lineHeight}
             color={COLORS.textPrimary}
-            mB={12}
+            mB={SPACING.component}
           >
             Explore
           </Typography>
@@ -68,97 +79,179 @@ const AnalyticsDashboard = ({ navigation }) => {
               <TouchableOpacity
                 key={item.label}
                 style={[styles.listRow, i < EXPLORE_ITEMS.length - 1 && styles.listBorder]}
-                onPress={() => go(item.screen)}
+                onPress={() => onExplorePress(item)}
                 activeOpacity={0.88}
               >
-                <View style={styles.listIcon}>
-                  <Icon name={item.icon} iconFamily="Ionicons" size={20} color={COLORS.primary} />
+                <View style={styles.listIconSm}>
+                  <Icon
+                    name={item.icon}
+                    iconFamily="Ionicons"
+                    size={20}
+                    color={COLORS.primary}
+                  />
                 </View>
                 <View style={styles.listText}>
-                  <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
+                  <Typography
+                    fFamily="barlowSemiBold600"
+                    size={TYPE.body.size}
+                    color={COLORS.textPrimary}
+                  >
                     {item.label}
                   </Typography>
-                  <Typography size={12} color={COLORS.textSecondary} mT={2}>
+                  <Typography
+                    size={TYPE.caption.size}
+                    color={COLORS.textSecondary}
+                    mT={2}
+                  >
                     {item.desc}
                   </Typography>
                 </View>
-                <Icon name="chevron-forward" iconFamily="Ionicons" size={18} color={COLORS.textSecondary} />
+                <Icon
+                  name="chevron-forward"
+                  iconFamily="Ionicons"
+                  size={18}
+                  color={COLORS.textSecondary}
+                />
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
+        {/* Classic Workbook — entire card tappable (web: single button) */}
         <TouchableOpacity
           style={[GLOBALSTYLE.screenCard, styles.workbookCard]}
           onPress={() => go('WorkbookDetailScreen')}
           activeOpacity={0.88}
         >
           <View style={styles.workbookHeader}>
-            <View style={styles.listIcon}>
-              <Icon name="book-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
+            <View style={styles.listIconLg}>
+              <Icon
+                name="book-outline"
+                iconFamily="Ionicons"
+                size={22}
+                color={COLORS.primary}
+              />
             </View>
             <View>
-              <Typography fFamily="barlowSemiBold600" size={18} color={COLORS.textPrimary}>
+              <Typography
+                fFamily={TYPE.h3.fFamily}
+                size={TYPE.h3.size}
+                color={COLORS.textPrimary}
+              >
                 Classic Workbook
               </Typography>
-              <Typography size={12} color={COLORS.primary} fFamily="barlowMedium500" mT={2}>
+              <Typography
+                size={TYPE.caption.size}
+                color={COLORS.primary}
+                fFamily="barlowMedium500"
+                mT={2}
+              >
                 Unlocked
               </Typography>
             </View>
           </View>
           <View style={styles.workbookActions}>
             <View style={styles.openBtn}>
-              <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.white100}>
+              <Typography
+                fFamily="barlowSemiBold600"
+                size={TYPE.body.size}
+                color={COLORS.white100}
+              >
                 Open
               </Typography>
             </View>
             <View style={styles.downloadBtn}>
-              <Icon name="download-outline" iconFamily="Ionicons" size={20} color={COLORS.textSecondary} />
+              <Icon
+                name="download-outline"
+                iconFamily="Ionicons"
+                size={20}
+                color={COLORS.textSecondary}
+              />
             </View>
           </View>
         </TouchableOpacity>
 
-        <View style={[GLOBALSTYLE.screenCard, styles.workbookCard, styles.proCardWrap]}>
-          <View style={styles.lockedOverlay}>
-            <Icon name="lock-closed-outline" iconFamily="Ionicons" size={28} color={COLORS.textSecondary} />
-            <Typography fFamily="barlowMedium500" size={14} color={COLORS.textSecondary} mT={8}>
+        {/* Pro Workbook — locked overlay (web: non-interactive card) */}
+        <View style={[GLOBALSTYLE.screenCard, styles.workbookCard, styles.proWrap]}>
+          <View style={styles.lockedOverlay} pointerEvents="box-none">
+            <Icon
+              name="lock-closed-outline"
+              iconFamily="Ionicons"
+              size={28}
+              color={COLORS.textSecondary}
+            />
+            <Typography
+              fFamily="barlowMedium500"
+              size={TYPE.body.size}
+              color={COLORS.textSecondary}
+              mT={8}
+            >
               Upgrade to Pro
             </Typography>
           </View>
           <View style={styles.workbookHeader}>
-            <View style={styles.listIcon}>
-              <Icon name="book-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
+            <View style={styles.listIconLg}>
+              <Icon
+                name="book-outline"
+                iconFamily="Ionicons"
+                size={22}
+                color={COLORS.primary}
+              />
             </View>
             <View>
-              <Typography fFamily="barlowSemiBold600" size={18} color={COLORS.textPrimary}>
+              <Typography
+                fFamily={TYPE.h3.fFamily}
+                size={TYPE.h3.size}
+                color={COLORS.textPrimary}
+              >
                 Pro Workbook
               </Typography>
-              <Typography size={12} color={COLORS.textSecondary} mT={2}>
+              <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
                 Locked
               </Typography>
             </View>
           </View>
           <View style={styles.workbookActions}>
             <View style={[styles.openBtn, styles.openBtnMuted]}>
-              <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textSecondary}>
+              <Typography
+                fFamily="barlowSemiBold600"
+                size={TYPE.body.size}
+                color={COLORS.textSecondary}
+              >
                 Open
               </Typography>
             </View>
             <View style={styles.downloadBtn}>
-              <Icon name="download-outline" iconFamily="Ionicons" size={20} color={COLORS.textSecondary} />
+              <Icon
+                name="download-outline"
+                iconFamily="Ionicons"
+                size={20}
+                color={COLORS.textSecondary}
+              />
             </View>
           </View>
         </View>
 
+        {/* Schedule Analytics Session → web /book-session */}
         <TouchableOpacity
           style={[GLOBALSTYLE.screenCard, styles.scheduleRow]}
           onPress={() => go('AnalyticsScheduleScreen')}
           activeOpacity={0.88}
         >
-          <View style={styles.listIcon}>
-            <Icon name="calendar-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
+          <View style={styles.listIconLg}>
+            <Icon
+              name="calendar-outline"
+              iconFamily="Ionicons"
+              size={22}
+              color={COLORS.primary}
+            />
           </View>
-          <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary} style={{ flex: 1 }}>
+          <Typography
+            fFamily="barlowSemiBold600"
+            size={TYPE.body.size}
+            color={COLORS.textPrimary}
+            style={{ flex: 1 }}
+          >
             Schedule Analytics Session
           </Typography>
         </TouchableOpacity>
@@ -177,7 +270,11 @@ const styles = StyleSheet.create({
     gap: Sizer.vSize(SPACING.section),
   },
   section: {},
-  listCard: { padding: 0, overflow: 'hidden' },
+  listCard: {
+    padding: 0,
+    overflow: 'hidden',
+    ...SHADOWS.card,
+  },
   listRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -189,10 +286,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.borderMuted,
   },
-  listIcon: {
+  /** Web w-10 h-10 */
+  listIconSm: {
     width: Sizer.hSize(40),
     height: Sizer.hSize(40),
     borderRadius: Sizer.hSize(20),
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  /** Web w-11 h-11 */
+  listIconLg: {
+    width: Sizer.hSize(44),
+    height: Sizer.hSize(44),
+    borderRadius: Sizer.hSize(22),
     backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
@@ -202,10 +309,12 @@ const styles = StyleSheet.create({
     padding: Sizer.hSize(SPACING.cardP),
     ...SHADOWS.card,
   },
-  proCardWrap: { overflow: 'hidden' },
+  proWrap: {
+    overflow: 'hidden',
+  },
   lockedOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
     zIndex: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -220,6 +329,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: Sizer.hSize(12),
   },
+  /** Web h-10 */
   openBtn: {
     flex: 1,
     height: Sizer.vSize(40),
@@ -229,7 +339,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   openBtnMuted: {
-    backgroundColor: COLORS.surfaceMuted,
+    backgroundColor: '#F5F5F5',
   },
   downloadBtn: {
     width: Sizer.hSize(40),
@@ -239,6 +349,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderMuted,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.surface,
   },
   scheduleRow: {
     flexDirection: 'row',

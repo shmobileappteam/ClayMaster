@@ -6,15 +6,15 @@ export const BASE_URL = __DEV__
 export const API_DOMAIN = `${BASE_URL}api/`;
 
 export const ENDPOINTS = {
-  // --- Auth ---
-  LOGIN: 'login',
-  REGISTER: 'register',
-  RESEND_OTP: 'resend/otp',
-  VERIFY_OTP: 'verify/otp',
-  RESEND_PASSWORD_OTP: 'resend/forgot/password/otp',
-  FORGOT_PASSWORD: 'forgot/password',
-  RESET_PASSWORD: 'verify/otp/password',
-  LOGOUT: 'logout',
+  // --- Auth (TEMP disabled — see userService AUTH_APIS_DISABLED) ---
+  // LOGIN: 'login',
+  // REGISTER: 'register',
+  // RESEND_OTP: 'resend/otp',
+  // VERIFY_OTP: 'verify/otp',
+  // RESEND_PASSWORD_OTP: 'resend/forgot/password/otp',
+  // FORGOT_PASSWORD: 'forgot/password',
+  // RESET_PASSWORD: 'verify/otp/password',
+  // LOGOUT: 'logout',
 
   EDIT_PROFILE: 'edit-profile',
   DELETE_USER: 'delete/user',
