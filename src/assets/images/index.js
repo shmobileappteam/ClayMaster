@@ -4,7 +4,7 @@ export { default as crown } from '../images/crown.png';
 export { default as subbg } from '../images/subbg.png';
 export { default as Edit } from '../images/edit.png';
 export { default as cmLogo } from '../images/cm-logo.png';
-export { default as onboarding1 } from '../images/onboarding-1.jpg';
+export { default as onboarding1 } from '../images/onboarding-1.png';
 export { default as onboarding2 } from '../images/onboarding-2.jpg';
 export { default as onboarding3 } from '../images/onboarding-3.jpg';
 export { default as shopCap } from '../images/shop-cap.jpg';
