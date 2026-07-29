@@ -1,21 +1,21 @@
 // ✅ Base URLs
 export const BASE_URL = __DEV__
-  ? 'https://claymaster.net/'
-  : 'https://claymaster.net/';
+  ? 'https://claymaster.net/beta/'
+  : 'https://claymaster.net/beta/';
 
 export const API_DOMAIN = `${BASE_URL}api/`;
 
 export const ENDPOINTS = {
-  // --- Auth (TEMP disabled — see userService AUTH_APIS_DISABLED) ---
-  // LOGIN: 'login',
-  // REGISTER: 'register',
-  // RESEND_OTP: 'resend/otp',
-  // VERIFY_OTP: 'verify/otp',
-  // RESEND_PASSWORD_OTP: 'resend/forgot/password/otp',
-  // FORGOT_PASSWORD: 'forgot/password',
-  // RESET_PASSWORD: 'verify/otp/password',
-  // LOGOUT: 'logout',
-
+  // --- Auth ---
+  LOGIN: 'login',
+  REGISTER: 'register',
+  RESEND_OTP: 'resend/otp',
+  VERIFY_OTP: 'verify/otp',
+  RESEND_PASSWORD_OTP: 'resend/forgot/password/otp',
+  FORGOT_PASSWORD: 'forgot/password',
+  RESET_PASSWORD: 'verify/otp/password',
+  LOGOUT: 'logout',
+  GET_PROFILE: 'profile',
   EDIT_PROFILE: 'edit-profile',
   DELETE_USER: 'delete/user',
   UPDATE_PASSWORD: 'user/update-password',

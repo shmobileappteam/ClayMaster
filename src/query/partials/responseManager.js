@@ -3,10 +3,11 @@ import { setUser } from '../../redux/slices/appSlice';
 import { CommonActions } from '@react-navigation/native';
 //-------
 import { queryClient, storage } from '../../api/api';
-import { AUTH_APIS_DISABLED, KEYS } from '../../constants';
+import { KEYS } from '../../constants';
 import { getClasses, getCourses, getRounds } from '../../api/roundService';
 import { getTraps } from '../../api/stationService';
 import { getPackages } from '../../api/packageService';
+import { getProfile } from '../../api/userService';
 import { resetToBottomTab, resetToFieldMode } from '../../navigation/navigationHelpers';
 import { fetchNetworkStatus } from '../../utils/networkStatus';
 
@@ -35,28 +36,50 @@ async function Prefetching() {
   ]);
 }
 
+function isEmailVerified(user) {
+  return Boolean(user?.email_verified_at || user?.is_verified);
+}
+
+async function resolveUser(loginUser) {
+  let user = loginUser;
+  try {
+    const profileRes = await getProfile();
+    if (profileRes?.status && profileRes?.user) {
+      user = { ...loginUser, ...profileRes.user };
+    }
+  } catch (err) {
+    console.log('🚀 ~ resolveUser ~ getProfile err:', err?.response?.data || err);
+  }
+  return user;
+}
+
 export const onLoginSuccess = async (
   response,
   navigation,
   dispatch,
-  { email, password },
+  { email, password } = {},
   setIsLoading = () => {},
   subscriptionEnabled,
   { showModeSelect = true } = {},
 ) => {
   try {
     if (response?.status) {
-      dispatch(setUser(response?.user));
-      storage.set(KEYS.ACCESS_TOKEN, response?.token);
-      storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
-      if (!AUTH_APIS_DISABLED) {
-        await Prefetching();
+      if (response?.token) {
+        storage.set(KEYS.ACCESS_TOKEN, response.token);
+      }
+      if (email && password) {
+        storage.set(KEYS.CREDENTIALS, JSON.stringify({ email, password }));
       }
 
-      if (response?.user?.email_verified_at) {
+      const user = await resolveUser(response?.user);
+      dispatch(setUser(user));
+
+      await Prefetching();
+
+      if (isEmailVerified(user)) {
         let redirectScreen = 'ModeSelectScreen';
 
-        if (subscriptionEnabled && response?.user?.subscription_status !== 'active') {
+        if (subscriptionEnabled && user?.subscription_status !== 'active') {
           redirectScreen = 'SubscriptionScreen';
         } else if (!showModeSelect) {
           const storedMode = storage.getString(KEYS.APP_MODE);
@@ -98,7 +121,7 @@ export const onLoginSuccess = async (
               {
                 name: 'VerifyEmailScreen',
                 params: {
-                  email,
+                  email: email || user?.email,
                   fromLogin: true,
                 },
               },
@@ -116,7 +139,9 @@ export const onLoginSuccess = async (
 
 export const onRegisterSuccess = async (response, email, navigation) => {
   if (response?.status) {
-    storage.set(KEYS.ACCESS_TOKEN, response?.token);
+    if (response?.token) {
+      storage.set(KEYS.ACCESS_TOKEN, response.token);
+    }
     showMessage({
       type: 'success',
       message: response?.message,
@@ -129,7 +154,7 @@ export const onResetPasswordError = async (response, setScreenType) => {
   if (response?.status == 401) {
     const otpMessage = response?.data?.message;
     console.log('🚀 ~ otpMessage:', otpMessage);
-    if (otpMessage.indexOf('otp') !== -1 || otpMessage.indexOf('OTP') !== -1) {
+    if (otpMessage?.indexOf('otp') !== -1 || otpMessage?.indexOf('OTP') !== -1) {
       setScreenType('verification');
     }
   }

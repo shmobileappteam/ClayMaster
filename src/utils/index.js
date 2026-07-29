@@ -143,28 +143,19 @@ export const objectToFormData = (
 };
 
 export const maskPhoneNumber = input => {
-  if (!input) return;
-  // Remove all non-numeric characters from the input and take only 10 first digits
-  const digits = input.replace(/\D/g, '').slice(0, 10);
+  if (!input) return '';
+  // Remove all non-numeric characters and take only first 10 digits
+  const digits = String(input).replace(/\D/g, '').slice(0, 10);
 
-  // Return empty string if there are no digits
   if (digits.length === 0) return '';
 
-  let formattedPhoneNumber = '';
-
-  // Apply different formats based on digit length
   if (digits.length <= 3) {
-    // Format for 1-3 digits
-    formattedPhoneNumber = digits;
-  } else if (digits.length <= 6) {
-    // Format for 4-6 digits as AAA-BBB
-    formattedPhoneNumber = digits.replace(/(\d{3})(\d+)/, '$1-$2');
-  } else {
-    // Format for 7-10 digits as AAA-BBB-CCCC
-    formattedPhoneNumber = digits.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3');
+    return digits;
   }
-
-  return formattedPhoneNumber;
+  if (digits.length <= 6) {
+    return digits.replace(/(\d{3})(\d+)/, '$1-$2');
+  }
+  return digits.replace(/(\d{3})(\d{3})(\d+)/, '$1-$2-$3');
 };
 
 export const formatDate = isoDate => {

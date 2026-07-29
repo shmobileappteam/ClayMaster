@@ -10,7 +10,7 @@ import { COLORS } from '../../globalStyle/Theme';
 import { useAppMode } from '../../context/AppModeContext';
 import { useCustomMutation } from '../../query/useCustomMutation';
 import { onLoginSuccess } from '../../query/partials/responseManager';
-import { login } from '../../api/userService';
+import { getProfile, login } from '../../api/userService';
 import { handleLogout } from '../../redux/slices/appSlice';
 import { resetToFieldMode } from '../../navigation/navigationHelpers';
 import { KEYS } from '../../constants';
@@ -20,6 +20,11 @@ const SplashScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { subscriptionEnabled } = useSelector(state => state.app);
   const { mode, activeRound } = useAppMode();
+
+  const goLogin = () => {
+    dispatch(handleLogout());
+    navigation.replace('LoginScreen');
+  };
 
   const { mutate: requestLogin } = useCustomMutation({
     mutationFn: data => login(data, () => {}),
@@ -34,11 +39,37 @@ const SplashScreen = ({ navigation }) => {
         { showModeSelect: false },
       );
     },
-    onError: () => {
-      dispatch(handleLogout());
-      navigation.replace('LoginScreen');
-    },
+    onError: goLogin,
   });
+
+  const restoreWithProfile = async credentials => {
+    try {
+      const profile = await getProfile();
+      if (!profile?.status || !profile?.user) {
+        throw new Error('Invalid profile');
+      }
+      await onLoginSuccess(
+        {
+          status: true,
+          token: storage.getString(KEYS.ACCESS_TOKEN),
+          user: profile.user,
+        },
+        navigation,
+        dispatch,
+        credentials || {},
+        () => {},
+        subscriptionEnabled,
+        { showModeSelect: false },
+      );
+    } catch {
+      if (credentials?.email && credentials?.password) {
+        const device_token = storage.getString(KEYS.FCM_TOKEN);
+        requestLogin({ ...credentials, device_token });
+        return;
+      }
+      goLogin();
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -56,7 +87,8 @@ const SplashScreen = ({ navigation }) => {
       }
 
       const token = storage.getString(KEYS.ACCESS_TOKEN);
-      const credentials = storage.getString(KEYS.CREDENTIALS);
+      const credentialsRaw = storage.getString(KEYS.CREDENTIALS);
+      const credentials = credentialsRaw ? JSON.parse(credentialsRaw) : null;
       const hasSession = !!(token || credentials);
 
       if (!hasSession) {
@@ -69,10 +101,14 @@ const SplashScreen = ({ navigation }) => {
         return;
       }
 
-      if (credentials) {
-        const userData = JSON.parse(credentials);
+      if (token) {
+        restoreWithProfile(credentials);
+        return;
+      }
+
+      if (credentials?.email && credentials?.password) {
         const device_token = storage.getString(KEYS.FCM_TOKEN);
-        requestLogin({ ...userData, device_token });
+        requestLogin({ ...credentials, device_token });
         return;
       }
 

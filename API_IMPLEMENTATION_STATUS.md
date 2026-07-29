@@ -47,7 +47,7 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 
 | Module | Status |
 |--------|--------|
-| Auth | 🟡 Stubbed (+ some ⚠️ gaps) |
+| Auth | ✅ Live |
 | Profile / Account | ✅ Live |
 | Subscription / Packages / Stripe | ✅ Live |
 | Rounds & Stations | ✅ Mostly live |
@@ -65,15 +65,15 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `POST` | `/api/login` | Public | 🟡 Stubbed |
-| `POST` | `/api/register` | Public | 🟡 Stubbed |
-| `POST` | `/api/verify/otp` | Public | 🟡 Stubbed |
-| `POST` | `/api/resend/otp` | Public | 🟡 Stubbed · ⚠️ Not in v2 doc samples |
-| `POST` | `/api/forgot/password` | Public | 🟡 Stubbed · ⚠️ Not in docs |
-| `POST` | `/api/resend/forgot/password/otp` | Public | 🟡 Stubbed · ⚠️ Not in docs |
-| `POST` | `/api/verify/otp/password` | Public | 🟡 Stubbed · ⚠️ Not in docs |
-| `GET` | `/api/logout` | Bearer | 🟡 Stubbed · ⚠️ Not in docs |
-| `GET` | `/api/profile` | Bearer | ❌ Not implemented (documented) |
+| `POST` | `/api/login` | Public | ✅ Live |
+| `POST` | `/api/register` | Public | ✅ Live |
+| `POST` | `/api/verify/otp` | Public | ✅ Live |
+| `POST` | `/api/resend/otp` | Public | ✅ Live · ⚠️ Thin doc samples |
+| `POST` | `/api/forgot/password` | Public | ✅ Live · ⚠️ Thin doc samples |
+| `POST` | `/api/resend/forgot/password/otp` | Public | ✅ Live · ⚠️ Thin doc samples |
+| `POST` | `/api/verify/otp/password` | Public | ✅ Live · ⚠️ Thin doc samples |
+| `GET` | `/api/logout` | Bearer | ✅ Live · ⚠️ Thin doc samples |
+| `GET` | `/api/profile` | Bearer | ✅ Live |
 
 ### Errors
 
@@ -86,9 +86,11 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 
 ### Dev notes
 
-- ⚠️ Profile/updatePassword/deleteUser reuse the same **“delete your account”** 401 message (copy-paste bug on backend).
-- App sends `device_token` on login when FCM is available — keep when re-enabling.
-- Re-enable: `AUTH_APIS_DISABLED = false` + uncomment keys in `endpoints.js` / `userService.js`.
+- Profile/updatePassword/deleteUser may reuse a **“delete your account”** 401 message (backend copy-paste).
+- App sends `device_token` on login when FCM is available.
+- After login/register token is stored, app calls `GET /api/profile` to hydrate full user (incl. `email_verified_at`).
+- Splash restores session via `GET /api/profile` when a token exists; falls back to credential re-login.
+- `AUTH_APIS_DISABLED` in `src/constants/index.js` is **false** (live auth).
 
 ---
 

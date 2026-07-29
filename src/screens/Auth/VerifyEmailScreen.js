@@ -13,30 +13,45 @@ import SlideInView from '../../animations/SlideView';
 import Sizer from '../../helpers/Sizer';
 import SuccessMessage from '../../components/SuccessMessage/SuccessMessage';
 import { useCustomMutation } from '../../query/useCustomMutation';
-import { resendOtp, verifyOtp } from '../../api/userService';
+import { getProfile, resendOtp, verifyOtp } from '../../api/userService';
 import validatoinSchema from '../../validations';
 import { showMessage } from '../../utils';
 import { CommonActions } from '@react-navigation/native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser } from '../../redux/slices/appSlice';
+import { useResendCooldown } from '../../hooks/useResendCooldown';
 
 const VerifyEmailScreen = ({ navigation, route }) => {
   const comeFromLogin = route.params?.fromLogin;
   const email = route.params?.email;
+  const dispatch = useDispatch();
 
   const { user, subscriptionEnabled } = useSelector(state => state.app);
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const { secondsLeft, isCoolingDown, startCooldown } = useResendCooldown(60, {
+    startOnMount: false,
+  });
 
   // Resend Otp Query:
-  const { mutateAsync: fetchOtp, isFetching } = useCustomMutation({
-    mutationFn: resendOtp,
-  });
+  const { mutateAsync: fetchOtp, isPending: isResendPending } =
+    useCustomMutation({
+      mutationFn: resendOtp,
+    });
 
   // Verify Email Mutation:
   const { mutate: requestVerifyEmail, isPending } = useCustomMutation({
     mutationFn: verifyOtp,
-    onSuccess: response => {
+    onSuccess: async response => {
       if (response.status) {
+        try {
+          const profile = await getProfile();
+          if (profile?.status && profile?.user) {
+            dispatch(setUser(profile.user));
+          }
+        } catch {
+          /* continue with success UI even if profile refresh fails */
+        }
         setIsEmailVerified(true);
       }
     },
@@ -44,7 +59,11 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 
   // Resend Otp Request:
   const handleResendOtp = () => {
+    if (isCoolingDown || isResendPending) {
+      return;
+    }
     fetchOtp(email).then(response => {
+      startCooldown();
       showMessage({ type: 'success', message: response.message });
     });
   };
@@ -157,7 +176,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
                     <TouchableOpacity
                       activeOpacity={BASEOPACITY}
                       style={styles.resenStyles}
-                      disabled={isFetching}
+                      disabled={isCoolingDown || isResendPending}
                       onPress={handleResendOtp}
                     >
                       <Typography fontSize={14} fFamily="poppinsMedium500">
@@ -166,9 +185,17 @@ const VerifyEmailScreen = ({ navigation, route }) => {
                           fontSize={15}
                           mL={6}
                           fFamily="poppinsMedium500"
-                          color={COLORS.primary}
+                          color={
+                            isCoolingDown || isResendPending
+                              ? COLORS.black200
+                              : COLORS.primary
+                          }
                         >
-                          Resend Now{' '}
+                          {isResendPending
+                            ? 'Resending...'
+                            : isCoolingDown
+                              ? `Resend in ${secondsLeft}s`
+                              : 'Resend Now'}
                         </Typography>
                       </Typography>
                     </TouchableOpacity>

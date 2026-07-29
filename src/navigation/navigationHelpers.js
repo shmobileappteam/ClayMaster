@@ -1,6 +1,6 @@
 import { CommonActions } from '@react-navigation/native';
 import { queryClient } from '../api/api';
-// import { logout as logoutApi } from '../api/userService';
+import { logout as logoutApi } from '../api/userService';
 import { handleLogout } from '../redux/slices/appSlice';
 
 const STACK_ROUTE = 'BottomTabs';
@@ -130,8 +130,14 @@ export function navigateFromMenuItem(navigation, item) {
 }
 
 /** Clear session and reset root stack to Login (works from tabs, drawer, or stack screens). */
-export function performLogout(navigation, dispatch) {
+export async function performLogout(navigation, dispatch) {
   const stack = getStackNavigation(navigation) ?? navigation;
+
+  try {
+    await logoutApi();
+  } catch {
+    /* Local session still cleared below */
+  }
 
   queryClient.clear();
   dispatch(handleLogout());
@@ -142,8 +148,4 @@ export function performLogout(navigation, dispatch) {
       routes: [{ name: 'LoginScreen' }],
     }),
   );
-
-  // logoutApi().catch(() => {
-  //   /* Local session already cleared */
-  // });
 }

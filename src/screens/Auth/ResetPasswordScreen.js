@@ -17,11 +17,15 @@ import { resendPasswordOtp, resetPassword } from '../../api/userService';
 import { onResetPasswordError } from '../../query/partials/responseManager';
 import { showMessage } from '../../utils';
 import Sizer from '../../helpers/Sizer';
+import { useResendCooldown } from '../../hooks/useResendCooldown';
 
 const ResetPasswordScreen = ({ navigation, route }) => {
   const email = route?.params?.email;
   console.log('🚀 ~ ResetPasswordScreen ~ email:', email);
   const [screenType, setScreenType] = useState('verification');
+  const { secondsLeft, isCoolingDown, startCooldown } = useResendCooldown(60, {
+    startOnMount: false,
+  });
 
   // Reset Mutation Hook:
   const { mutate: resetPass, isPending } = useCustomMutation({
@@ -46,6 +50,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
       mutationFn: resendPasswordOtp,
       onSuccess: response => {
         if (response.status) {
+          startCooldown();
           showMessage({
             type: 'success',
             message: response?.message,
@@ -64,8 +69,10 @@ const ResetPasswordScreen = ({ navigation, route }) => {
   };
 
   // Resend Otp Request:
-  const handleResendOtp = values => {
-    console.log('🚀 ~ handleResendOtp ~ values:', values);
+  const handleResendOtp = () => {
+    if (isCoolingDown || isResendOtpPending) {
+      return;
+    }
     fetchOtp({ email });
   };
 
@@ -166,8 +173,8 @@ const ResetPasswordScreen = ({ navigation, route }) => {
                   <TouchableOpacity
                     activeOpacity={BASEOPACITY}
                     style={styles.resenStyles}
-                    disabled={isResendOtpPending}
-                    onPress={handleResendOtp.bind(this, values)}
+                    disabled={isCoolingDown || isResendOtpPending}
+                    onPress={handleResendOtp}
                   >
                     <Typography fontSize={14} fFamily="poppinsMedium500">
                       Didn’t receive the code?{' '}
@@ -175,9 +182,17 @@ const ResetPasswordScreen = ({ navigation, route }) => {
                         fontSize={15}
                         mL={6}
                         fFamily="poppinsMedium500"
-                        color={COLORS.primary}
+                        color={
+                          isCoolingDown || isResendOtpPending
+                            ? COLORS.black200
+                            : COLORS.primary
+                        }
                       >
-                        Resend Now{' '}
+                        {isResendOtpPending
+                          ? 'Resending...'
+                          : isCoolingDown
+                            ? `Resend in ${secondsLeft}s`
+                            : 'Resend Now'}
                       </Typography>
                     </Typography>
                   </TouchableOpacity>

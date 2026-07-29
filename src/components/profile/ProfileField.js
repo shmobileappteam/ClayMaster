@@ -21,6 +21,9 @@ const ProfileField = ({
   showPasswordToggle,
   onTogglePassword,
   passwordVisible,
+  maxLength,
+  leftAddon,
+  returnKeyType,
 }) => (
   <View style={styles.wrap}>
     <Typography
@@ -32,6 +35,7 @@ const ProfileField = ({
       {label}
     </Typography>
     <View style={styles.inputRow}>
+      {leftAddon ? <View style={styles.leftAddon}>{leftAddon}</View> : null}
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -43,12 +47,15 @@ const ProfileField = ({
         secureTextEntry={secureTextEntry}
         multiline={multiline}
         numberOfLines={multiline ? numberOfLines : 1}
+        maxLength={maxLength}
+        returnKeyType={returnKeyType}
         style={[
           styles.input,
           multiline && styles.textArea,
           !editable && styles.inputDisabled,
           error ? styles.inputError : null,
           showPasswordToggle && styles.inputWithEye,
+          leftAddon && styles.inputWithLeftAddon,
         ]}
       />
       {showPasswordToggle ? (
@@ -85,6 +92,17 @@ const styles = StyleSheet.create({
   },
   inputWithEye: {
     paddingRight: Sizer.hSize(44),
+  },
+  inputWithLeftAddon: {
+    paddingLeft: Sizer.hSize(52),
+  },
+  leftAddon: {
+    position: 'absolute',
+    zIndex: 2,
+    left: Sizer.hSize(14),
+    top: 0,
+    height: Sizer.vSize(48),
+    justifyContent: 'center',
   },
   eyeBtn: {
     position: 'absolute',

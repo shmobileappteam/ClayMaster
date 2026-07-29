@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, FormController, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import ProfileField from '../../../components/profile/ProfileField';
 import Icon from '../../../helpers/Icon';
@@ -17,20 +17,21 @@ import Sizer from '../../../helpers/Sizer';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { editProfile } from '../../../api/userService';
 import { setUser } from '../../../redux/slices/appSlice';
-import { maskPhoneNumber, showToast } from '../../../utils';
+import { formatBackendErrors, maskPhoneNumber, showToast } from '../../../utils';
 import useImagePicker from '../../../hooks/useImagePicker';
 import { BASE_URL } from '../../../api/endpoints';
-import { FormController } from '../../../atomComponents';
+import validatoinSchema from '../../../validations';
 
 /**
- * ClayMaster-App-UI `EditProfile.tsx` — keeps existing editProfile API.
+ * Edit profile — form fields match POST /api/edit-profile payload.
+ * first_name, last_name, contact, address, username, profile_image (+ id, email)
  */
 const ProfileDetailsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { user } = useSelector(state => state.app);
   const { openGallery, imageUri, clearImage } = useImagePicker();
 
-  const { mutate: editProf, isPending } = useCustomMutation({
+  const { mutateAsync: editProf, isPending } = useCustomMutation({
     mutationFn: editProfile,
     onSuccess: response => {
       if (response?.status) {
@@ -57,15 +58,17 @@ const ProfileDetailsScreen = ({ navigation }) => {
       ? `${BASE_URL}${user.profile_image}`
       : null;
 
-  const handleSubmit = values => {
-    const parts = (values.full_name || '').trim().split(/\s+/);
+  const handleSubmit = async (values, { setErrors }) => {
     const payload = {
+      id: user?.id,
       email: user?.email,
-      first_name: parts[0] || '',
-      last_name: parts.slice(1).join(' ') || '',
-      address: values.location || '',
-      contact: (values.phone || '').replace(/\D/g, ''),
+      first_name: values.first_name?.trim() || '',
+      last_name: values.last_name?.trim() || '',
+      username: values.username?.trim() || '',
+      contact: (values.contact || '').replace(/\D/g, ''),
+      address: values.address?.trim() || '',
     };
+
     if (imageUri?.uri) {
       payload.profile_image = {
         uri: imageUri.uri,
@@ -73,7 +76,15 @@ const ProfileDetailsScreen = ({ navigation }) => {
         type: imageUri.type,
       };
     }
-    editProf({ id: user?.id, ...payload });
+
+    try {
+      await editProf(payload);
+    } catch (err) {
+      const response = err?.response;
+      if (response?.status === 422 && response?.data?.errors) {
+        setErrors(formatBackendErrors(response.data.errors));
+      }
+    }
   };
 
   useEffect(() => {
@@ -94,12 +105,16 @@ const ProfileDetailsScreen = ({ navigation }) => {
       />
       <FormController
         initialValues={{
-          full_name: displayName,
+          first_name: user?.first_name || '',
+          last_name: user?.last_name || '',
+          username: user?.username || '',
           email: user?.email || '',
-          phone: user?.contact || '',
-          location: user?.address_1 || '',
-          bio: 'Passionate clay shooter. Pro member since 2024.',
+          contact: String(user?.contact || '')
+            .replace(/\D/g, '')
+            .slice(0, 10),
+          address: user?.address_1 || user?.address || '',
         }}
+        validationSchema={validatoinSchema.authValidations.editProfileSchema}
         onSubmit={handleSubmit}
       >
         {({ handleSubmit: submit, handleChange, handleBlur, values, errors }) => (
@@ -149,42 +164,64 @@ const ProfileDetailsScreen = ({ navigation }) => {
             </View>
 
             <ProfileField
-              label="Full Name"
-              value={values.full_name}
-              onChangeText={handleChange('full_name')}
-              onBlur={handleBlur('full_name')}
-              error={errors.full_name}
-              placeholder="John Smith"
+              label="First Name"
+              value={values.first_name}
+              onChangeText={handleChange('first_name')}
+              onBlur={handleBlur('first_name')}
+              error={errors.first_name}
+              placeholder="First name"
+            />
+            <ProfileField
+              label="Last Name"
+              value={values.last_name}
+              onChangeText={handleChange('last_name')}
+              onBlur={handleBlur('last_name')}
+              error={errors.last_name}
+              placeholder="Last name"
+            />
+            <ProfileField
+              label="Username"
+              value={values.username}
+              onChangeText={handleChange('username')}
+              onBlur={handleBlur('username')}
+              error={errors.username}
+              placeholder="Username"
             />
             <ProfileField
               label="Email"
               value={values.email}
               editable={false}
-              placeholder="john.smith@email.com"
+              placeholder="email@example.com"
             />
             <ProfileField
-              label="Phone"
-              value={maskPhoneNumber(values.phone)}
-              onChangeText={t => handleChange('phone')(t.replace(/\D/g, ''))}
-              onBlur={handleBlur('phone')}
-              error={errors.phone}
-              placeholder="+1 (555) 123-4567"
+              label="Contact"
+              value={maskPhoneNumber(values.contact)}
+              onChangeText={t =>
+                handleChange('contact')(String(t || '').replace(/\D/g, '').slice(0, 10))
+              }
+              onBlur={handleBlur('contact')}
+              error={errors.contact}
+              placeholder="555-123-4567"
               keyboardType="phone-pad"
+              maxLength={12}
+              returnKeyType="done"
+              leftAddon={
+                <Typography
+                  fFamily="barlowMedium500"
+                  size={TYPE.body.size}
+                  color={COLORS.textPrimary}
+                >
+                  +1
+                </Typography>
+              }
             />
             <ProfileField
-              label="Location"
-              value={values.location}
-              onChangeText={handleChange('location')}
-              onBlur={handleBlur('location')}
-              error={errors.location}
-              placeholder="Dallas, TX"
-            />
-            <ProfileField
-              label="Bio"
-              value={values.bio}
-              onChangeText={handleChange('bio')}
-              multiline
-              placeholder="Tell us about yourself"
+              label="Address"
+              value={values.address}
+              onChangeText={handleChange('address')}
+              onBlur={handleBlur('address')}
+              error={errors.address}
+              placeholder="Address"
             />
 
             <TouchableOpacity

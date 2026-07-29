@@ -83,6 +83,28 @@ const changePaswordSchema = Yup.object().shape({
     .oneOf([Yup.ref('password')], 'Passwords do not match'),
 });
 
+/** Matches POST /api/edit-profile validation rules */
+const editProfileSchema = Yup.object().shape({
+  first_name: Yup.string()
+    .required('First name is required')
+    .max(25, 'First name must be at most 25 characters'),
+  last_name: Yup.string()
+    .required('Last name is required')
+    .max(25, 'Last name must be at most 25 characters'),
+  username: Yup.string().nullable(),
+  contact: Yup.string()
+    .nullable()
+    .transform(value => (value == null ? '' : String(value)))
+    .test('phone', 'Invalid phone number.', value => {
+      if (!value) return true;
+      const digits = value.replace(/\D/g, '');
+      return digits.length === 10;
+    }),
+  address: Yup.string()
+    .nullable()
+    .max(25, 'Address must be at most 25 characters'),
+});
+
 export default {
   SignUpSchema,
   SignInSchema,
@@ -90,4 +112,5 @@ export default {
   ResetPasswordSchema,
   verifyOtpSchema,
   changePaswordSchema,
+  editProfileSchema,
 };
