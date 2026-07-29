@@ -19,7 +19,7 @@ export const ENDPOINTS = {
   EDIT_PROFILE: 'edit-profile',
   DELETE_USER: 'delete/user',
   UPDATE_PASSWORD: 'user/update-password',
-  
+
   // --- Packages and Payment ---
   GET_PACKAGES: 'packages',
   GET_DISCOUNT_FOR_PACKAGES: 'discounts',
@@ -44,6 +44,10 @@ export const ENDPOINTS = {
   MARK_NOTIFICATION_READ: id => `notifications/${id}/read`,
   MARK_ALL_NOTIFICATIONS_READ: 'notifications/read-all',
   DELETE_NOTIFICATION: id => `notifications/${id}`,
+
+  // --- Reviews ---
+  GET_REVIEWS: 'reviews',
+  POST_REVIEW: 'reviews',
 
   // --- Config ---
   SUBSCRIPTION_ENABLED: 'subscription-enabled',

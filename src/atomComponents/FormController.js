@@ -7,6 +7,7 @@ const FormController = props => {
     validationSchema,
     validateOnChange = true,
     validateOnBlur = true,
+    enableReinitialize = false,
     onSubmit,
     children,
     validate,
@@ -18,6 +19,7 @@ const FormController = props => {
       validationSchema={validationSchema}
       validateOnChange={validateOnChange}
       validateOnBlur={validateOnBlur}
+      enableReinitialize={enableReinitialize}
       onSubmit={onSubmit}
       validate={validate}>
       {formikProps => {

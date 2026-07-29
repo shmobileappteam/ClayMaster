@@ -105,6 +105,25 @@ const editProfileSchema = Yup.object().shape({
     .max(25, 'Address must be at most 25 characters'),
 });
 
+/** Matches POST /api/reviews */
+const submitReviewSchema = Yup.object().shape({
+  title: Yup.string().required('Title is required').max(120, 'Title is too long'),
+  review: Yup.string()
+    .required('Review is required')
+    .min(10, 'Please write a bit more detail'),
+  name: Yup.string().required('Name is required').max(80, 'Name is too long'),
+  email: Yup.string().email('Invalid email').required('Email is required'),
+  issue: Yup.string().required('Issue is required'),
+  difference_after: Yup.string().required('Please describe the difference after'),
+  performance_change: Yup.string().required(
+    'Please describe your performance change',
+  ),
+  rating: Yup.number()
+    .required('Rating is required')
+    .min(1, 'Select a rating')
+    .max(5, 'Invalid rating'),
+});
+
 export default {
   SignUpSchema,
   SignInSchema,
@@ -113,4 +132,5 @@ export default {
   verifyOtpSchema,
   changePaswordSchema,
   editProfileSchema,
+  submitReviewSchema,
 };

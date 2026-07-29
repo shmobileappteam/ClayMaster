@@ -333,15 +333,15 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/reviews` | Bearer | ❌ Not implemented |
-| `POST` | `/api/reviews` | Bearer | ❌ Not implemented |
+| `GET` | `/api/reviews` | Bearer | ✅ Live (`reviewService.getReviews` → `ReviewsScreen`) |
+| `POST` | `/api/reviews` | Bearer | ✅ Live (`reviewService.submitReview` → Write Review modal) |
 
 ### Errors (submit)
 
 | Code | Body / notes |
 |------|----------------|
 | `201` | Success |
-| `403` | `{ "status": false, "message": "You don't have any active subscription, Please Subscribe first." }` |
+| `403` | `{ "status": false, "message": "You don't have any active subscription, Please Subscribe first." }` — app prompts Subscribe |
 | `422` | e.g. `{ "errors": { "rating": ["The rating field is required."] } }` |
 | `401` | Unauthenticated |
 
@@ -349,6 +349,8 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 - Requires active subscription to submit.
 - List supports `page`, `per_page`.
+- Summary stats computed client-side from returned reviews.
+- Dummy `LIBRARY_REVIEWS` / `REVIEW_STATS` no longer used by `ReviewsScreen`.
 
 ---
 
