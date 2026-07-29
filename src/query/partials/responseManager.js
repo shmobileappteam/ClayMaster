@@ -7,6 +7,7 @@ import { KEYS } from '../../constants';
 import { getClasses, getCourses, getRounds } from '../../api/roundService';
 import { getTraps } from '../../api/stationService';
 import { getPackages } from '../../api/packageService';
+import { getNotificationCounts } from '../../api/notificationService';
 import { getProfile } from '../../api/userService';
 import { resetToBottomTab, resetToFieldMode } from '../../navigation/navigationHelpers';
 import { fetchNetworkStatus } from '../../utils/networkStatus';
@@ -32,6 +33,10 @@ async function Prefetching() {
     queryClient.prefetchQuery({
       queryKey: ['packages'],
       queryFn: getPackages,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ['notificationCounts'],
+      queryFn: getNotificationCounts,
     }),
   ]);
 }

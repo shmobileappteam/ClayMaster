@@ -51,7 +51,7 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 | Profile / Account | ✅ Live |
 | Subscription / Packages / Stripe | ✅ Live |
 | Rounds & Stations | ✅ Mostly live |
-| Notifications | ❌ Not implemented |
+| Notifications | ✅ Live |
 | Academy / Library | ❌ Not implemented |
 | Tournament | ❌ Not implemented |
 | Reviews | ❌ Not implemented |
@@ -238,11 +238,11 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/notifications` | Bearer | ❌ Not implemented |
-| `GET` | `/api/notifications/counts` | Bearer | ❌ Not implemented |
-| `POST` | `/api/notifications/{id}/read` | Bearer | ❌ Not implemented |
-| `POST` | `/api/notifications/read-all` | Bearer | ❌ Not implemented |
-| `DELETE` | `/api/notifications/{id}` | Bearer | ❌ Not implemented |
+| `GET` | `/api/notifications` | Bearer | ✅ Live |
+| `GET` | `/api/notifications/counts` | Bearer | ✅ Live |
+| `POST` | `/api/notifications/{id}/read` | Bearer | ✅ Live |
+| `POST` | `/api/notifications/read-all` | Bearer | ✅ Live |
+| `DELETE` | `/api/notifications/{id}` | Bearer | ✅ Live |
 
 ### Query (list)
 
@@ -262,7 +262,10 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 ### Dev notes
 
 - Types include `AdminBroadcastNotification`, `RoundActionNotification` (`admin_uploaded`, etc.).
-- Replace app dummy `constants/notifications.js` when wiring → prefer new `notificationService.js`.
+- Service: `src/api/notificationService.js`. UI maps API items via `mapApiNotification` (no dummy list).
+- Header bell badge uses `GET /notifications/counts` (`unread > 0`).
+- Delete returns HTTP 200 with `status: false` on failure — client checks body.
+- Long-press deletes; tap marks read and opens round / download when present.
 
 ---
 

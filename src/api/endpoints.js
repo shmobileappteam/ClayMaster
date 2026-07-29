@@ -38,6 +38,12 @@ export const ENDPOINTS = {
   GET_TRAPS: 'trap-presentations',
   POST_STATION: round_id => `rounds/${round_id}/stations`,
 
+  // --- Notifications ---
+  GET_NOTIFICATIONS: 'notifications',
+  GET_NOTIFICATION_COUNTS: 'notifications/counts',
+  MARK_NOTIFICATION_READ: id => `notifications/${id}/read`,
+  MARK_ALL_NOTIFICATIONS_READ: 'notifications/read-all',
+  DELETE_NOTIFICATION: id => `notifications/${id}`,
 
   // --- Config ---
   SUBSCRIPTION_ENABLED: 'subscription-enabled',

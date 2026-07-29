@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { Typography } from '../../atomComponents';
 import Icon from '../../helpers/Icon';
 import { COLORS, SHADOWS } from '../../globalStyle/Theme';
@@ -11,6 +12,10 @@ import {
   openDrawerFromTabNavigation,
 } from '../../navigation/navigationHelpers';
 import ModeIndicatorBar from './ModeIndicatorBar';
+import { useCustomQuery } from '../../query/useCustomQuery';
+import { getNotificationCounts } from '../../api/notificationService';
+import { storage } from '../../api/api';
+import { KEYS } from '../../constants';
 
 /**
  * Web AppHeader parity — sticky library-mode header with menu + notifications.
@@ -26,6 +31,17 @@ const LibraryHeader = ({
 }) => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { isLogged } = useSelector(state => state.app);
+  const hasToken = Boolean(storage.getString(KEYS.ACCESS_TOKEN));
+
+  const { data: counts } = useCustomQuery({
+    queryKey: ['notificationCounts'],
+    queryFn: getNotificationCounts,
+    enabled: Boolean(showNotification && (isLogged || hasToken)),
+    staleTime: 30_000,
+  });
+
+  const unreadCount = Number(counts?.unread) || 0;
 
   return (
     <View style={[styles.wrap, { paddingTop: insets.top }]}>
@@ -51,44 +67,46 @@ const LibraryHeader = ({
               hitSlop={12}
               activeOpacity={0.88}
             >
-                <Icon
-                  name="menu"
-                  iconFamily="Ionicons"
-                  size={24}
-                  color={COLORS.textPrimary}
-                />
-              </TouchableOpacity>
-            ) : null}
-          </View>
-          <Typography
-            fFamily="barlowSemiBold600"
-            size={18}
-            color={COLORS.textPrimary}
-            textAlign="center"
-            style={styles.title}
-          >
-            {title}
-          </Typography>
-          <View style={[styles.side, styles.sideRight]}>
-            {rightSlot}
-            {showNotification ? (
-              <TouchableOpacity
-                onPress={() => navigateFromTabToStack(navigation, 'NotificationScreen')}
-                hitSlop={12}
-                activeOpacity={0.88}
-                style={styles.bellWrap}
-              >
-                <Icon
-                  name="notifications-outline"
-                  iconFamily="Ionicons"
-                  size={24}
-                  color={COLORS.textPrimary}
-                />
-                <View style={styles.bellDot} />
-              </TouchableOpacity>
-            ) : null}
-          </View>
+              <Icon
+                name="menu"
+                iconFamily="Ionicons"
+                size={24}
+                color={COLORS.textPrimary}
+              />
+            </TouchableOpacity>
+          ) : null}
         </View>
+        <Typography
+          fFamily="barlowSemiBold600"
+          size={18}
+          color={COLORS.textPrimary}
+          textAlign="center"
+          style={styles.title}
+        >
+          {title}
+        </Typography>
+        <View style={[styles.side, styles.sideRight]}>
+          {rightSlot}
+          {showNotification ? (
+            <TouchableOpacity
+              onPress={() =>
+                navigateFromTabToStack(navigation, 'NotificationScreen')
+              }
+              hitSlop={12}
+              activeOpacity={0.88}
+              style={styles.bellWrap}
+            >
+              <Icon
+                name="notifications-outline"
+                iconFamily="Ionicons"
+                size={24}
+                color={COLORS.textPrimary}
+              />
+              {unreadCount > 0 ? <View style={styles.bellDot} /> : null}
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
       {showModeIndicator ? <ModeIndicatorBar variant="library" /> : null}
     </View>
   );
