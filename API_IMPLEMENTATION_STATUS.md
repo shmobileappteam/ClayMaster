@@ -163,11 +163,14 @@ Custom messages: min → stronger password (8+); confirmed → does not match; d
 
 ### Dev notes
 
-- Packages returns a **raw array** — not `{ status, data }`.
+- Packages returns a **raw array** — not `{ status, data }` (`packageService.getPackages` normalizes to array).
 - Package `description` has bracketed numbers like `(1)` stripped via regex before send.
-- Discounts: null config entries are **skipped** (can return empty `data[]` with `status: true`); no auth required.
+- Discounts: null config entries are **skipped** (can return empty `data[]` with `status: true`); no auth required. Used on signup for `discount_type`.
 - Setup-intent returns bare `{ client_secret }` (no status wrapper).
-- Subscribe success uses `{ success: true, ... }` (not always `status`).
+- Subscribe success uses `{ success: true, ... }` (not `status`). App merges fields into Redux user then refreshes via `GET /profile`.
+- App boot (`App.js`) calls `GET /subscription-enabled` for flag + optional `stripe_public_key`.
+- Flow: packages list → setup-intent → Stripe `confirmSetupIntent` → subscribe with `payment_method` + `package_id`.
+- Cancel subscription has no API in docs — UI prompts support contact.
 
 ---
 

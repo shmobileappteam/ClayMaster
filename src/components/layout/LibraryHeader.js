@@ -110,10 +110,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(16),
   },
   side: {
-    width: Sizer.hSize(40),
+    minWidth: Sizer.hSize(40),
     alignItems: 'flex-start',
   },
   sideRight: {
+    minWidth: Sizer.hSize(40),
     alignItems: 'flex-end',
     flexDirection: 'row',
     justifyContent: 'flex-end',

@@ -19,6 +19,12 @@ export const ENDPOINTS = {
   EDIT_PROFILE: 'edit-profile',
   DELETE_USER: 'delete/user',
   UPDATE_PASSWORD: 'user/update-password',
+  
+  // --- Packages and Payment ---
+  GET_PACKAGES: 'packages',
+  GET_DISCOUNT_FOR_PACKAGES: 'discounts',
+  SETUP_INTENT: 'stripe/setup-intent',
+  PAYMENT: 'stripe/subscribe',
 
   // --- Rounds ---
   GET_COURSES: 'courses',
@@ -32,11 +38,6 @@ export const ENDPOINTS = {
   GET_TRAPS: 'trap-presentations',
   POST_STATION: round_id => `rounds/${round_id}/stations`,
 
-  // --- Packages and Payment ---
-  GET_PACKAGES: 'packages',
-  GET_DISCOUNT_FOR_PACKAGES: 'discounts',
-  SETUP_INTENT: 'stripe/setup-intent',
-  PAYMENT: 'stripe/subscribe',
 
   // --- Config ---
   SUBSCRIPTION_ENABLED: 'subscription-enabled',

@@ -77,11 +77,25 @@ export const onLoginSuccess = async (
       await Prefetching();
 
       if (isEmailVerified(user)) {
-        let redirectScreen = 'ModeSelectScreen';
+        const needsSubscription =
+          subscriptionEnabled && user?.subscription_status !== 'active';
 
-        if (subscriptionEnabled && user?.subscription_status !== 'active') {
-          redirectScreen = 'SubscriptionScreen';
-        } else if (!showModeSelect) {
+        if (needsSubscription) {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                {
+                  name: 'SubscriptionScreen',
+                  params: { fromAuth: true },
+                },
+              ],
+            }),
+          );
+          return;
+        }
+
+        if (!showModeSelect) {
           const storedMode = storage.getString(KEYS.APP_MODE);
           if (storedMode === 'course') {
             resetToFieldMode(navigation, 'CourseHomeScreen');
@@ -107,7 +121,7 @@ export const onLoginSuccess = async (
         navigation.dispatch(
           CommonActions.reset({
             index: 0,
-            routes: [{ name: redirectScreen }],
+            routes: [{ name: 'ModeSelectScreen' }],
           }),
         );
       } else {

@@ -75,18 +75,20 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 
   function handleRouting() {
     if (comeFromLogin) {
-      let rediredScreen = 'ModeSelectScreen';
-
-      if (subscriptionEnabled) {
-        if (user?.subscription_status !== 'active') {
-          rediredScreen = 'SubscriptionScreen';
-        }
-      }
+      const needsSubscription =
+        subscriptionEnabled && user?.subscription_status !== 'active';
 
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: rediredScreen }],
+          routes: [
+            needsSubscription
+              ? {
+                  name: 'SubscriptionScreen',
+                  params: { fromAuth: true },
+                }
+              : { name: 'ModeSelectScreen' },
+          ],
         }),
       );
     } else {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Platform,
   ScrollView,
@@ -11,7 +12,6 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { CardField, useStripe } from '@stripe/stripe-react-native';
-import { CommonActions } from '@react-navigation/native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { Button } from '../../../components';
@@ -31,49 +31,31 @@ import {
   getPackages,
   handlePaymentSuccess,
 } from '../../../api/packageService';
-import { queryClient } from '../../../api/api';
+import { getProfile } from '../../../api/userService';
 import { formatExpiryDate, showMessage } from '../../../utils';
 import { setUser } from '../../../redux/slices/appSlice';
 import { useKeyboard } from '../../../hooks/useKeyboard';
+import { performLogout } from '../../../navigation/navigationHelpers';
 
-/** Web `MembershipPlan.tsx` feature lists when API HTML is empty */
-const WEB_FEATURES = {
-  classic: [
-    'Classic Workbook access',
-    'Community forum',
-    'Basic analytics',
-    '5 training videos/month',
-    'Score tracking',
-  ],
-  pro: [
-    'All Classic features',
-    'Pro Workbook access',
-    'Advanced analytics',
-    'Unlimited training videos',
-    'Priority coaching booking',
-    'Tournament entry included',
-    'Shop discounts (10%)',
-  ],
-};
+/** Parse feature bullets from package description / front_description HTML */
+const parseFeatures = html => {
+  if (!html) return [];
 
-const parseFeatures = (html, planTitle = '') => {
-  if (html) {
-    const items = [];
-    const liRegex = /<li[^>]*>(.*?)<\/li>/gis;
-    let match = liRegex.exec(html);
-    while (match) {
-      const text = match[1].replace(/<[^>]+>/g, '').trim();
-      if (text) items.push(text);
-      match = liRegex.exec(html);
-    }
-    if (items.length) return items;
-    const plain = html.replace(/<[^>]+>/g, '\n').split('\n').map(s => s.trim()).filter(Boolean);
-    if (plain.length) return plain;
+  const items = [];
+  const liRegex = /<li[^>]*>(.*?)<\/li>/gis;
+  let match = liRegex.exec(html);
+  while (match) {
+    const text = match[1].replace(/<[^>]+>/g, '').trim();
+    if (text) items.push(text);
+    match = liRegex.exec(html);
   }
-  const key = String(planTitle).toLowerCase();
-  if (key.includes('pro')) return WEB_FEATURES.pro;
-  if (key.includes('classic')) return WEB_FEATURES.classic;
-  return WEB_FEATURES.pro;
+  if (items.length) return items;
+
+  return html
+    .replace(/<[^>]+>/g, '\n')
+    .split('\n')
+    .map(s => s.trim())
+    .filter(Boolean);
 };
 
 const formatPlanPrice = price => {
@@ -83,7 +65,7 @@ const formatPlanPrice = price => {
 };
 
 const formatPeriod = duration => {
-  if (!duration) return '/month';
+  if (!duration) return '';
   const d = String(duration).toLowerCase();
   if (d.includes('month')) return '/month';
   if (d.includes('year')) return '/year';
@@ -94,16 +76,18 @@ const formatPeriod = duration => {
  * ClayMaster-App-UI `MembershipPlan.tsx` — Stripe/payment API unchanged.
  */
 const SubscriptionScreen = ({ navigation, route }) => {
-  const canGoBack = navigation.canGoBack?.() ?? false;
+  const fromAuth = Boolean(route?.params?.fromAuth);
+  const canGoBack = !fromAuth && (navigation.canGoBack?.() ?? false);
   const { user } = useSelector(state => state.app);
   const dispatch = useDispatch();
   const { confirmSetupIntent } = useStripe();
   const { keyboardOpen } = useKeyboard();
 
-  const { data: packagesData = [] } = useCustomQuery({
-    queryKey: ['packages'],
-    queryFn: getPackages,
-  });
+  const { data: packagesData = [], isLoading: isLoadingPackages, isError: isPackagesError, refetch: refetchPackages } =
+    useCustomQuery({
+      queryKey: ['packages'],
+      queryFn: getPackages,
+    });
 
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -117,48 +101,75 @@ const SubscriptionScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (packagesData.length && !selectedPlan) {
       const userPkg = packagesData.find(p => p.id == user?.package_id);
-      setSelectedPlan(userPkg || packagesData[0]);
+      const popular = packagesData.find(p => p.is_popular);
+      setSelectedPlan(userPkg || popular || packagesData[0]);
     }
   }, [packagesData, user?.package_id, selectedPlan]);
 
   const { mutate: handlePaySuccess, isPending: isLoadingPaymentSuccess } =
     useCustomMutation({
       mutationFn: handlePaymentSuccess,
-      onSuccess: ({ data }) => {
+      onSuccess: async data => {
         if (data?.success) {
-          dispatch(
-            setUser({
-              ...user,
-              package_id: selectedPlan?.id,
-              subscription_status: 'active',
-              package_expires_at:
-                data?.package_expires_at || user?.package_expires_at,
-            }),
-          );
+          let nextUser = {
+            ...user,
+            package_id: String(data?.package_id ?? selectedPlan?.id ?? ''),
+            subscription_status: data?.subscription_status || 'active',
+            package_expires_at:
+              data?.package_expires_at || user?.package_expires_at,
+            remaining_sessions:
+              data?.remaining_sessions ?? user?.remaining_sessions,
+            remaining_service_sessions:
+              data?.remaining_service_sessions ??
+              user?.remaining_service_sessions,
+            discount_type: data?.discount_type ?? user?.discount_type,
+          };
+
+          try {
+            const profile = await getProfile();
+            if (profile?.status && profile?.user) {
+              nextUser = { ...nextUser, ...profile.user };
+            }
+          } catch {
+            /* keep subscribe response fields */
+          }
+
+          dispatch(setUser(nextUser));
           showMessage({
-            message: 'Payment Successfull!',
+            message: 'Payment Successful!',
             type: 'success',
             bgColor: COLORS.primary,
           });
-          navigation.replace('SubscribtionSuccessScreen');
+          setClientSecret(null);
+          navigation.replace('SubscribtionSuccessScreen', {
+            fromAuth,
+          });
         } else {
           showMessage({ message: 'Payment Failed!', type: 'danger' });
         }
+      },
+      onError: () => {
+        showMessage({ message: 'Payment Failed!', type: 'danger' });
       },
     });
 
   const { mutate: requestPaymentIntent, isPending: isLoadingPaymentIntent } =
     useCustomMutation({
       mutationFn: fetchPaymentIntent,
-      onSuccess: async ({ data }) => {
+      onSuccess: data => {
         const secret = data?.client_secret;
         if (secret) {
           setClientSecret(secret);
           setModalVisible(true);
+        } else {
+          showMessage({
+            message: 'Unable to start payment. Please try again.',
+            type: 'danger',
+          });
         }
       },
       onError: () => {
-        const msg = 'Error While Payment Proceeding.';
+        const msg = 'Error while starting payment.';
         if (Platform.OS === 'android') {
           ToastAndroid.show(msg, ToastAndroid.LONG);
         } else {
@@ -172,6 +183,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
 
   const planActionLabel = plan => {
     if (isCurrentPlan(plan)) return 'Current Plan';
+    if (!isActive) return `Get ${plan?.title || 'Plan'}`;
     return `Switch to ${plan?.title || 'Plan'}`;
   };
 
@@ -209,12 +221,16 @@ const SubscriptionScreen = ({ navigation, route }) => {
     }
   };
 
-  const bannerTitle = currentPackage?.title
-    ? `${currentPackage.title} Member`
-    : 'Pro Member';
-  const renewLabel = user?.package_expires_at
-    ? `Renews on ${formatExpiryDate(user.package_expires_at)}`
-    : 'Renews on May 1, 2026';
+  const bannerTitle = isActive
+    ? currentPackage?.title
+      ? `${currentPackage.title} Member`
+      : 'Member'
+    : 'No active plan';
+  const renewLabel = isActive
+    ? user?.package_expires_at
+      ? `Renews on ${formatExpiryDate(user.package_expires_at)}`
+      : 'Active subscription'
+    : 'Choose a plan to get started';
 
   const sortedPlans = [...packagesData].sort(
     (a, b) => parseFloat(a?.price || 0) - parseFloat(b?.price || 0),
@@ -226,7 +242,25 @@ const SubscriptionScreen = ({ navigation, route }) => {
         title="Membership Plan"
         showBack={canGoBack}
         showNotification={false}
+        showModeIndicator={!fromAuth}
         onBack={() => navigation.goBack()}
+        rightSlot={
+          fromAuth ? (
+            <TouchableOpacity
+              onPress={() => performLogout(navigation, dispatch)}
+              hitSlop={12}
+              activeOpacity={0.88}
+            >
+              <Typography
+                fFamily="barlowSemiBold600"
+                size={TYPE.body.size}
+                color={COLORS.primary}
+              >
+                Logout
+              </Typography>
+            </TouchableOpacity>
+          ) : null
+        }
       />
 
       <ScrollView
@@ -259,12 +293,57 @@ const SubscriptionScreen = ({ navigation, route }) => {
           </Typography>
         </View>
 
+        {isLoadingPackages ? (
+          <View style={styles.centerState}>
+            <ActivityIndicator color={COLORS.primary} size="large" />
+            <Typography
+              size={TYPE.body.size}
+              color={COLORS.textSecondary}
+              mT={12}
+            >
+              Loading plans...
+            </Typography>
+          </View>
+        ) : null}
+
+        {isPackagesError ? (
+          <View style={styles.centerState}>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
+              Could not load membership plans.
+            </Typography>
+            <TouchableOpacity
+              style={styles.retryBtn}
+              onPress={() => refetchPackages()}
+              activeOpacity={0.88}
+            >
+              <Typography
+                fFamily="barlowSemiBold600"
+                size={TYPE.body.size}
+                color={COLORS.primary}
+              >
+                Retry
+              </Typography>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        {!isLoadingPackages && !isPackagesError && sortedPlans.length === 0 ? (
+          <View style={styles.centerState}>
+            <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
+              No plans available right now.
+            </Typography>
+          </View>
+        ) : null}
+
         <View style={styles.plansList}>
           {sortedPlans.map(plan => {
             const current = isCurrentPlan(plan);
-            const features = parseFeatures(plan?.description, plan?.title);
+            const features = parseFeatures(
+              plan?.description || plan?.front_description,
+            );
             const loading =
               isLoadingPaymentIntent || isLoadingPaymentSuccess;
+            const isPopular = Boolean(plan?.is_popular);
 
             return (
               <View
@@ -292,9 +371,24 @@ const SubscriptionScreen = ({ navigation, route }) => {
                       Current
                     </Typography>
                   </View>
+                ) : isPopular ? (
+                  <View style={[styles.currentBadge, styles.popularBadge]}>
+                    <Typography
+                      size={TYPE.caption.size}
+                      color={COLORS.white100}
+                      fFamily="barlowSemiBold600"
+                    >
+                      Popular
+                    </Typography>
+                  </View>
                 ) : null}
 
-                <View style={[styles.planHeader, current && styles.planHeaderBadge]}>
+                <View
+                  style={[
+                    styles.planHeader,
+                    (current || isPopular) && styles.planHeaderBadge,
+                  ]}
+                >
                   <Typography
                     fFamily={TYPE.h2.fFamily}
                     size={TYPE.h2.size}
@@ -320,25 +414,27 @@ const SubscriptionScreen = ({ navigation, route }) => {
                   </View>
                 </View>
 
-                <View style={styles.features}>
-                  {features.map(feature => (
-                    <View key={feature} style={styles.featureRow}>
-                      <Icon
-                        name="checkmark"
-                        iconFamily="Ionicons"
-                        size={16}
-                        color={COLORS.primary}
-                      />
-                      <Typography
-                        size={TYPE.body.size}
-                        color={COLORS.textPrimary}
-                        style={styles.featureText}
-                      >
-                        {feature}
-                      </Typography>
-                    </View>
-                  ))}
-                </View>
+                {features.length > 0 ? (
+                  <View style={styles.features}>
+                    {features.map((feature, index) => (
+                      <View key={`${plan.id}-${index}`} style={styles.featureRow}>
+                        <Icon
+                          name="checkmark"
+                          iconFamily="Ionicons"
+                          size={16}
+                          color={COLORS.primary}
+                        />
+                        <Typography
+                          size={TYPE.body.size}
+                          color={COLORS.textPrimary}
+                          style={styles.featureText}
+                        >
+                          {feature}
+                        </Typography>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
 
                 <TouchableOpacity
                   style={[
@@ -372,15 +468,26 @@ const SubscriptionScreen = ({ navigation, route }) => {
           })}
         </View>
 
-        <TouchableOpacity style={styles.cancelLink} activeOpacity={0.88}>
-          <Typography
-            size={TYPE.caption.size}
-            color={COLORS.destructive}
-            fFamily="barlowMedium500"
+        {isActive ? (
+          <TouchableOpacity
+            style={styles.cancelLink}
+            activeOpacity={0.88}
+            onPress={() =>
+              Alert.alert(
+                'Cancel Subscription',
+                'To cancel your subscription, please contact support at support@claymaster.net.',
+              )
+            }
           >
-            Cancel Subscription
-          </Typography>
-        </TouchableOpacity>
+            <Typography
+              size={TYPE.caption.size}
+              color={COLORS.destructive}
+              fFamily="barlowMedium500"
+            >
+              Cancel Subscription
+            </Typography>
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
 
       <Modal
@@ -542,6 +649,19 @@ const styles = StyleSheet.create({
   cancelLink: {
     alignItems: 'center',
     paddingVertical: Sizer.vSize(8),
+  },
+  centerState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Sizer.vSize(24),
+  },
+  retryBtn: {
+    marginTop: Sizer.vSize(12),
+    paddingHorizontal: Sizer.hSize(16),
+    paddingVertical: Sizer.vSize(8),
+  },
+  popularBadge: {
+    backgroundColor: COLORS.textPrimary,
   },
   modalOuter: {
     flex: 1,
