@@ -57,7 +57,7 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 | Reviews | ✅ Live |
 | Shop / Cart / Orders | ❌ Not implemented |
 | Forum / Community | ❌ Not implemented |
-| Online Coaching / Sessions | ❌ Not implemented |
+| Online Coaching / Sessions | ✅ Live |
 
 ---
 
@@ -438,10 +438,10 @@ Replies / reactions / reports / polls: auth only (subscription check not applied
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/coaches` | Bearer | ❌ Not implemented |
-| `GET` | `/api/sessions` | Bearer | ❌ Not implemented |
-| `GET` | `/api/sessions/purchase-info` | Bearer | ❌ Not implemented |
-| `POST` | `/api/sessions/purchase` | Bearer | ❌ Not implemented |
+| `GET` | `/api/coaches` | Bearer | ✅ Live (`AnalyticsScheduleScreen` Book tab) |
+| `GET` | `/api/sessions` | Bearer | ✅ Live (`CoachingScreen` stats + schedule upcoming/history) |
+| `GET` | `/api/sessions/purchase-info` | Bearer | ✅ Live (`CoachingScreen` Buy Sessions) |
+| `POST` | `/api/sessions/purchase` | Bearer | ✅ Live (`CoachingScreen` Stripe → `payment_method_id`) |
 
 ### Errors
 
@@ -456,10 +456,12 @@ Doc lists expected HTTP as `201 / 403 / 422` for several of these (including GET
 
 ### Dev notes
 
-- Coaches return Calendly `booking_url`s — open in browser/WebView.
-- Sessions include Zoom `join_url` (nullable) + usage `summary`.
-- Purchase: `bundle_type` = `single` | `bundle` + Stripe `payment_method_id`.
-- Replace local `bookingData.js` when wiring → `coachingService.js`.
+- Service: `src/api/coachingService.js` · helpers: `src/constants/coaching.js`.
+- Coaches return Calendly `booking_url`s — open in-app via `CalendlyBookingScreen` (WebView).
+- Sessions include Zoom `join_url` (nullable) + usage `summary`; split upcoming/past by `datetime`.
+- Purchase: setup-intent → Stripe Card → `bundle_type` = `single` | `bundle` + `payment_method_id`.
+- Nav: drawer **On-line Coaching** → `CoachingScreen`; Book Session / Analytics “Schedule Analytics Session” → `AnalyticsScheduleScreen`.
+- No in-app create/reschedule API — scheduling is Calendly (WebView) only.
 
 ---
 

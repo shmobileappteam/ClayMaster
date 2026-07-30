@@ -36,6 +36,7 @@ import {
   DrillsScreen,
   DrillDetailScreen,
   CoachingScreen,
+  CalendlyBookingScreen,
   CommunityScreen,
   CommunityDetailScreen,
   CreatePostScreen,
@@ -134,6 +135,7 @@ const StackNavigator = () => {
       <Stack.Screen name="DrillDetailScreen" component={DrillDetailScreen} />
 
       <Stack.Screen name="CoachingScreen" component={CoachingScreen} />
+      <Stack.Screen name="CalendlyBookingScreen" component={CalendlyBookingScreen} />
 
       <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
       <Stack.Screen name="CommunityDetailScreen" component={CommunityDetailScreen} />

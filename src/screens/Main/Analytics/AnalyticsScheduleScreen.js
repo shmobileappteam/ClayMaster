@@ -1,18 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Linking,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import BookingForm from '../../../components/coaching/BookingForm';
 import BookingHistoryCard from '../../../components/coaching/BookingHistoryCard';
 import Icon from '../../../helpers/Icon';
+import { getCoaches, getSessions } from '../../../api/coachingService';
 import {
-  formatSessionDate,
-  getDefaultBookingDate,
-  initialPastBookings,
-  initialUpcomingBookings,
-} from '../../../constants/bookingData';
+  openExternalUrl,
+  splitAppointments,
+} from '../../../constants/coaching';
 import { COLORS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { useCustomQuery } from '../../../query/useCustomQuery';
 import { showMessage } from '../../../utils';
 import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
@@ -23,25 +31,15 @@ const TABS = [
 ];
 
 /**
- * ClayMaster-App-UI `/book-session` — opened from Analytics "Schedule Analytics Session"
+ * Coaching sessions — coaches (Calendly) + appointments from GET /api/sessions
  */
 const AnalyticsScheduleScreen = ({ navigation, route }) => {
-  if (useRequireLibraryMode()) {
-    return null;
-  }
+  const blocked = useRequireLibraryMode();
 
   const initialTab = route?.params?.tab;
   const [activeTab, setActiveTab] = useState(
     TABS.some(t => t.key === initialTab) ? initialTab : 'book',
   );
-  const [upcomingBookings, setUpcomingBookings] = useState(initialUpcomingBookings);
-  const [pastBookings] = useState(initialPastBookings);
-  const [sessionType, setSessionType] = useState('Virtual');
-  const [selectedDate, setSelectedDate] = useState(getDefaultBookingDate());
-  const [selectedTime, setSelectedTime] = useState('');
-  const [focusArea, setFocusArea] = useState('General Improvement');
-  const [notes, setNotes] = useState('');
-  const [editingBookingId, setEditingBookingId] = useState(null);
 
   useEffect(() => {
     if (route?.params?.tab && TABS.some(t => t.key === route.params.tab)) {
@@ -49,85 +47,84 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
     }
   }, [route?.params?.tab]);
 
-  const selectedDateLabel = selectedDate ? formatSessionDate(selectedDate) : null;
-  const latestBooking = upcomingBookings.find(b => b.isNew);
+  const {
+    data: coachesData,
+    isLoading: loadingCoaches,
+    isError: coachesError,
+    isFetching: fetchingCoaches,
+    refetch: refetchCoaches,
+  } = useCustomQuery({
+    queryKey: ['coaches'],
+    queryFn: getCoaches,
+  });
 
-  const resetForm = () => {
-    setSessionType('Virtual');
-    setSelectedDate(getDefaultBookingDate());
-    setSelectedTime('');
-    setFocusArea('General Improvement');
-    setNotes('');
-    setEditingBookingId(null);
+  const {
+    data: sessions,
+    isLoading: loadingSessions,
+    isError: sessionsError,
+    isFetching: fetchingSessions,
+    refetch: refetchSessions,
+  } = useCustomQuery({
+    queryKey: ['sessions'],
+    queryFn: getSessions,
+  });
+
+  const coaches = coachesData?.items || [];
+  const { upcoming, past } = useMemo(
+    () => splitAppointments(sessions?.appointments),
+    [sessions?.appointments],
+  );
+
+  if (blocked) {
+    return null;
+  }
+
+  const findCoachBookingUrl = coachName => {
+    if (!coachName) return null;
+    const match = coaches.find(
+      c => c.name?.toLowerCase() === String(coachName).toLowerCase(),
+    );
+    return match?.booking_url || coaches[0]?.booking_url || null;
   };
 
-  const handleConfirmBooking = () => {
-    if (!selectedDate || !selectedTime) {
+  const openCalendly = (url, coachName) => {
+    if (!url) {
       showMessage({
         type: 'danger',
-        message: 'Select an available slot before confirming your session.',
+        message: 'No booking link available for this coach.',
       });
       return;
     }
-
-    const bookingId = editingBookingId ?? Date.now();
-    const updatedBooking = {
-      id: bookingId,
-      coach: 'Kevin DeMichiel',
-      initials: 'KD',
-      sessionDate: selectedDate,
-      date: formatSessionDate(selectedDate),
-      time: selectedTime,
-      type: sessionType,
-      focus: focusArea,
-      status: 'Confirmed',
-      notes: notes.trim() || undefined,
-      isNew: true,
-    };
-
-    setUpcomingBookings(current => {
-      let replaced = false;
-      const next = current.map(booking => {
-        const clean = { ...booking, isNew: false };
-        if (editingBookingId && booking.id === editingBookingId) {
-          replaced = true;
-          return updatedBooking;
-        }
-        return clean;
-      });
-      return replaced ? next : [updatedBooking, ...next];
+    navigation.navigate('CalendlyBookingScreen', {
+      url,
+      title: coachName ? `Book with ${coachName}` : 'Book Session',
     });
+  };
 
-    showMessage({
-      type: 'success',
-      message: editingBookingId
-        ? `${updatedBooking.date} at ${updatedBooking.time} — booking updated.`
-        : `${updatedBooking.date} at ${updatedBooking.time} — booking confirmed.`,
-    });
-
-    resetForm();
-    setActiveTab('upcoming');
+  const handleBookCoach = coach => {
+    openCalendly(coach?.booking_url, coach?.name);
   };
 
   const handleJoinSession = booking => {
-    showMessage({
-      type: 'success',
-      message: `You're set for ${booking.date} at ${booking.time} with ${booking.coach}.`,
-    });
+    openExternalUrl(booking?.joinUrl, Linking, showMessage);
   };
 
-  const handleReschedule = booking => {
-    setEditingBookingId(booking.id);
-    setSessionType(booking.type);
-    setSelectedDate(booking.sessionDate);
-    setSelectedTime(booking.time);
-    setFocusArea(booking.focus);
-    setNotes(booking.notes ?? '');
-    setActiveTab('book');
-    showMessage({
-      type: 'success',
-      message: 'Update the booking details and save your new session time.',
-    });
+  const handleBookAgain = booking => {
+    const url = findCoachBookingUrl(booking?.coach);
+    if (!url) {
+      setActiveTab('book');
+      showMessage({
+        type: 'success',
+        message: 'Pick a coach below to schedule another session.',
+      });
+      return;
+    }
+    openCalendly(url, booking?.coach);
+  };
+
+  const refreshLists = () => {
+    refetchSessions();
+    refetchCoaches();
   };
 
   return (
@@ -164,65 +161,106 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
         <View style={styles.tabContent}>
           {activeTab === 'book' ? (
             <BookingForm
-              sessionType={sessionType}
-              selectedDate={selectedDate}
-              selectedDateLabel={selectedDateLabel}
-              selectedTime={selectedTime}
-              focusArea={focusArea}
-              notes={notes}
-              isEditing={editingBookingId != null}
-              onSessionTypeChange={setSessionType}
-              onDateChange={setSelectedDate}
-              onTimeChange={setSelectedTime}
-              onFocusAreaChange={setFocusArea}
-              onNotesChange={setNotes}
-              onSubmit={handleConfirmBooking}
+              coaches={coaches}
+              canBook={sessions?.canBookSession !== false}
+              remainingSessions={sessions?.summary?.remainingSessions ?? 0}
+              isLoading={loadingCoaches || loadingSessions}
+              isError={coachesError}
+              onRetry={refetchCoaches}
+              onBookCoach={handleBookCoach}
+              refreshing={fetchingCoaches && !loadingCoaches}
+              onRefresh={refreshLists}
             />
           ) : null}
 
           {activeTab === 'upcoming' ? (
-            <View style={styles.list}>
-              {latestBooking ? (
-                <View style={styles.confirmedBanner}>
-                  <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
-                    Booking confirmed
+            <ScrollView
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={fetchingSessions && !loadingSessions}
+                  onRefresh={refetchSessions}
+                  tintColor={COLORS.primary}
+                />
+              }
+            >
+              {loadingSessions ? (
+                <ActivityIndicator color={COLORS.primary} />
+              ) : sessionsError ? (
+                <TouchableOpacity onPress={refetchSessions}>
+                  <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
+                    Could not load sessions. Tap to retry.
                   </Typography>
-                  <Typography size={12} color={COLORS.textSecondary} mT={4}>
-                    {latestBooking.date} · {latestBooking.time} · {latestBooking.focus}
-                  </Typography>
-                </View>
-              ) : null}
-              {upcomingBookings.length === 0 ? (
+                </TouchableOpacity>
+              ) : upcoming.length === 0 ? (
                 <View style={styles.empty}>
-                  <Icon name="calendar-outline" iconFamily="Ionicons" size={40} color={COLORS.textSecondary} />
+                  <Icon
+                    name="calendar-outline"
+                    iconFamily="Ionicons"
+                    size={40}
+                    color={COLORS.textSecondary}
+                  />
                   <Typography size={14} color={COLORS.textSecondary} mT={12}>
                     No upcoming sessions
                   </Typography>
                 </View>
               ) : (
-                upcomingBookings.map(booking => (
+                upcoming.map(booking => (
                   <BookingHistoryCard
                     key={booking.id}
                     booking={booking}
                     variant="upcoming"
                     onJoin={handleJoinSession}
-                    onReschedule={handleReschedule}
+                    onBookAgain={handleBookAgain}
                   />
                 ))
               )}
-            </View>
+            </ScrollView>
           ) : null}
 
           {activeTab === 'past' ? (
-            <View style={styles.list}>
-              {pastBookings.map(booking => (
-                <BookingHistoryCard
-                  key={booking.id}
-                  booking={booking}
-                  variant="past"
+            <ScrollView
+              contentContainerStyle={styles.list}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={fetchingSessions && !loadingSessions}
+                  onRefresh={refetchSessions}
+                  tintColor={COLORS.primary}
                 />
-              ))}
-            </View>
+              }
+            >
+              {loadingSessions ? (
+                <ActivityIndicator color={COLORS.primary} />
+              ) : sessionsError ? (
+                <TouchableOpacity onPress={refetchSessions}>
+                  <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
+                    Could not load sessions. Tap to retry.
+                  </Typography>
+                </TouchableOpacity>
+              ) : past.length === 0 ? (
+                <View style={styles.empty}>
+                  <Icon
+                    name="time-outline"
+                    iconFamily="Ionicons"
+                    size={40}
+                    color={COLORS.textSecondary}
+                  />
+                  <Typography size={14} color={COLORS.textSecondary} mT={12}>
+                    No past sessions
+                  </Typography>
+                </View>
+              ) : (
+                past.map(booking => (
+                  <BookingHistoryCard
+                    key={booking.id}
+                    booking={booking}
+                    variant="past"
+                  />
+                ))
+              )}
+            </ScrollView>
           ) : null}
         </View>
       </View>
@@ -261,14 +299,6 @@ const styles = StyleSheet.create({
   list: {
     gap: Sizer.vSize(SPACING.component),
     paddingBottom: Sizer.vSize(40),
-  },
-  confirmedBanner: {
-    backgroundColor: COLORS.surface,
-    borderRadius: Sizer.hSize(12),
-    borderWidth: 1,
-    borderColor: COLORS.borderMuted,
-    padding: Sizer.hSize(SPACING.cardP),
-    marginBottom: Sizer.vSize(SPACING.component),
   },
   empty: {
     alignItems: 'center',

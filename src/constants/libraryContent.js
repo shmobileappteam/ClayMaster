@@ -82,12 +82,6 @@ export const WEBCAST_PAST = [
   { title: 'January: Season Kickoff', date: 'Jan 17, 2026', duration: '47 min', locked: true },
 ];
 
-/** ClayMaster-App-UI `Coaching.tsx` */
-export const COACHING_PACKAGES = [
-  { sessions: '1 Session', desc: 'One-on-one with Kevin', price: '$75' },
-  { sessions: '10 Sessions', desc: 'Save $50 – Best value', price: '$700' },
-];
-
 /** ClayMaster-App-UI `Reviews.tsx` */
 export const LIBRARY_REVIEWS = [
   {

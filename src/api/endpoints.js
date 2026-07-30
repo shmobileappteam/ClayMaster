@@ -66,6 +66,12 @@ export const ENDPOINTS = {
   GET_MANUAL_DELIVERIES: 'manual-deliveries',
   GET_MANUAL_DELIVERY: id => `manual-deliveries/${id}`,
 
+  // --- Online Coaching / Sessions ---
+  GET_COACHES: 'coaches',
+  GET_SESSIONS: 'sessions',
+  GET_SESSION_PURCHASE_INFO: 'sessions/purchase-info',
+  PURCHASE_SESSIONS: 'sessions/purchase',
+
   // --- Config ---
   SUBSCRIPTION_ENABLED: 'subscription-enabled',
 };

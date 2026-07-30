@@ -39,6 +39,7 @@ import WebcastScreen from './Main/Academy/WebcastScreen';
 import DrillsScreen from './Main/Academy/DrillsScreen';
 import DrillDetailScreen from './Main/Academy/DrillDetailScreen';
 import CoachingScreen from './Main/Coaching/CoachingScreen';
+import CalendlyBookingScreen from './Main/Coaching/CalendlyBookingScreen';
 import CommunityScreen from './Main/Community/CommunityScreen';
 import CommunityDetailScreen from './Main/Community/CommunityDetailScreen';
 import CreatePostScreen from './Main/Community/CreatePostScreen';
@@ -110,6 +111,7 @@ export {
   DrillsScreen,
   DrillDetailScreen,
   CoachingScreen,
+  CalendlyBookingScreen,
   CommunityScreen,
   CommunityDetailScreen,
   CreatePostScreen,

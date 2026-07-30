@@ -5,23 +5,13 @@ import Icon from '../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
 
-const BookingHistoryCard = ({
-  booking,
-  variant,
-  onJoin,
-  onReschedule,
-}) => {
+const BookingHistoryCard = ({ booking, variant, onJoin, onBookAgain }) => {
   const isCompleted = booking.status === 'Completed';
   const isCancelled = booking.status === 'Cancelled';
+  const canJoin = Boolean(booking.joinUrl);
 
   return (
-    <View
-      style={[
-        GLOBALSTYLE.screenCard,
-        styles.card,
-        booking.isNew && styles.cardNew,
-      ]}
-    >
+    <View style={[GLOBALSTYLE.screenCard, styles.card]}>
       <View style={styles.header}>
         <View style={styles.coachRow}>
           <View style={styles.avatar}>
@@ -29,28 +19,21 @@ const BookingHistoryCard = ({
               {booking.initials}
             </Typography>
           </View>
-          <View>
+          <View style={{ flex: 1 }}>
             <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
               {booking.coach}
             </Typography>
-            <Typography size={12} color={COLORS.textSecondary} mT={2}>
-              {booking.type} · {booking.focus}
-            </Typography>
+            {booking.name ? (
+              <Typography size={12} color={COLORS.textSecondary} mT={2}>
+                {booking.name}
+              </Typography>
+            ) : null}
           </View>
         </View>
-        <View style={styles.badges}>
-          <View style={styles.statusBadge}>
-            <Typography size={12} color={COLORS.primary} fFamily="barlowMedium500">
-              {booking.status}
-            </Typography>
-          </View>
-          {booking.isNew ? (
-            <View style={styles.newBadge}>
-              <Typography size={12} color={COLORS.textPrimary} fFamily="barlowMedium500">
-                New
-              </Typography>
-            </View>
-          ) : null}
+        <View style={styles.statusBadge}>
+          <Typography size={12} color={COLORS.primary} fFamily="barlowMedium500">
+            {booking.status}
+          </Typography>
         </View>
       </View>
 
@@ -69,32 +52,29 @@ const BookingHistoryCard = ({
         </View>
       </View>
 
-      {booking.notes ? (
-        <Typography size={12} color={COLORS.textSecondary} mB={12}>
-          {booking.notes}
-        </Typography>
-      ) : null}
-
       {variant === 'upcoming' ? (
         <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.joinBtn}
+            style={[styles.joinBtn, !canJoin && styles.joinBtnDisabled]}
             onPress={() => onJoin?.(booking)}
             activeOpacity={0.88}
+            disabled={!canJoin}
           >
             <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.white100}>
-              Join Session
+              {canJoin ? 'Join Session' : 'Link pending'}
             </Typography>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.rescheduleBtn}
-            onPress={() => onReschedule?.(booking)}
-            activeOpacity={0.88}
-          >
-            <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
-              Reschedule
-            </Typography>
-          </TouchableOpacity>
+          {onBookAgain ? (
+            <TouchableOpacity
+              style={styles.rescheduleBtn}
+              onPress={() => onBookAgain?.(booking)}
+              activeOpacity={0.88}
+            >
+              <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
+                Book again
+              </Typography>
+            </TouchableOpacity>
+          ) : null}
         </View>
       ) : (
         <View style={styles.pastStatus}>
@@ -102,7 +82,13 @@ const BookingHistoryCard = ({
             name={isCompleted ? 'checkmark-circle' : 'close-circle'}
             iconFamily="Ionicons"
             size={16}
-            color={isCancelled ? COLORS.destructive : isCompleted ? COLORS.primary : COLORS.textSecondary}
+            color={
+              isCancelled
+                ? COLORS.destructive
+                : isCompleted
+                  ? COLORS.primary
+                  : COLORS.textSecondary
+            }
           />
           <Typography
             size={12}
@@ -125,17 +111,19 @@ const styles = StyleSheet.create({
     padding: Sizer.hSize(SPACING.cardP),
     ...SHADOWS.card,
   },
-  cardNew: {
-    borderWidth: 1,
-    borderColor: 'rgba(235, 108, 15, 0.3)',
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: Sizer.vSize(12),
   },
-  coachRow: { flexDirection: 'row', alignItems: 'center', gap: Sizer.hSize(8), flex: 1 },
+  coachRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Sizer.hSize(8),
+    flex: 1,
+    paddingRight: Sizer.hSize(8),
+  },
   avatar: {
     width: Sizer.hSize(40),
     height: Sizer.hSize(40),
@@ -144,16 +132,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badges: { alignItems: 'flex-end', gap: Sizer.hSize(8) },
   statusBadge: {
     backgroundColor: COLORS.primaryLight,
-    paddingHorizontal: Sizer.hSize(10),
-    paddingVertical: Sizer.vSize(4),
-    borderRadius: Sizer.hSize(20),
-  },
-  newBadge: {
-    borderWidth: 1,
-    borderColor: COLORS.borderMuted,
     paddingHorizontal: Sizer.hSize(10),
     paddingVertical: Sizer.vSize(4),
     borderRadius: Sizer.hSize(20),
@@ -173,6 +153,9 @@ const styles = StyleSheet.create({
     borderRadius: Sizer.hSize(12),
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  joinBtnDisabled: {
+    opacity: 0.55,
   },
   rescheduleBtn: {
     flex: 1,
