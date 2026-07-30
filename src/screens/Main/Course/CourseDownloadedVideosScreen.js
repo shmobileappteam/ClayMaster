@@ -96,8 +96,7 @@ const CourseDownloadedVideosScreen = ({ navigation }) => {
                 {video.title}
               </Typography>
               <Typography size={12} color={COLORS.courseTextMuted} mT={4}>
-                {video.duration}
-                {video.size ? ` · ${video.size}` : ''} · On device
+                On device
               </Typography>
             </View>
             <Icon
@@ -113,8 +112,8 @@ const CourseDownloadedVideosScreen = ({ navigation }) => {
           <Icon name="cloud-download-outline" iconFamily="Ionicons" size={18} color={COLORS.courseTextMuted} />
           <Typography size={12} color={COLORS.courseTextMuted} mL={8} style={styles.hintText}>
             {canUseLibrary
-              ? 'Open any video in Full Library Mode and tap the bookmark to save it here for offline range use.'
-              : 'When online, switch to Full Library Mode to browse and save videos before heading to the field.'}
+              ? 'Open videos in Full Library Mode to stream them. Saved clips appear here for offline use.'
+              : 'When online, switch to Full Library Mode to browse videos before heading to the field.'}
           </Typography>
         </View>
       </ScrollView>

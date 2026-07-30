@@ -26,6 +26,7 @@ const portalMenuItems = [
     action: s.action,
     tab: s.tab,
   })),
+  { label: 'Academy', screen: 'AcademyScreen', icon: 'school-outline' },
   { label: 'Additional Videos', screen: 'AdditionalVideosScreen', icon: 'film-outline' },
   { label: 'Documents', screen: 'AdditionalDocumentsScreen', icon: 'document-text-outline' },
   { label: 'Managed Service', screen: 'ManagedServiceScreen', icon: 'headset-outline' },

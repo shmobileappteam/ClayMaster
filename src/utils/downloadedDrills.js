@@ -1,6 +1,5 @@
 import { storage } from '../api/api';
 import { KEYS } from '../constants';
-import { estimateDrillSizeMb } from '../constants/practiceDrills';
 
 export function getDownloadedDrills() {
   const raw = storage.getString(KEYS.DOWNLOADED_DRILLS);
@@ -21,14 +20,14 @@ export function isDrillDownloaded(drillId) {
 
 export function getDrillStorageSummary() {
   const drills = getDownloadedDrills();
-  const totalMb = drills.reduce((sum, d) => sum + (d.sizeMb ?? estimateDrillSizeMb(d.pages)), 0);
+  const totalMb = drills.reduce((sum, d) => sum + (Number(d.sizeMb) || 0), 0);
   return {
     count: drills.length,
     totalMb: Math.round(totalMb * 10) / 10,
   };
 }
 
-/** Save drill PDF metadata for offline Field access (PAGE 13). */
+/** Save drill PDF metadata for offline Field access. */
 export function saveDownloadedDrill(drill) {
   const list = getDownloadedDrills();
   if (list.some(d => d.id === drill.id)) {
@@ -37,12 +36,10 @@ export function saveDownloadedDrill(drill) {
   const entry = {
     id: drill.id,
     title: drill.title,
-    desc: drill.desc,
-    tier: drill.tier,
-    pages: drill.pages,
-    duration: drill.duration,
-    level: drill.level,
-    sizeMb: drill.sizeMb ?? estimateDrillSizeMb(drill.pages),
+    desc: drill.desc || '',
+    fileUrl: drill.fileUrl || null,
+    fileType: drill.fileType || '',
+    sizeMb: drill.sizeMb || 0,
     downloadedAt: new Date().toISOString(),
   };
   const next = [entry, ...list];

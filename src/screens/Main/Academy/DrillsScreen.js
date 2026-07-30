@@ -1,83 +1,52 @@
-import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useMemo } from 'react';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
-import { useDrillAccess } from '../../../hooks/useDrillAccess';
-import { useModeSwitch } from '../../../hooks/useModeSwitch';
-import { PRACTICE_DRILLS, estimateDrillSizeMb } from '../../../constants/practiceDrills';
-import {
-  getDrillStorageSummary,
-  isDrillDownloaded,
-  removeDownloadedDrill,
-  saveDownloadedDrill,
-} from '../../../utils/downloadedDrills';
+import { mapPracticeDrill } from '../../../constants/academy';
 import { showMessage } from '../../../utils';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { getPracticeDrills } from '../../../api/academyService';
 
-/**
- * PAGE 13–14 — Full Library practice drills (Classic 9 / Pro 13 PDFs).
- * List = preview cards; open detail only via View (portal parity).
- */
+/** Practice drills list → tap opens in-app PDF viewer. */
 const DrillsScreen = ({ navigation }) => {
-  const { isPro, drills, classicCount, proCount, canAccessDrill } = useDrillAccess();
-  const { canUseLibrary } = useModeSwitch();
-  const [savedIds, setSavedIds] = useState([]);
+  const blocked = useRequireLibraryMode();
 
-  useFocusEffect(
-    useCallback(() => {
-      setSavedIds(PRACTICE_DRILLS.filter(d => isDrillDownloaded(d.id)).map(d => d.id));
-    }, []),
+  const { data, isLoading, isError, isFetching, refetch } = useCustomQuery({
+    queryKey: ['practiceDrills'],
+    queryFn: getPracticeDrills,
+  });
+
+  const drills = useMemo(
+    () => (data?.items || []).map(mapPracticeDrill).filter(Boolean),
+    [data?.items],
   );
 
-  if (useRequireLibraryMode()) {
+  if (blocked) {
     return null;
   }
 
-  const storage = getDrillStorageSummary();
-
-  const openDrill = drill => {
-    if (!canAccessDrill(drill)) {
+  const openPdf = drill => {
+    if (!drill.fileUrl) {
       showMessage({
-        type: 'default',
-        title: 'Pro drill',
-        message: 'Upgrade to Pro for 13 practice drill PDFs (Classic includes 9).',
-        duration: 4000,
+        type: 'danger',
+        title: 'Unavailable',
+        message: 'No PDF is available for this drill.',
+        duration: 3000,
       });
       return;
     }
     navigation.navigate('DrillDetailScreen', { drill });
-  };
-
-  const toggleDownload = drill => {
-    if (!canAccessDrill(drill)) {
-      return;
-    }
-    if (!canUseLibrary) {
-      showMessage({
-        type: 'danger',
-        title: 'Connection required',
-        message: 'Download drill PDFs while you have full internet or strong Wi‑Fi.',
-        duration: 4000,
-      });
-      return;
-    }
-    if (savedIds.includes(drill.id)) {
-      removeDownloadedDrill(drill.id);
-      setSavedIds(prev => prev.filter(id => id !== drill.id));
-      return;
-    }
-    saveDownloadedDrill(drill);
-    setSavedIds(prev => [...prev, drill.id]);
-    showMessage({
-      type: 'success',
-      title: 'Saved for Field Mode',
-      message: `~${estimateDrillSizeMb(drill.pages)} MB PDF ready offline.`,
-      duration: 3000,
-    });
   };
 
   return (
@@ -88,99 +57,64 @@ const DrillsScreen = ({ navigation }) => {
         showNotification={false}
         onBack={() => navigation.goBack()}
       />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
+            tintColor={COLORS.primary}
+          />
+        }
+      >
         <Typography size={14} color={COLORS.textSecondary} mB={12}>
-          {isPro
-            ? `Pro membership — ${proCount} drill PDFs (2–4 pages each).`
-            : `Classic membership — ${classicCount} drill PDFs. Upgrade for ${proCount - classicCount} more.`}
+          Tap a drill to open the PDF.
         </Typography>
 
-        <View style={[GLOBALSTYLE.screenCard, styles.downloadSection]}>
-          <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
-            Download for Field Mode
-          </Typography>
-          <Typography size={12} color={COLORS.textSecondary} mT={6} lineHeight={18}>
-            Small PDFs store quickly on your phone. Save drills here, then open them offline at the range
-            under Field Mode → Practice Drills.
-          </Typography>
-          <Typography size={12} color={COLORS.textPrimary} fFamily="barlowMedium500" mT={10}>
-            {storage.count} PDFs saved · ~{storage.totalMb} MB total
-          </Typography>
-        </View>
-
-        {PRACTICE_DRILLS.map(drill => {
-          const locked = !canAccessDrill(drill);
-          const saved = savedIds.includes(drill.id);
-          return (
-            <View
+        {isLoading ? (
+          <ActivityIndicator color={COLORS.primary} />
+        ) : isError ? (
+          <TouchableOpacity onPress={refetch}>
+            <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
+              Could not load drills. Tap to retry.
+            </Typography>
+          </TouchableOpacity>
+        ) : drills.length === 0 ? (
+          <Typography color={COLORS.textSecondary}>No practice drills yet.</Typography>
+        ) : (
+          drills.map(drill => (
+            <TouchableOpacity
               key={drill.id}
-              style={[GLOBALSTYLE.screenCard, styles.drillCard, locked && styles.drillCardLocked]}
+              style={[GLOBALSTYLE.screenCard, styles.drillCard]}
+              activeOpacity={0.88}
+              onPress={() => openPdf(drill)}
             >
-              <View style={styles.drillHeader}>
-                <View style={styles.iconCircle}>
-                  <Icon name="locate-outline" iconFamily="Ionicons" size={22} color={COLORS.primary} />
-                </View>
-                <View style={styles.drillText}>
-                  <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
-                    {drill.title}
-                    {drill.tier === 'pro' ? ' · Pro' : ''}
-                  </Typography>
-                  <Typography size={12} color={COLORS.textSecondary} mT={2} numberOfLines={2}>
-                    {drill.desc}
-                  </Typography>
-                  <Typography size={12} color={COLORS.textSecondary} mT={4}>
-                    {drill.pages}-page PDF preview · tap View for full drill
-                  </Typography>
-                  {saved ? (
-                    <Typography size={12} color={COLORS.primary} mT={4}>
-                      On device
-                    </Typography>
-                  ) : null}
-                </View>
+              <View style={styles.iconCircle}>
+                <Icon
+                  name="document-text-outline"
+                  iconFamily="Ionicons"
+                  size={22}
+                  color={COLORS.primary}
+                />
               </View>
-              <View style={styles.drillActions}>
-                <TouchableOpacity
-                  style={[styles.viewBtn, locked && styles.btnDisabled]}
-                  activeOpacity={0.88}
-                  onPress={() => openDrill(drill)}
-                  disabled={locked}
-                >
-                  <Icon name="eye-outline" iconFamily="Ionicons" size={16} color={COLORS.white100} />
-                  <Typography fFamily="barlowSemiBold600" size={12} color={COLORS.white100} mL={4}>
-                    View
-                  </Typography>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.secondaryBtn, locked && styles.btnDisabled]}
-                  activeOpacity={0.88}
-                  onPress={() => toggleDownload(drill)}
-                  disabled={locked}
-                >
-                  <Icon
-                    name={saved ? 'checkmark-circle' : 'download-outline'}
-                    iconFamily="Ionicons"
-                    size={16}
-                    color={saved ? COLORS.primary : COLORS.textSecondary}
-                  />
-                  <Typography size={12} color={saved ? COLORS.primary : COLORS.textSecondary} mL={4}>
-                    {saved ? 'Saved' : 'Download'}
-                  </Typography>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.secondaryBtn, locked && styles.btnDisabled]}
-                  activeOpacity={0.88}
-                  onPress={() => openDrill(drill)}
-                  disabled={locked}
-                >
-                  <Icon name="print-outline" iconFamily="Ionicons" size={16} color={COLORS.textSecondary} />
-                  <Typography size={12} color={COLORS.textSecondary} mL={4}>
-                    Print
-                  </Typography>
-                </TouchableOpacity>
+              <View style={styles.drillText}>
+                <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.textPrimary}>
+                  {drill.title}
+                </Typography>
+                <Typography size={12} color={COLORS.textSecondary} mT={4}>
+                  {drill.fileType?.toUpperCase() || 'PDF'}
+                </Typography>
               </View>
-            </View>
-          );
-        })}
+              <Icon
+                name="chevron-forward"
+                iconFamily="Ionicons"
+                size={18}
+                color={COLORS.textSecondary}
+              />
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
     </Container>
   );
@@ -195,19 +129,14 @@ const styles = StyleSheet.create({
     paddingBottom: Sizer.vSize(40),
     gap: Sizer.vSize(SPACING.component),
   },
-  downloadSection: {
+  drillCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: Sizer.hSize(SPACING.cardP),
+    gap: Sizer.hSize(12),
     ...SHADOWS.card,
   },
-  drillCard: { padding: Sizer.hSize(SPACING.cardP), ...SHADOWS.card },
-  drillCardLocked: { opacity: 0.55 },
-  drillHeader: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Sizer.hSize(12),
-    marginBottom: Sizer.vSize(12),
-  },
-  drillText: { flex: 1 },
+  drillText: { flex: 1, minWidth: 0 },
   iconCircle: {
     width: Sizer.hSize(44),
     height: Sizer.hSize(44),
@@ -215,28 +144,5 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  drillActions: { flexDirection: 'row', gap: Sizer.hSize(8) },
-  viewBtn: {
-    flex: 1,
-    height: Sizer.vSize(36),
-    backgroundColor: COLORS.primary,
-    borderRadius: Sizer.hSize(12),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryBtn: {
-    height: Sizer.vSize(36),
-    paddingHorizontal: Sizer.hSize(12),
-    borderWidth: 1,
-    borderColor: COLORS.borderMuted,
-    borderRadius: Sizer.hSize(12),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnDisabled: {
-    opacity: 0.5,
   },
 });

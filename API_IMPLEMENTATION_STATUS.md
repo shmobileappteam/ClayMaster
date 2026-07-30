@@ -52,9 +52,9 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 | Subscription / Packages / Stripe | ✅ Live |
 | Rounds & Stations | ✅ Mostly live |
 | Notifications | ✅ Live |
-| Academy / Library | ❌ Not implemented |
+| Academy / Library | ✅ Live |
 | Tournament | ❌ Not implemented |
-| Reviews | ❌ Not implemented |
+| Reviews | ✅ Live |
 | Shop / Cart / Orders | ❌ Not implemented |
 | Forum / Community | ❌ Not implemented |
 | Online Coaching / Sessions | ❌ Not implemented |
@@ -273,21 +273,21 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/tutorial-videos/` | Bearer | ❌ Not implemented |
-| `GET` | `/api/tutorial-videos/{id}` | Bearer | ❌ Not implemented |
-| `GET` | `/api/workbooks` | Bearer | ❌ Not implemented |
-| `GET` | `/api/workbooks/{id}` | Bearer | ❌ Not implemented |
-| `GET` | `/api/instructional-videos` | Bearer | ❌ Not implemented |
-| `GET` | `/api/instructional-videos/{id}` | Bearer | ❌ Not implemented |
-| `GET` | `/api/additional-videos` | Bearer | ❌ Not implemented |
-| `GET` | `/api/additional-videos/{id}` | Bearer | ❌ Not implemented |
-| `GET` | `/api/additional-videos/categories` | Bearer | ❌ Not implemented |
-| `GET` | `/api/practice-drills` | Bearer | ❌ Not implemented |
-| `GET` | `/api/practice-drills/{id}` | Bearer | ❌ Not implemented |
-| `GET` | `/api/monthly-webcasts` | Bearer | ❌ Not implemented |
-| `GET` | `/api/monthly-webcasts/{id}` | Bearer | ❌ Not implemented |
-| `GET` | `/api/manual-deliveries` | Bearer | ❌ Not implemented |
-| `GET` | `/api/manual-deliveries/{id}` | Bearer | ❌ Not implemented |
+| `GET` | `/api/tutorial-videos/` | Bearer | ✅ Live (`InstructionalVideosScreen` `catalog=tutorial`) |
+| `GET` | `/api/tutorial-videos/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
+| `GET` | `/api/workbooks` | Bearer | ✅ Live (`WorkbookDetailScreen`) |
+| `GET` | `/api/workbooks/{id}` | Bearer | ✅ Live (service ready) |
+| `GET` | `/api/instructional-videos` | Bearer | ✅ Live (`InstructionalVideosScreen`, `AcademyScreen`) |
+| `GET` | `/api/instructional-videos/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
+| `GET` | `/api/additional-videos` | Bearer | ✅ Live (`AdditionalVideosScreen`) |
+| `GET` | `/api/additional-videos/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
+| `GET` | `/api/additional-videos/categories` | Bearer | ✅ Live (service ready) |
+| `GET` | `/api/practice-drills` | Bearer | ✅ Live (`DrillsScreen`, `AcademyScreen`) |
+| `GET` | `/api/practice-drills/{id}` | Bearer | ✅ Live (service ready) |
+| `GET` | `/api/monthly-webcasts` | Bearer | ✅ Live (`WebcastScreen`) |
+| `GET` | `/api/monthly-webcasts/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
+| `GET` | `/api/manual-deliveries` | Bearer | ✅ Live (`AdditionalDocumentsScreen`) |
+| `GET` | `/api/manual-deliveries/{id}` | Bearer | ✅ Live (service ready) |
 
 ### Errors (typical for this group)
 
@@ -299,9 +299,12 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 ### Dev notes
 
-- Package gating via `can_access` / null `video_url` or `file_url` — handle locked content in UI.
+- Package gating via `can_access` / null `video_url` or `file_url` — locked state shown in UI.
+- Playback via `react-native-video` in `LibraryVideoPlayer` on `VideoDetailScreen`.
+- PDFs / workbooks / manuals open via `Linking.openURL`.
 - ⚠️ Monthly webcasts **list** URL was mis-pasted in docs as `practice-drills/33`; use `/api/monthly-webcasts`.
 - Envelope usually `{ status, message, data }`; manuals list nests `data.documents[]`.
+- Drawer: **Academy**, **Instructional Videos**, **Additional Videos**, **Documents**, **Practice Drills**, **Monthly Webcasts**; Analytics → Workbooks / Video Tutorials.
 
 ---
 

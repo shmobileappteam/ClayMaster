@@ -1,228 +1,120 @@
-import React, { useCallback, useState } from 'react';
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
-import Icon from '../../../helpers/Icon';
-import { videoThumb1 } from '../../../assets/images';
+import LibraryVideoPlayer from '../../../components/video/LibraryVideoPlayer';
 import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 import { useModeSwitch } from '../../../hooks/useModeSwitch';
+import { isVideoDownloaded } from '../../../utils/downloadedVideos';
+import { useCustomQuery } from '../../../query/useCustomQuery';
 import {
-  isVideoDownloaded,
-  saveDownloadedVideo,
-} from '../../../utils/downloadedVideos';
-import { showMessage } from '../../../utils';
-import { navigateFromFieldToStack } from '../../../navigation/navigationHelpers';
+  getAdditionalVideo,
+  getInstructionalVideo,
+  getMonthlyWebcast,
+  getTutorialVideo,
+} from '../../../api/academyService';
+import {
+  mapInstructionalVideo,
+  mapLibraryVideo,
+  mapTutorialVideo,
+  mapWebcast,
+} from '../../../constants/academy';
 
-const DEFAULT_VIDEO = {
-  id: 'tower-shot-mastery',
-  title: 'Tower Shot Mastery',
-  instructor: 'Kevin DeMichiel',
-  duration: '12:30',
-  size: '86 MB',
-  description:
-    'Learn the fundamentals of the tower shot including proper stance, lead technique, and timing. This comprehensive guide covers everything from beginner to advanced positioning.',
+const fetchDetailBySource = async (id, source) => {
+  if (source === 'tutorial') return getTutorialVideo(id);
+  if (source === 'additional') return getAdditionalVideo(id);
+  if (source === 'webcast') return getMonthlyWebcast(id);
+  return getInstructionalVideo(id);
+};
+
+const mapBySource = (item, source) => {
+  if (source === 'tutorial') return mapTutorialVideo(item);
+  if (source === 'webcast') return mapWebcast(item);
+  if (source === 'additional') return mapLibraryVideo(item, 'additional');
+  return mapInstructionalVideo(item);
 };
 
 const VideoDetailScreen = ({ navigation, route }) => {
   const fieldOnlineAccess = route?.params?.fieldOnlineAccess === true;
-  const video = {
-    ...DEFAULT_VIDEO,
-    ...route?.params?.video,
-    id: route?.params?.video?.id ?? route?.params?.videoId ?? DEFAULT_VIDEO.id,
-    title: route?.params?.video?.title ?? route?.params?.title ?? DEFAULT_VIDEO.title,
-    instructor:
-      route?.params?.video?.instructor ?? route?.params?.instructor ?? DEFAULT_VIDEO.instructor,
-    duration:
-      route?.params?.video?.duration ?? route?.params?.duration ?? DEFAULT_VIDEO.duration,
-    size: route?.params?.video?.size ?? route?.params?.size ?? DEFAULT_VIDEO.size,
-    description: route?.params?.video?.description ?? route?.params?.description ?? DEFAULT_VIDEO.description,
-  };
+  const paramVideo = route?.params?.video || {};
+  const videoId = paramVideo.id ?? route?.params?.videoId;
+  const source = paramVideo.source || route?.params?.source || 'instructional';
+  const blocked = useRequireLibraryMode({
+    allowOnlineInField: fieldOnlineAccess,
+  });
+  const { canUseLibrary } = useModeSwitch();
 
-  const { canUseLibrary, isFieldMode } = useModeSwitch();
-  const [savedOnDevice, setSavedOnDevice] = useState(() => isVideoDownloaded(video.id));
+  const needsFetch = Boolean(videoId) && !paramVideo.videoUrl;
 
-  useFocusEffect(
-    useCallback(() => {
-      setSavedOnDevice(isVideoDownloaded(video.id));
-    }, [video.id]),
-  );
+  const { data: detailRaw } = useCustomQuery({
+    queryKey: ['libraryVideo', source, videoId],
+    queryFn: () => fetchDetailBySource(videoId, source),
+    enabled: needsFetch,
+  });
 
-  if (useRequireLibraryMode({ allowOnlineInField: fieldOnlineAccess })) {
+  const video = useMemo(() => {
+    const fromApi = detailRaw ? mapBySource(detailRaw, source) : null;
+    const base = fromApi || paramVideo;
+    return {
+      id: base.id ?? videoId,
+      title: base.title || '',
+      description: base.description || '',
+      videoUrl: base.videoUrl || base.video_url || null,
+      thumbnail: base.thumbnail || null,
+      locked: Boolean(base.locked),
+      canAccess:
+        base.canAccess !== false &&
+        Boolean(base.videoUrl || base.video_url),
+      source: base.source || source,
+      category: base.category || null,
+    };
+  }, [detailRaw, paramVideo, source, videoId]);
+
+  if (blocked) {
     return null;
   }
 
-  const canStream = canUseLibrary;
-  const canSaveForOffline = canUseLibrary && !savedOnDevice;
-
-  const handlePlay = () => {
-    if (savedOnDevice) {
-      const params = { title: video.title, videoId: video.id };
-      if (isFieldMode || fieldOnlineAccess) {
-        navigateFromFieldToStack(navigation, 'CourseMissFixVideoScreen', params);
-      } else {
-        navigation.navigate('CourseMissFixVideoScreen', params);
-      }
-      return;
-    }
-    if (!canStream) {
-      showMessage({
-        type: 'danger',
-        title: 'Connection required',
-        message:
-          'Save this video to your device while online, then watch it offline in Field Mode → Downloaded Videos.',
-        duration: 4000,
-      });
-      return;
-    }
-    showMessage({
-      type: 'default',
-      title: 'Streaming',
-      message: 'Video playback will connect to the library stream when the player API is wired.',
-      duration: 3000,
-    });
-  };
-
-  const handleDownload = () => {
-    if (savedOnDevice) {
-      showMessage({
-        type: 'default',
-        title: 'Already on device',
-        message: 'Find this clip under Field Mode → Downloaded Videos.',
-        duration: 3000,
-      });
-      return;
-    }
-    if (!canSaveForOffline) {
-      showMessage({
-        type: 'danger',
-        title: 'Connection required',
-        message: 'Download videos in Full Library Mode (or when online) to watch at the range without Wi‑Fi.',
-        duration: 4000,
-      });
-      return;
-    }
-    saveDownloadedVideo(video);
-    setSavedOnDevice(true);
-    showMessage({
-      type: 'success',
-      title: 'Saved for offline',
-      message: 'Available in Field Mode under Downloaded Videos.',
-      duration: 3500,
-    });
-  };
+  const savedOnDevice = isVideoDownloaded(video.id);
+  const canStream = canUseLibrary && video.canAccess && !video.locked;
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
-        title={video.title}
+        title={video.title || 'Video'}
         showBack
         showNotification={false}
         onBack={() => navigation.goBack()}
       />
       <ScrollView showsVerticalScrollIndicator={false}>
-        {fieldOnlineAccess && !savedOnDevice ? (
-          <Typography
-            size={12}
-            color={COLORS.primary}
-            style={styles.streamBanner}
-          >
-            Streaming — save to device for offline range use
-          </Typography>
-        ) : null}
-        <View style={styles.player}>
-          <Image source={videoThumb1} style={styles.thumb} resizeMode="cover" />
-          <View style={styles.playOverlay}>
-            <TouchableOpacity style={styles.playBtn} activeOpacity={0.9} onPress={handlePlay}>
-              <Icon
-                name="play"
-                iconFamily="Ionicons"
-                size={28}
-                color={COLORS.white100}
-                style={styles.playIconOffset}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <LibraryVideoPlayer
+          uri={canStream || savedOnDevice ? video.videoUrl : null}
+          locked={video.locked || (!canStream && !savedOnDevice)}
+          lockedMessage={
+            video.locked
+              ? 'Upgrade your plan to unlock this video.'
+              : 'Connect to the internet to play this video.'
+          }
+          poster={video.thumbnail || undefined}
+        />
+
         <View style={[GLOBALSTYLE.paddingHor, styles.body]}>
-          <Typography fFamily="barlowBold700" size={24} color={COLORS.textPrimary}>
-            {video.title}
-          </Typography>
-          <View style={styles.metaRow}>
-            <Icon
-              name="person-outline"
-              iconFamily="Ionicons"
-              size={16}
-              color={COLORS.textSecondary}
-            />
-            <Typography size={14} color={COLORS.textSecondary} mL={6}>
-              {video.instructor}
-            </Typography>
-            <Icon
-              name="time-outline"
-              iconFamily="Ionicons"
-              size={16}
-              color={COLORS.textSecondary}
-              style={styles.metaSpacer}
-            />
-            <Typography size={14} color={COLORS.textSecondary} mL={6}>
-              {video.duration}
-            </Typography>
-          </View>
-          <Typography size={14} color={COLORS.textSecondary} lineHeight={22} mT={16}>
-            {video.description}
-          </Typography>
-          {!canStream && !savedOnDevice ? (
-            <Typography size={12} color={COLORS.primary} mT={12}>
-              No stable connection — download this clip when online to watch at the range.
+          {video.title ? (
+            <Typography fFamily="barlowBold700" size={24} color={COLORS.textPrimary}>
+              {video.title}
             </Typography>
           ) : null}
-          <View style={styles.actions}>
-            <TouchableOpacity style={styles.playPrimary} activeOpacity={0.9} onPress={handlePlay}>
-              <Icon
-                name="play"
-                iconFamily="Ionicons"
-                size={18}
-                color={COLORS.white100}
-              />
-              <Typography
-                fFamily="barlowSemiBold600"
-                size={15}
-                color={COLORS.white100}
-                mL={8}
-              >
-                {savedOnDevice ? 'Play (offline)' : 'Play'}
-              </Typography>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.iconBtn, savedOnDevice && styles.iconBtnSaved]}
-              activeOpacity={0.88}
-              onPress={handleDownload}
-            >
-              <Icon
-                name={savedOnDevice ? 'bookmark' : 'bookmark-outline'}
-                iconFamily="Ionicons"
-                size={20}
-                color={savedOnDevice ? COLORS.primary : COLORS.textSecondary}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn} activeOpacity={0.88}>
-              <Icon
-                name="share-outline"
-                iconFamily="Ionicons"
-                size={20}
-                color={COLORS.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
+          {video.category ? (
+            <Typography size={14} color={COLORS.textSecondary} mT={8}>
+              {video.category}
+            </Typography>
+          ) : null}
+          {video.description ? (
+            <Typography size={14} color={COLORS.textSecondary} lineHeight={22} mT={16}>
+              {video.description}
+            </Typography>
+          ) : null}
         </View>
       </ScrollView>
     </Container>
@@ -232,74 +124,8 @@ const VideoDetailScreen = ({ navigation, route }) => {
 export default VideoDetailScreen;
 
 const styles = StyleSheet.create({
-  streamBanner: {
-    paddingHorizontal: Sizer.hSize(16),
-    paddingTop: Sizer.vSize(8),
-  },
-  player: {
-    aspectRatio: 16 / 9,
-    backgroundColor: COLORS.textPrimary,
-  },
-  thumb: {
-    width: '100%',
-    height: '100%',
-  },
-  playOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(26,26,26,0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playBtn: {
-    width: Sizer.hSize(64),
-    height: Sizer.hSize(64),
-    borderRadius: Sizer.hSize(32),
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playIconOffset: {
-    marginLeft: 4,
-  },
   body: {
     paddingVertical: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(40),
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: Sizer.vSize(12),
-    flexWrap: 'wrap',
-  },
-  metaSpacer: {
-    marginLeft: 16,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: Sizer.hSize(12),
-    marginTop: Sizer.vSize(24),
-  },
-  playPrimary: {
-    flex: 1,
-    height: Sizer.vSize(48),
-    backgroundColor: COLORS.primary,
-    borderRadius: Sizer.hSize(12),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconBtn: {
-    width: Sizer.hSize(48),
-    height: Sizer.hSize(48),
-    borderRadius: Sizer.hSize(12),
-    borderWidth: 1,
-    borderColor: COLORS.borderMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-  },
-  iconBtnSaved: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.primaryLight,
   },
 });

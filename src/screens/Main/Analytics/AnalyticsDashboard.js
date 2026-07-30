@@ -24,6 +24,7 @@ const EXPLORE_ITEMS = [
     desc: 'Instructional training videos',
     icon: 'play-circle-outline',
     screen: 'InstructionalVideosScreen',
+    params: { catalog: 'tutorial' },
   },
   {
     label: 'Workbooks',
@@ -50,14 +51,15 @@ const AnalyticsDashboard = ({ navigation }) => {
     return null;
   }
 
-  const go = screen => navigateFromTabToStack(navigation, screen);
+  const go = (screen, params) =>
+    navigateFromTabToStack(navigation, screen, params);
 
   const onExplorePress = item => {
     if (item.tab) {
       navigateFromTabToTab(navigation, item.tab);
       return;
     }
-    go(item.screen);
+    go(item.screen, item.params);
   };
 
   return (

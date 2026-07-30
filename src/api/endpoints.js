@@ -49,6 +49,23 @@ export const ENDPOINTS = {
   GET_REVIEWS: 'reviews',
   POST_REVIEW: 'reviews',
 
+  // --- Academy / Library ---
+  GET_TUTORIAL_VIDEOS: 'tutorial-videos/',
+  GET_TUTORIAL_VIDEO: id => `tutorial-videos/${id}`,
+  GET_WORKBOOKS: 'workbooks',
+  GET_WORKBOOK: id => `workbooks/${id}`,
+  GET_INSTRUCTIONAL_VIDEOS: 'instructional-videos',
+  GET_INSTRUCTIONAL_VIDEO: id => `instructional-videos/${id}`,
+  GET_ADDITIONAL_VIDEOS: 'additional-videos',
+  GET_ADDITIONAL_VIDEO: id => `additional-videos/${id}`,
+  GET_ADDITIONAL_VIDEO_CATEGORIES: 'additional-videos/categories',
+  GET_PRACTICE_DRILLS: 'practice-drills',
+  GET_PRACTICE_DRILL: id => `practice-drills/${id}`,
+  GET_MONTHLY_WEBCASTS: 'monthly-webcasts',
+  GET_MONTHLY_WEBCAST: id => `monthly-webcasts/${id}`,
+  GET_MANUAL_DELIVERIES: 'manual-deliveries',
+  GET_MANUAL_DELIVERY: id => `manual-deliveries/${id}`,
+
   // --- Config ---
   SUBSCRIPTION_ENABLED: 'subscription-enabled',
 };

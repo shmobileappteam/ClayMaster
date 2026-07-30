@@ -1,5 +1,13 @@
-import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useMemo } from 'react';
+import {
+  ActivityIndicator,
+  Linking,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
@@ -11,58 +19,136 @@ import {
   TYPE,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
-import { LIBRARY_DOCUMENTS } from '../../../constants/libraryContent';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { getManualDeliveries } from '../../../api/academyService';
+import { mapManualDocument, openRemoteFile } from '../../../constants/academy';
+import { showMessage } from '../../../utils';
 
-/** ClayMaster-App-UI `AdditionalDocuments.tsx` */
-const AdditionalDocumentsScreen = ({ navigation }) => (
-  <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-    <LibraryHeader
-      title="Documents"
-      showBack
-      showNotification={false}
-      onBack={() => navigation.goBack()}
-    />
-    <ScrollView
-      contentContainerStyle={styles.scroll}
-      showsVerticalScrollIndicator={false}
-    >
-      <Typography size={TYPE.body.size} color={COLORS.textSecondary} mB={SPACING.component}>
-        Reference materials, guides & templates
-      </Typography>
-      {LIBRARY_DOCUMENTS.map(doc => (
-        <View key={doc.title} style={[GLOBALSTYLE.screenCard, styles.docCard]}>
-          <View style={styles.docHeader}>
-            <View style={styles.docIcon}>
-              <Icon name="document-text-outline" iconFamily="Ionicons" size={20} color={COLORS.primary} />
+/** ClayMaster-App-UI `AdditionalDocuments.tsx` → manual deliveries API */
+const AdditionalDocumentsScreen = ({ navigation }) => {
+  const { data, isLoading, isError, isFetching, refetch } = useCustomQuery({
+    queryKey: ['manualDeliveries'],
+    queryFn: getManualDeliveries,
+  });
+
+  const documents = useMemo(
+    () => (data?.items || []).map(mapManualDocument).filter(Boolean),
+    [data?.items],
+  );
+
+  const openDoc = doc => openRemoteFile(doc.fileUrl, Linking, showMessage);
+
+  return (
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+      <LibraryHeader
+        title="Documents"
+        showBack
+        showNotification={false}
+        onBack={() => navigation.goBack()}
+      />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
+            tintColor={COLORS.primary}
+          />
+        }
+      >
+        <Typography
+          size={TYPE.body.size}
+          color={COLORS.textSecondary}
+          mB={SPACING.component}
+        >
+          Reference materials, guides & templates
+        </Typography>
+
+        {isLoading ? (
+          <ActivityIndicator color={COLORS.primary} />
+        ) : isError ? (
+          <TouchableOpacity onPress={refetch}>
+            <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
+              Could not load documents. Tap to retry.
+            </Typography>
+          </TouchableOpacity>
+        ) : documents.length === 0 ? (
+          <Typography color={COLORS.textSecondary}>No documents yet.</Typography>
+        ) : (
+          documents.map(doc => (
+            <View key={doc.id} style={[GLOBALSTYLE.screenCard, styles.docCard]}>
+              <View style={styles.docHeader}>
+                <View style={styles.docIcon}>
+                  <Icon
+                    name="document-text-outline"
+                    iconFamily="Ionicons"
+                    size={20}
+                    color={COLORS.primary}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Typography
+                    fFamily="barlowSemiBold600"
+                    size={TYPE.body.size}
+                    color={COLORS.textPrimary}
+                  >
+                    {doc.title}
+                  </Typography>
+                  <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+                    {[doc.type, doc.category].filter(Boolean).join(' · ')}
+                  </Typography>
+                </View>
+              </View>
+              <View style={styles.docActions}>
+                <TouchableOpacity
+                  style={styles.viewBtn}
+                  activeOpacity={0.88}
+                  onPress={() => openDoc(doc)}
+                >
+                  <Icon
+                    name="eye-outline"
+                    iconFamily="Ionicons"
+                    size={14}
+                    color={COLORS.white100}
+                  />
+                  <Typography
+                    fFamily="barlowSemiBold600"
+                    size={TYPE.caption.size}
+                    color={COLORS.white100}
+                    mL={6}
+                  >
+                    View
+                  </Typography>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.downloadBtn}
+                  activeOpacity={0.88}
+                  onPress={() => openDoc(doc)}
+                >
+                  <Icon
+                    name="download-outline"
+                    iconFamily="Ionicons"
+                    size={14}
+                    color={COLORS.textPrimary}
+                  />
+                  <Typography
+                    fFamily="barlowSemiBold600"
+                    size={TYPE.caption.size}
+                    color={COLORS.textPrimary}
+                    mL={6}
+                  >
+                    Download
+                  </Typography>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
-                {doc.title}
-              </Typography>
-              <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
-                {doc.type} · {doc.size} · {doc.category}
-              </Typography>
-            </View>
-          </View>
-          <View style={styles.docActions}>
-            <TouchableOpacity style={styles.viewBtn} activeOpacity={0.88}>
-              <Icon name="eye-outline" iconFamily="Ionicons" size={14} color={COLORS.white100} />
-              <Typography fFamily="barlowSemiBold600" size={TYPE.caption.size} color={COLORS.white100} mL={6}>
-                View
-              </Typography>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.downloadBtn} activeOpacity={0.88}>
-              <Icon name="download-outline" iconFamily="Ionicons" size={14} color={COLORS.textPrimary} />
-              <Typography fFamily="barlowSemiBold600" size={TYPE.caption.size} color={COLORS.textPrimary} mL={6}>
-                Download
-              </Typography>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ))}
-    </ScrollView>
-  </Container>
-);
+          ))
+        )}
+      </ScrollView>
+    </Container>
+  );
+};
 
 export default AdditionalDocumentsScreen;
 
