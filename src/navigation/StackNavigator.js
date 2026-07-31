@@ -42,6 +42,7 @@ import {
   CreatePostScreen,
   ProductDetailScreen,
   OrdersScreen,
+  OrderDetailScreen,
   ReviewsScreen,
   AdditionalDocumentsScreen,
   AdditionalVideosScreen,
@@ -143,6 +144,7 @@ const StackNavigator = () => {
 
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
       <Stack.Screen name="OrdersScreen" component={OrdersScreen} />
+      <Stack.Screen name="OrderDetailScreen" component={OrderDetailScreen} />
       <Stack.Screen
         name="CartScreen"
         component={CartScreen}

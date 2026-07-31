@@ -17,6 +17,7 @@ export const getDiscountForPackages = async () => {
 /** POST /api/stripe/setup-intent — { client_secret } */
 export const fetchPaymentIntent = async () => {
   const response = await api.post(ENDPOINTS.SETUP_INTENT);
+  console.log('response', response.data);
   return response.data;
 };
 

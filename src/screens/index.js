@@ -47,6 +47,7 @@ import VirtualTournamentScreen from './Main/Community/VirtualTournamentScreen';
 import ShopScreen from './Main/Commerce/ShopScreen';
 import ProductDetailScreen from './Main/Commerce/ProductDetailScreen';
 import OrdersScreen from './Main/Commerce/OrdersScreen';
+import OrderDetailScreen from './Main/Commerce/OrderDetailScreen';
 import ReviewsScreen from './Main/Reviews/ReviewsScreen';
 import AdditionalDocumentsScreen from './Main/Documents/AdditionalDocumentsScreen';
 import AdditionalVideosScreen from './Main/Videos/AdditionalVideosScreen';
@@ -119,6 +120,7 @@ export {
   ShopScreen,
   ProductDetailScreen,
   OrdersScreen,
+  OrderDetailScreen,
   ReviewsScreen,
   AdditionalDocumentsScreen,
   AdditionalVideosScreen,

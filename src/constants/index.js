@@ -19,3 +19,7 @@ export const KEYS = {
 
 export const STRIPE_PUBLISHABLE_KEY =
   'pk_live_51REqPyCMP5tchOw4PQQmjqSv0vJGjZznIdwD52Q3MEDXoMPS1qfiiucNXFSMlMtiEIjvM21kk1jFa3PBgp8r23W000utzrSdQ8';
+
+/** Country State City API — same key as SupremeSignature */
+export const CSC_API_KEY =
+  'ZndUUFB1Zzd5Z1NNb2J3TzBIcGozNUs4cENhQXBHdDEzbjV6dllaNA==';

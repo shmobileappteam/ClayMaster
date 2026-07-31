@@ -55,7 +55,7 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 | Academy / Library | ✅ Live |
 | Tournament | ❌ Not implemented |
 | Reviews | ✅ Live |
-| Shop / Cart / Orders | ❌ Not implemented |
+| Shop / Cart / Orders | ✅ Live |
 | Forum / Community | ❌ Not implemented |
 | Online Coaching / Sessions | ✅ Live |
 
@@ -361,15 +361,15 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/shop/products` | Bearer | ❌ Not implemented |
-| `GET` | `/api/shop/products/{id}` | Bearer | ❌ Not implemented |
-| `POST` | `/api/cart/add` | Bearer | ❌ Not implemented |
-| `GET` | `/api/cart` | Bearer | ❌ Not implemented |
-| `POST` | `/api/cart/update` | Bearer | ❌ Not implemented |
-| `DELETE` | `/api/cart/{variant_id}` | Bearer | ❌ Not implemented |
-| `POST` | `/api/checkout/place-order` | Bearer | ❌ Not implemented |
-| `GET` | `/api/orders` | Bearer | ❌ Not implemented |
-| `GET` | `/api/orders/{id}` | Bearer | ❌ Not implemented |
+| `GET` | `/api/shop/products` | Bearer | ✅ Live (`ShopScreen` grid) |
+| `GET` | `/api/shop/products/{id}` | Bearer | ✅ Live (`ProductDetailScreen` — variant/color/size selection) |
+| `POST` | `/api/cart/add` | Bearer | ✅ Live (Add to Cart / Buy Now) |
+| `GET` | `/api/cart` | Bearer | ✅ Live (`CartScreen` + cart badge) |
+| `POST` | `/api/cart/update` | Bearer | ✅ Live (qty stepper) |
+| `DELETE` | `/api/cart/{variant_id}` | Bearer | ✅ Live (trash / qty→0) |
+| `POST` | `/api/checkout/place-order` | Bearer | ✅ Live (`CheckoutScreen` billing form + Stripe) |
+| `GET` | `/api/orders` | Bearer | ✅ Live (`OrdersScreen`) |
+| `GET` | `/api/orders/{id}` | Bearer | ✅ Live (`OrderDetailScreen`) |
 
 ### Errors
 
@@ -377,14 +377,16 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 |------|--------|
 | `401` | Unauthenticated |
 | `500` | Possible on product list DB fail |
-| Checkout / cart validation | Confirm `422` shapes live (limited in docs) |
+| `422` | Checkout billing validation → mapped to form fields via `formatBackendErrors` |
 
 ### Dev notes
 
-- Cart prices often in **cents** (`2500` = $25); cart summary / orders may use dollar numbers/strings — normalize in UI.
-- Checkout success uses `status: "success"` (**string**), not boolean.
-- Docs cart delete URL has typo `//api` — use `/api/cart/{variant_id}`.
-- Replace `shopProducts.js` + migrate Redux `cartSlice` to server cart when wiring.
+- Service: `src/api/shopService.js` · mappers: `src/constants/shop.js`.
+- Cart item / variant prices in **cents** (`2500` = $25) — `centsToDollars` in UI; cart summary (`subtotal`/`discount`/`total`) and order totals are dollars.
+- Checkout success uses `status: "success"` (**string**) — both string and boolean accepted.
+- Payment: `stripe/setup-intent` → `confirmSetupIntent` (CardField) → `payment_method` in place-order body.
+- Server cart is source of truth: Redux `cartSlice`, `shopProducts.js`, `shopHelpers.js` removed; badge uses query `['cart']`.
+- Printify: variant resolved from selected color/size option-value ids; hero image switches per variant (`imageForVariant`).
 
 ---
 

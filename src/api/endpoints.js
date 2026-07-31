@@ -5,6 +5,9 @@ export const BASE_URL = __DEV__
 
 export const API_DOMAIN = `${BASE_URL}api/`;
 
+/** Country State City API root */
+export const CSC_DOMAIN = 'https://api.countrystatecity.in/v1/';
+
 export const ENDPOINTS = {
   // --- Auth ---
   LOGIN: 'login',
@@ -72,6 +75,23 @@ export const ENDPOINTS = {
   GET_SESSION_PURCHASE_INFO: 'sessions/purchase-info',
   PURCHASE_SESSIONS: 'sessions/purchase',
 
+  // --- Shop / Cart / Orders ---
+  GET_SHOP_PRODUCTS: 'shop/products',
+  GET_SHOP_PRODUCT: id => `shop/products/${id}`,
+  ADD_TO_CART: 'cart/add',
+  GET_CART: 'cart',
+  UPDATE_CART: 'cart/update',
+  REMOVE_CART_ITEM: variantId => `cart/${variantId}`,
+  PLACE_ORDER: 'checkout/place-order',
+  GET_ORDERS: 'orders',
+  GET_ORDER: id => `orders/${id}`,
+
   // --- Config ---
   SUBSCRIPTION_ENABLED: 'subscription-enabled',
+
+  // --- Country State City ---
+  CSC_COUNTRIES: 'countries',
+  CSC_STATES: countryIso => `countries/${countryIso}/states`,
+  CSC_CITIES: (countryIso, stateIso) =>
+    `countries/${countryIso}/states/${stateIso}/cities`,
 };

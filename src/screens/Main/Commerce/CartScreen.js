@@ -1,12 +1,14 @@
 import React from 'react';
 import {
+  ActivityIndicator,
   Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useQueryClient } from '@tanstack/react-query';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
@@ -18,35 +20,107 @@ import {
   TYPE,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
-import { removeFromCart, updateQuantity } from '../../../redux/slices/cartSlice';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { useCustomMutation } from '../../../query/useCustomMutation';
 import {
-  formatPrice,
-  resolveProductImage,
-} from '../../../utils/shopHelpers';
+  getCart,
+  removeCartItem,
+  updateCartItem,
+} from '../../../api/shopService';
+import { centsToDollars, formatMoney } from '../../../constants/shop';
 import { navigateFromTabToTab } from '../../../navigation/navigationHelpers';
+import { showMessage } from '../../../utils';
 
-const SHIPPING = 5;
-
-/**
- * ClayMaster-App-UI `Cart.tsx`
- */
+/** ClayMaster-App-UI `Cart.tsx` → GET /api/cart + cart/update + cart/{variant_id} */
 const CartScreen = ({ navigation }) => {
-  const dispatch = useDispatch();
-  const { items, totalAmount } = useSelector(state => state.cart);
+  const queryClient = useQueryClient();
+  const { data, isLoading, isError, isFetching, refetch } = useCustomQuery({
+    queryKey: ['cart'],
+    queryFn: getCart,
+  });
 
-  const changeQty = (id, qty) => {
-    dispatch(updateQuantity({ id, quantity: qty }));
+  const items = data?.items || [];
+
+  const refreshCart = () => queryClient.invalidateQueries({ queryKey: ['cart'] });
+
+  const { mutate: mutateQuantity, isPending: updating } = useCustomMutation({
+    mutationFn: updateCartItem,
+    onSuccess: res => {
+      if (res?.status === false) {
+        showMessage({ type: 'danger', message: res?.message || 'Could not update cart.' });
+      }
+      refreshCart();
+    },
+    onError: err => {
+      showMessage({
+        type: 'danger',
+        message: err?.data?.message || 'Could not update cart.',
+      });
+    },
+  });
+
+  const { mutate: mutateRemove, isPending: removing } = useCustomMutation({
+    mutationFn: removeCartItem,
+    onSuccess: res => {
+      if (res?.status === false) {
+        showMessage({ type: 'danger', message: res?.message || 'Could not remove item.' });
+      }
+      refreshCart();
+    },
+    onError: err => {
+      showMessage({
+        type: 'danger',
+        message: err?.data?.message || 'Could not remove item.',
+      });
+    },
+  });
+
+  const busy = updating || removing;
+
+  const changeQty = (item, qty) => {
+    if (busy) return;
+    if (qty <= 0) {
+      mutateRemove(item.variant_id);
+      return;
+    }
+    mutateQuantity({ variant_id: item.variant_id, quantity: qty });
   };
+
+  const header = (
+    <LibraryHeader
+      title="My Cart"
+      showBack
+      showNotification={false}
+      onBack={() => navigation.goBack()}
+    />
+  );
+
+  if (isLoading) {
+    return (
+      <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+        {header}
+        <ActivityIndicator color={COLORS.primary} style={{ marginTop: 48 }} />
+      </Container>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+        {header}
+        <TouchableOpacity onPress={refetch} style={styles.centerPad}>
+          <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
+            Could not load cart. Tap to retry.
+          </Typography>
+        </TouchableOpacity>
+      </Container>
+    );
+  }
 
   if (items.length === 0) {
     return (
       <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-        <LibraryHeader
-          title="My Cart"
-          showBack
-          showNotification={false}
-          onBack={() => navigation.goBack()}
-        />
+        {header}
         <View style={styles.empty}>
           <View style={styles.emptyIcon}>
             <Icon name="bag-outline" iconFamily="Ionicons" size={28} color={COLORS.primary} />
@@ -71,29 +145,25 @@ const CartScreen = ({ navigation }) => {
     );
   }
 
-  const total = totalAmount + SHIPPING;
-
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <LibraryHeader
-        title="My Cart"
-        showBack
-        showNotification={false}
-        onBack={() => navigation.goBack()}
-      />
+      {header}
       <View style={styles.flex}>
         <ScrollView
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isFetching && !isLoading}
+              onRefresh={refetch}
+              tintColor={COLORS.primary}
+            />
+          }
         >
           {items.map(item => (
             <View key={item.id} style={[GLOBALSTYLE.screenCard, styles.lineItem]}>
-              {resolveProductImage(item.image) ? (
-                <Image
-                  source={resolveProductImage(item.image)}
-                  style={styles.thumb}
-                  resizeMode="cover"
-                />
+              {item.image ? (
+                <Image source={{ uri: item.image }} style={styles.thumb} resizeMode="cover" />
               ) : (
                 <View style={[styles.thumb, styles.thumbPlaceholder]}>
                   <Icon name="shirt-outline" iconFamily="Ionicons" size={24} color={COLORS.textSecondary} />
@@ -106,23 +176,29 @@ const CartScreen = ({ navigation }) => {
                     size={TYPE.body.size}
                     color={COLORS.textPrimary}
                     style={{ flex: 1, paddingRight: 8 }}
+                    numberOfLines={2}
                   >
-                    {item.name}
+                    {item.title}
                   </Typography>
                   <TouchableOpacity
-                    onPress={() => dispatch(removeFromCart(item.id))}
+                    onPress={() => !busy && mutateRemove(item.variant_id)}
                     hitSlop={8}
                   >
                     <Icon name="trash-outline" iconFamily="Ionicons" size={16} color={COLORS.textSecondary} />
                   </TouchableOpacity>
                 </View>
+                {item.size || item.color ? (
+                  <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+                    {[item.color, item.size].filter(Boolean).join(' · ')}
+                  </Typography>
+                ) : null}
                 <Typography fFamily="barlowBold700" size={TYPE.body.size} color={COLORS.primary} mT={4}>
-                  {formatPrice(item.price)}
+                  {formatMoney(centsToDollars(item.price))}
                 </Typography>
                 <View style={styles.qtyRow}>
                   <TouchableOpacity
                     style={styles.qtyBtnOutline}
-                    onPress={() => changeQty(item.id, item.quantity - 1)}
+                    onPress={() => changeQty(item, Number(item.quantity) - 1)}
                   >
                     <Icon name="remove" iconFamily="Ionicons" size={14} color={COLORS.textPrimary} />
                   </TouchableOpacity>
@@ -136,10 +212,13 @@ const CartScreen = ({ navigation }) => {
                   </Typography>
                   <TouchableOpacity
                     style={styles.qtyBtnFill}
-                    onPress={() => changeQty(item.id, item.quantity + 1)}
+                    onPress={() => changeQty(item, Number(item.quantity) + 1)}
                   >
                     <Icon name="add" iconFamily="Ionicons" size={14} color={COLORS.white100} />
                   </TouchableOpacity>
+                  {busy ? (
+                    <ActivityIndicator size="small" color={COLORS.primary} />
+                  ) : null}
                 </View>
               </View>
             </View>
@@ -153,23 +232,25 @@ const CartScreen = ({ navigation }) => {
                 Subtotal
               </Typography>
               <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
-                {formatPrice(totalAmount)}
+                {formatMoney(data?.subtotal)}
               </Typography>
             </View>
-            <View style={styles.summaryRow}>
-              <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
-                Shipping
-              </Typography>
-              <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
-                {formatPrice(SHIPPING)}
-              </Typography>
-            </View>
+            {data?.discount ? (
+              <View style={styles.summaryRow}>
+                <Typography size={TYPE.body.size} color={COLORS.textSecondary}>
+                  Annual Subscriber Credit
+                </Typography>
+                <Typography size={TYPE.body.size} color={COLORS.primary}>
+                  -{formatMoney(data.discount)}
+                </Typography>
+              </View>
+            ) : null}
             <View style={styles.summaryTotal}>
               <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.textPrimary}>
                 Total
               </Typography>
               <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.textPrimary}>
-                {formatPrice(total)}
+                {formatMoney(data?.total)}
               </Typography>
             </View>
           </View>
@@ -197,6 +278,10 @@ const styles = StyleSheet.create({
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(16),
     gap: Sizer.vSize(SPACING.component),
+  },
+  centerPad: {
+    padding: Sizer.hSize(24),
+    alignItems: 'center',
   },
   empty: {
     flex: 1,

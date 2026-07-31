@@ -19,7 +19,7 @@ export const login = async (body, setIsLoading) => {
     password: body?.password,
     ...(body?.device_token ? { device_token: body.device_token } : {}),
   });
-  const response = await api.post(ENDPOINTS.LOGIN, payload);
+  const response = await api.post(ENDPOINTS.LOGIN, payload);                   
   console.log('response', response.data);
   return response.data;
 };

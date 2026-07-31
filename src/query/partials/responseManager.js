@@ -67,6 +67,8 @@ export const onLoginSuccess = async (
   subscriptionEnabled,
   { showModeSelect = true } = {},
 ) => {
+
+  console.log('response', response);
   try {
     if (response?.status) {
       if (response?.token) {
