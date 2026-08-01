@@ -96,12 +96,15 @@ const SplashScreen = ({ navigation }) => {
         return;
       }
 
-      if (activeRound && !activeRound.finished) {
-        navigation.replace('CourseRoundScreen');
-        return;
-      }
-
       if (token) {
+        // Unfinished local draft or last mode Field → Field home (resume card), not auto-play
+        if (
+          (activeRound?.roundId && !activeRound.finished) ||
+          mode === 'course'
+        ) {
+          resetToFieldMode(navigation, 'CourseHomeScreen');
+          return;
+        }
         restoreWithProfile(credentials);
         return;
       }

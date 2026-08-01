@@ -11,27 +11,19 @@ import { KEYS } from '../constants';
 
 /**
  * @typedef {'course' | 'library'} AppMode
- * - `course` — Field Mode (scorecard, miss, drills, downloaded videos)
- * - `library` — Full Library Mode (portal on mobile)
- */
-
-/**
- * @typedef {'visual-discipline'|'timing-breakdown'|'speed-mismatch'|'target-line-misread'|'pressure-seq-breakdown'|'planning-error'} MissCategoryId
- */
-
-/**
- * @typedef {{ station: number, shots: { hit: boolean, missCategory?: MissCategoryId }[] }} StationRecord
- */
-
-/**
+ *
+ * Active round draft (MMKV) — stations stay local until Complete posts to API.
  * @typedef {{
- *   course: string,
- *   discipline: string,
- *   startedAt: string,
+ *   roundId: number,
+ *   course_name: string,
+ *   ncsca_class?: string,
+ *   created_at?: string,
+ *   european_rotation?: boolean,
+ *   starting_station?: number|null,
+ *   total_stations?: number|null,
+ *   station_sequence?: number[],
+ *   stations: object[],
  *   currentStation: number,
- *   totalStations: number,
- *   shotsPerStation: number,
- *   stations: StationRecord[],
  *   finished?: boolean,
  * }} ActiveRound
  */
@@ -74,76 +66,32 @@ export const AppModeProvider = ({ children }) => {
     }
   }, [activeRound]);
 
-  const startRound = useCallback(init => {
-    const round = {
-      course: init?.course ?? 'Practice Range',
-      discipline: init?.discipline ?? 'Sporting Clays',
-      startedAt: new Date().toISOString(),
-      currentStation: 1,
-      totalStations: init?.totalStations ?? 5,
-      shotsPerStation: init?.shotsPerStation ?? 5,
-      stations: [{ station: 1, shots: [] }],
-    };
-    setActiveRound(round);
-    setMode('course');
-  }, [setMode]);
-
-  const recordShot = useCallback((hit, missCategory) => {
-    setActiveRound(r => {
-      if (!r) return r;
-      const stations = r.stations.map(s => ({ ...s, shots: [...s.shots] }));
-      const cur = stations.find(s => s.station === r.currentStation);
-      if (cur) cur.shots.push({ hit, missCategory });
-      return { ...r, stations };
-    });
-  }, []);
-
-  const updateLastShotMiss = useCallback(missCategoryId => {
-    setActiveRound(r => {
-      if (!r) return r;
-      const stations = r.stations.map(s => ({
-        ...s,
-        shots: s.shots.map(sh => ({ ...sh })),
-      }));
-      const cur = stations.find(s => s.station === r.currentStation);
-      if (cur && cur.shots.length > 0) {
-        const last = cur.shots[cur.shots.length - 1];
-        if (!last.hit) last.missCategory = missCategoryId;
+  /** Replace the single active draft (resuming another round discards prior local stations). */
+  const setActiveDraft = useCallback(
+    draft => {
+      if (!draft?.roundId) {
+        setActiveRound(null);
+        return;
       }
-      return { ...r, stations };
-    });
-  }, []);
+      setActiveRound({
+        ...draft,
+        finished: false,
+        currentStation:
+          draft.currentStation ??
+          draft.stations?.[draft.stations.length - 1]?.station_number ??
+          1,
+      });
+      setMode('course');
+    },
+    [setMode],
+  );
 
-  const nextStation = useCallback(() => {
+  const updateDraftStations = useCallback(stations => {
     setActiveRound(r => {
       if (!r) return r;
-      const next = r.currentStation + 1;
-      if (next > r.totalStations) return r;
-      const exists = r.stations.find(s => s.station === next);
-      const stations = exists
-        ? r.stations
-        : [...r.stations, { station: next, shots: [] }];
-      return { ...r, currentStation: next, stations };
-    });
-  }, []);
-
-  const finishRound = useCallback(() => {
-    setActiveRound(r => {
-      if (!r) return r;
-      const tally = {};
-      r.stations.forEach(s =>
-        s.shots.forEach(sh => {
-          if (!sh.hit && sh.missCategory) {
-            tally[sh.missCategory] = (tally[sh.missCategory] || 0) + 1;
-          }
-        }),
-      );
-      const primary = Object.entries(tally).sort((a, b) => b[1] - a[1])[0]?.[0];
-      if (primary) {
-        setLastPrimaryMiss(primary);
-        storage.set(KEYS.LAST_PRIMARY_MISS, primary);
-      }
-      return { ...r, finished: true };
+      const current =
+        stations?.[stations.length - 1]?.station_number ?? r.currentStation;
+      return { ...r, stations, currentStation: current, finished: false };
     });
   }, []);
 
@@ -154,23 +102,18 @@ export const AppModeProvider = ({ children }) => {
       mode,
       setMode,
       activeRound,
-      startRound,
-      recordShot,
-      updateLastShotMiss,
-      nextStation,
-      finishRound,
+      setActiveDraft,
+      updateDraftStations,
       clearRound,
       lastPrimaryMiss,
+      setLastPrimaryMiss,
     }),
     [
       mode,
       setMode,
       activeRound,
-      startRound,
-      recordShot,
-      updateLastShotMiss,
-      nextStation,
-      finishRound,
+      setActiveDraft,
+      updateDraftStations,
       clearRound,
       lastPrimaryMiss,
     ],

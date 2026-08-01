@@ -1,5 +1,11 @@
-import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import React, { useMemo } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
@@ -11,117 +17,246 @@ import {
   TYPE,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { getRound, getRounds } from '../../../api/roundService';
+import { getStations } from '../../../api/stationService';
+import {
+  formatRoundMetaLine,
+  isRoundComplete,
+  mapRoundToScorecardStations,
+  scoreFromShots,
+  scoreFromStations,
+  sortRoundsForFieldList,
+} from '../../../constants/rounds';
+import AppLoader from '../../../atomComponents/AppLoader';
 
-/** ClayMaster-App-UI `Scorecard.tsx` */
-const STATIONS = [
-  { name: 'Station 1', shots: [true, true, false, true, true] },
-  { name: 'Station 2', shots: [true, false, true, true, true] },
-  { name: 'Station 3', shots: [true, true, true, false, false] },
-  { name: 'Station 4', shots: [true, true, true, true, false] },
-  { name: 'Station 5', shots: [false, true, true, true, true] },
-];
+/** Digital scorecard — completed rounds only (live API). */
+const LibraryScorecardScreen = ({ navigation, route }) => {
+  const roundId = route.params?.roundId;
 
-const totalHit = STATIONS.reduce(
-  (acc, s) => acc + s.shots.filter(Boolean).length,
-  0,
-);
-const totalShots = STATIONS.reduce((acc, s) => acc + s.shots.length, 0);
-const accuracy = Math.round((totalHit / totalShots) * 100);
+  const { data: roundsRaw, isLoading: listLoading } = useCustomQuery({
+    queryKey: ['rounds'],
+    queryFn: getRounds,
+    enabled: !roundId,
+  });
 
-const LibraryScorecardScreen = ({ navigation }) => (
-  <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-    <LibraryHeader
-      title="Scorecard"
-      showBack
-      showNotification={false}
-      onBack={() => navigation.goBack()}
-    />
-    <ScrollView
-      contentContainerStyle={styles.scroll}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.summary}>
-        <View>
-          <Typography size={TYPE.body.size} color={COLORS.white100} style={{ opacity: 0.8 }}>
-            Round Score
-          </Typography>
-          <Typography fFamily="barlowBold700" size={40} color={COLORS.white100} mT={4}>
-            {totalHit}/{totalShots}
-          </Typography>
-        </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Typography size={TYPE.body.size} color={COLORS.white100} style={{ opacity: 0.8 }}>
-            Accuracy
-          </Typography>
-          <Typography fFamily="barlowBold700" size={TYPE.h1.size} color={COLORS.white100} mT={4}>
-            {accuracy}%
-          </Typography>
-        </View>
-      </View>
-      <View style={styles.metaRow}>
-        <Icon name="locate-outline" iconFamily="Ionicons" size={16} color={COLORS.white100} />
-        <Typography size={TYPE.body.size} color={COLORS.white100} mL={8} style={{ opacity: 0.8 }}>
-          Apr 8, 2026 · Sporting Clays
-        </Typography>
-      </View>
+  const { data: roundDetail, isLoading: detailLoading } = useCustomQuery({
+    queryKey: ['round', roundId],
+    queryFn: ({ queryKey }) => getRound(queryKey[1]),
+    enabled: !!roundId,
+  });
 
-      <Typography
-        fFamily={TYPE.h2.fFamily}
-        size={TYPE.h2.size}
-        color={COLORS.textPrimary}
-        mT={SPACING.section}
-        mB={SPACING.component}
+  const { data: apiStations, isLoading: stationsLoading } = useCustomQuery({
+    queryKey: ['stations', roundId],
+    queryFn: ({ queryKey }) => getStations(queryKey[1]),
+    enabled: !!roundId,
+  });
+
+  const completedRounds = useMemo(() => {
+    const list = Array.isArray(roundsRaw)
+      ? roundsRaw
+      : Array.isArray(roundsRaw?.data)
+        ? roundsRaw.data
+        : [];
+    return sortRoundsForFieldList(list).filter(isRoundComplete);
+  }, [roundsRaw]);
+
+  if (!roundId) {
+    return (
+      <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+        <LibraryHeader
+          title="Digital Scorecard"
+          showBack
+          showNotification={false}
+          onBack={() => navigation.goBack()}
+        />
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+        >
+          {listLoading ? (
+            <ActivityIndicator color={COLORS.primary} style={{ marginTop: 40 }} />
+          ) : null}
+          {!listLoading && !completedRounds.length ? (
+            <Typography
+              size={14}
+              color={COLORS.textSecondary}
+              textAlign="center"
+              mT={32}
+            >
+              No completed rounds yet.
+            </Typography>
+          ) : null}
+          {completedRounds.map(item => (
+            <TouchableOpacity
+              key={String(item.id)}
+              style={[GLOBALSTYLE.screenCard, styles.listCard]}
+              activeOpacity={0.88}
+              onPress={() =>
+                navigation.push('LibraryScorecardScreen', { roundId: item.id })
+              }
+            >
+              <Typography fFamily="barlowSemiBold600" size={16} color={COLORS.textPrimary}>
+                {item.course_name || 'Round'}
+              </Typography>
+              <Typography size={12} color={COLORS.textSecondary} mT={4}>
+                {formatRoundMetaLine(item)}
+              </Typography>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </Container>
+    );
+  }
+
+  if (detailLoading || stationsLoading || !roundDetail) {
+    return (
+      <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+        <LibraryHeader
+          title="Scorecard"
+          showBack
+          showNotification={false}
+          onBack={() => navigation.goBack()}
+        />
+        <AppLoader />
+      </Container>
+    );
+  }
+
+  const stationsSource =
+    Array.isArray(apiStations) && apiStations.length
+      ? apiStations
+      : Array.isArray(roundDetail?.stations)
+        ? roundDetail.stations
+        : [];
+  const stations = mapRoundToScorecardStations({
+    ...roundDetail,
+    stations: stationsSource,
+  });
+  const computed = scoreFromStations(stationsSource);
+  const apiStatsUsable =
+    typeof roundDetail?.stats?.total === 'number' &&
+    roundDetail.stats.total > 0 &&
+    typeof roundDetail?.stats?.dead === 'number';
+  const totalHit = apiStatsUsable ? roundDetail.stats.dead : computed.hits;
+  const totalShots = apiStatsUsable
+    ? roundDetail.stats.total
+    : computed.taken;
+  const accuracy = totalShots
+    ? Math.round((totalHit / totalShots) * 100)
+    : 0;
+  const statsDead = totalHit;
+  const statsLost = apiStatsUsable
+    ? roundDetail.stats.lost
+    : Math.max(0, totalShots - totalHit);
+  const statsTotal = totalShots;
+
+  return (
+    <Container isPadding={false} backgroundColor={COLORS.mainBg}>
+      <LibraryHeader
+        title="Scorecard"
+        showBack
+        showNotification={false}
+        onBack={() => navigation.goBack()}
+      />
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
       >
-        Station Breakdown
-      </Typography>
+        <View style={styles.summary}>
+          <View>
+            <Typography size={TYPE.body.size} color={COLORS.white100} style={{ opacity: 0.8 }}>
+              Round Score
+            </Typography>
+            <Typography fFamily="barlowBold700" size={40} color={COLORS.white100} mT={4}>
+              {statsDead}/{statsTotal || 0}
+            </Typography>
+          </View>
+          <View style={{ alignItems: 'flex-end' }}>
+            <Typography size={TYPE.body.size} color={COLORS.white100} style={{ opacity: 0.8 }}>
+              Accuracy
+            </Typography>
+            <Typography fFamily="barlowBold700" size={TYPE.h1.size} color={COLORS.white100} mT={4}>
+              {accuracy}%
+            </Typography>
+          </View>
+        </View>
+        <View style={styles.metaRow}>
+          <Icon name="locate-outline" iconFamily="Ionicons" size={16} color={COLORS.white100} />
+          <Typography size={TYPE.body.size} color={COLORS.white100} mL={8} style={{ opacity: 0.8 }}>
+            {roundDetail.course_name}
+            {formatRoundMetaLine(roundDetail)
+              ? ` · ${formatRoundMetaLine(roundDetail)}`
+              : ''}
+          </Typography>
+        </View>
 
-      <View style={styles.stationList}>
-        {STATIONS.map(station => {
-          const hits = station.shots.filter(Boolean).length;
-          return (
-            <View key={station.name} style={[GLOBALSTYLE.screenCard, styles.stationCard]}>
-              <View style={styles.stationHeader}>
-                <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary}>
-                  {station.name}
-                </Typography>
-                <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.primary}>
-                  {hits}/{station.shots.length}
-                </Typography>
-              </View>
-              <View style={styles.shotsRow}>
-                {station.shots.map((hit, i) => (
-                  <View
-                    key={i}
-                    style={[styles.shotCell, hit ? styles.shotHit : styles.shotMiss]}
-                  >
-                    <Icon
-                      name={hit ? 'checkmark' : 'close'}
-                      iconFamily="Ionicons"
-                      size={18}
-                      color={hit ? COLORS.primary : COLORS.destructive}
-                    />
+        <Typography
+          fFamily={TYPE.h2.fFamily}
+          size={TYPE.h2.size}
+          color={COLORS.textPrimary}
+          mT={SPACING.section}
+          mB={SPACING.component}
+        >
+          Station Breakdown
+        </Typography>
+
+        <View style={styles.stationList}>
+          {stations.length ? (
+            stations.map((station, idx) => {
+              const source = stationsSource[idx];
+              const { hits, taken } = source?.shots?.length
+                ? scoreFromShots(source.shots)
+                : {
+                    hits: station.shots.filter(Boolean).length,
+                    taken: station.shots.length,
+                  };
+              return (
+                <View key={station.name} style={[GLOBALSTYLE.screenCard, styles.stationCard]}>
+                  <View style={styles.stationHeader}>
+                    <Typography
+                      fFamily="barlowSemiBold600"
+                      size={TYPE.body.size}
+                      color={COLORS.textPrimary}
+                    >
+                      {station.name}
+                    </Typography>
+                    <Typography
+                      fFamily="barlowSemiBold600"
+                      size={TYPE.body.size}
+                      color={COLORS.primary}
+                    >
+                      {hits}/{taken || 0}
+                    </Typography>
                   </View>
-                ))}
-              </View>
-            </View>
-          );
-        })}
-      </View>
-
-      <View style={[GLOBALSTYLE.screenCard, styles.witnessCard]}>
-        <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
-          Witnessed by
-        </Typography>
-        <Typography fFamily="barlowSemiBold600" size={TYPE.body.size} color={COLORS.textPrimary} mT={4}>
-          Kevin DeMichiel
-        </Typography>
-        <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={4}>
-          Signed digitally · Apr 8, 2026
-        </Typography>
-      </View>
-    </ScrollView>
-  </Container>
-);
+                  <View style={styles.shotsRow}>
+                    {station.shots.map((hit, i) => (
+                      <View
+                        key={i}
+                        style={[styles.shotCell, hit ? styles.shotHit : styles.shotMiss]}
+                      >
+                        <Icon
+                          name={hit ? 'checkmark' : 'close'}
+                          iconFamily="Ionicons"
+                          size={18}
+                          color={hit ? COLORS.primary : COLORS.destructive}
+                        />
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              );
+            })
+          ) : (
+            <Typography size={14} color={COLORS.textSecondary}>
+              No station shots recorded for this round.
+            </Typography>
+          )}
+        </View>
+      </ScrollView>
+    </Container>
+  );
+};
 
 export default LibraryScorecardScreen;
 
@@ -130,6 +265,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(40),
+  },
+  listCard: {
+    padding: Sizer.hSize(SPACING.cardP),
+    marginBottom: Sizer.vSize(12),
+    ...SHADOWS.card,
   },
   summary: {
     backgroundColor: COLORS.primary,
@@ -159,6 +299,7 @@ const styles = StyleSheet.create({
   },
   shotsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Sizer.hSize(8),
   },
   shotCell: {
@@ -173,10 +314,5 @@ const styles = StyleSheet.create({
   },
   shotMiss: {
     backgroundColor: 'rgba(220, 38, 38, 0.1)',
-  },
-  witnessCard: {
-    padding: Sizer.hSize(SPACING.cardP),
-    marginTop: Sizer.vSize(SPACING.section),
-    ...SHADOWS.card,
   },
 });

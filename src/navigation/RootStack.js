@@ -59,7 +59,7 @@ const RootStack = () => {
   };
 
   useEffect(() => {
-    //  storage.clea/rAll()
+     storage.clearAll()
     // async()=>{
 
     // }

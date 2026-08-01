@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   heroCard: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.green,
     borderRadius: Sizer.hSize(12),
     padding: Sizer.hSize(24),
     alignItems: 'center',

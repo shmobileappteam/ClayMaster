@@ -50,7 +50,7 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 | Auth | ✅ Live |
 | Profile / Account | ✅ Live |
 | Subscription / Packages / Stripe | ✅ Live |
-| Rounds & Stations | ✅ Mostly live |
+| Rounds & Stations | ✅ Live (Field Mode + MMKV draft) |
 | Notifications | ✅ Live |
 | Academy / Library | ✅ Live |
 | Tournament | ❌ Not implemented |
@@ -176,19 +176,21 @@ Custom messages: min → stronger password (8+); confirmed → does not match; d
 
 ## 4. Rounds & Stations
 
+**App flow (Field Mode reset):** Library Home → Field → New Round form → `POST /rounds` → play stations (HIT/MISS/Undo, pair/traps UI) with stations in **MMKV** until Complete → `POST /rounds/{id}/stations` → clear MMKV. Recent list from `GET /rounds` (resume on top). Digital Scorecard = completed rounds only. Send-to-ClayMaster removed from UI. Drawer **My Rounds** removed.
+
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/rounds` | Bearer | ✅ Live |
-| `GET` | `/api/rounds/{id}` | Bearer | ✅ Live |
-| `POST` | `/api/rounds` | Bearer | ✅ Live |
+| `GET` | `/api/rounds` | Bearer | ✅ Live (`CourseHomeScreen` recent + Digital Scorecard list) |
+| `GET` | `/api/rounds/{id}` | Bearer | ✅ Live (detail / scorecard) |
+| `POST` | `/api/rounds` | Bearer | ✅ Live (form Continue — creates server round) |
 | `POST` | `/api/rounds/{id}/complete` | Bearer | ❌ Not implemented |
-| `POST` | `/api/rounds/{id}/save` | Bearer | ❌ Not implemented |
-| `POST` | `/api/rounds/{id}/send-to-claymaster` | Bearer | ✅ Live |
+| `POST` | `/api/rounds/{id}/save` | Bearer | ❌ Not implemented (local MMKV instead while playing) |
+| `POST` | `/api/rounds/{id}/send-to-claymaster` | Bearer | 🟡 Endpoint exists · ❌ removed from round UI |
 | `GET` | `/api/courses` | Bearer | ✅ Live |
 | `GET` | `/api/classes` | Bearer | ✅ Live · ⚠️ Not in shared docs |
 | `GET` | `/api/trap-presentations` | Bearer | ✅ Live |
-| `POST` | `/api/rounds/{round_id}/stations` | Bearer | ✅ Live |
-| `GET` | `/api/rounds/{round_id}/stations` | Bearer | ❌ Not implemented |
+| `POST` | `/api/rounds/{round_id}/stations` | Bearer | ✅ Live (Complete Record — full stations payload) |
+| `GET` | `/api/rounds/{round_id}/stations` | Bearer | ✅ Live (resume hydrate) |
 
 ### Validation (422) — Stations ✅ CONFIRMED (`StationUpsertRequest`)
 
@@ -228,8 +230,13 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 ### Dev notes
 
-- Docs label some round helpers “not used in mobile” — **app already uses** courses, traps, round detail, send-to-claymaster.
-- Create-round field-mode note (backend): station start / pair-of-target (TP/RP) still evolving — watch payload drift.
+- Field home: `CourseHomeScreen` — START → `NewRoundScreen` form; Recent from `GET /rounds` (incomplete first).
+- Stations draft: MMKV `ACTIVE_ROUND` via `AppModeContext` (`setActiveDraft` / `updateDraftStations` / `clearRound`). One active draft; resuming another replaces it.
+- Play UI: StationCard (pair/traps) + big HIT/MISS/Undo (maps to `dead`/`lost`). No miss-category modal.
+- Leave play → ConfirmModal (saved on device) → Field home tabs. Splash with unfinished draft lands on Field home (not auto-open stations).
+- Digital Scorecard: `LibraryScorecardScreen` — completed rounds only (list + detail UI).
+- Send-to-ClayMaster buttons removed from `CompleteRoundScreen` / `ScorecardDetailsScreen`.
+- Drawer **My Rounds** removed from `menuSections.js`.
 - List rounds / courses / traps often return **raw arrays**.
 
 ---

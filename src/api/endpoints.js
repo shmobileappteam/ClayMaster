@@ -39,6 +39,7 @@ export const ENDPOINTS = {
 
   // --- Stations ---
   GET_TRAPS: 'trap-presentations',
+  GET_STATIONS: round_id => `rounds/${round_id}/stations`,
   POST_STATION: round_id => `rounds/${round_id}/stations`,
 
   // --- Notifications ---

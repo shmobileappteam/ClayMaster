@@ -45,7 +45,7 @@ const DashboardScreen = ({ navigation }) => {
           style={styles.courseSwitch}
           activeOpacity={0.88}
           onPress={() => {
-            if (activeRound && !activeRound.finished) {
+            if (activeRound?.roundId && !activeRound.finished) {
               switchToFieldMode('CourseHomeScreen');
               navigateFromTabToStack(navigation, 'CourseRoundScreen');
             } else {
@@ -58,11 +58,13 @@ const DashboardScreen = ({ navigation }) => {
           </View>
           <View style={styles.courseSwitchText}>
             <Typography fFamily="barlowBold700" size={14} lineHeight={21} color={COLORS.white100}>
-              {activeRound && !activeRound.finished ? 'Resume Round' : MODE_LABELS.field}
+              {activeRound?.roundId && !activeRound.finished
+                ? 'Resume Round'
+                : MODE_LABELS.field}
             </Typography>
             <Typography size={12} lineHeight={17} color="rgba(255,255,255,0.7)" mT={2}>
-              {activeRound && !activeRound.finished
-                ? `Station ${activeRound.currentStation}`
+              {activeRound?.roundId && !activeRound.finished
+                ? `${activeRound.course_name || 'Round'} · Station ${activeRound.currentStation}`
                 : `Switch to ${MODE_LABELS.field}`}
             </Typography>
           </View>

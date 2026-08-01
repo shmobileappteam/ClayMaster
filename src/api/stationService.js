@@ -6,6 +6,13 @@ export const getTraps = async () => {
   return response.data;
 };
 
+/** GET /api/rounds/{round_id}/stations — raw array */
+export const getStations = async roundId => {
+  const response = await api.get(ENDPOINTS.GET_STATIONS(roundId));
+  const body = response.data;
+  return Array.isArray(body) ? body : Array.isArray(body?.data) ? body.data : [];
+};
+
 export const postStations = async ({ roundId, payload }) => {
   const response = await api.post(ENDPOINTS.POST_STATION(roundId), payload);
   return response.data;

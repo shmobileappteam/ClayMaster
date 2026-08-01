@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, ScrollView } from 'react-native';
-import { formatApiStations, stationsData } from '../../constants/dummydata';
+import { formatApiStations } from '../../constants/dummydata';
 import StationCard from './StationCard';
 
 import Sizer from '../../helpers/Sizer';

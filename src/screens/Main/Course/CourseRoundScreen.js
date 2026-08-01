@@ -1,98 +1,287 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  BackHandler,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { Typography } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
-import MissOverlay from '../../../components/course/MissOverlay';
+import StationSetupPanel, {
+  SetupStepDots,
+} from '../../../components/course/StationSetupPanel';
+import StationProgressStrip from '../../../components/course/StationProgressStrip';
+import { ConfirmModal } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import { COLORS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { useAppMode } from '../../../context/AppModeContext';
-import { navigateToFieldMode } from '../../../navigation/navigationHelpers';
-import { MISS_CATEGORIES } from '../../../constants/missCategories';
+import { resetToFieldMode } from '../../../navigation/navigationHelpers';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { useCustomMutation } from '../../../query/useCustomMutation';
+import { getTraps, postStations } from '../../../api/stationService';
+import { queryClient } from '../../../api/api';
+import {
+  initialStation,
+  pairOfTargets,
+  validateLastStation,
+} from '../../../constants/dummydata';
+import {
+  buildStationsPayload,
+  scoreFromShots,
+  scoreFromStations,
+} from '../../../constants/rounds';
+import { showMessage } from '../../../utils';
+
+const isStationSetupComplete = station => {
+  if (!station?.selectedTargetPairs || !station?.pair_type) return false;
+  if (!station.traps || station.traps.length !== 2) return false;
+  return station.traps.every(
+    t => t.presentation && String(t.presentation).trim() !== '',
+  );
+};
 
 const CourseRoundScreen = ({ navigation }) => {
-  const {
-    activeRound,
-    startRound,
-    recordShot,
-    updateLastShotMiss,
-    nextStation,
-    finishRound,
-  } = useAppMode();
-  const [overlayOpen, setOverlayOpen] = useState(false);
+  const { activeRound, updateDraftStations, clearRound, setMode } =
+    useAppMode();
   const [showStationFeedback, setShowStationFeedback] = useState(false);
+  const [leaveVisible, setLeaveVisible] = useState(false);
+  const [confirmCompleteVisible, setConfirmCompleteVisible] = useState(false);
+  /** Reopen setup steps 1–3 from HIT/MISS */
+  const [editSetupStep, setEditSetupStep] = useState(null);
 
-  useEffect(() => {
-    if (!activeRound) startRound();
-  }, [activeRound, startRound]);
+  const { data: trapsRaw } = useCustomQuery({
+    queryKey: ['traps'],
+    queryFn: getTraps,
+  });
+  const trapsCatalog = Array.isArray(trapsRaw)
+    ? trapsRaw
+    : Array.isArray(trapsRaw?.data)
+      ? trapsRaw.data
+      : [];
 
   const round = activeRound;
-  const totalShotsTaken = round?.stations.reduce((a, s) => a + s.shots.length, 0) ?? 0;
-  const totalHits =
-    round?.stations.reduce(
-      (a, s) => a + s.shots.filter(sh => sh.hit).length,
-      0,
-    ) ?? 0;
-
-  const currentStation = round?.stations.find(
-    s => s.station === round.currentStation,
+  const stations = useMemo(
+    () => (Array.isArray(round?.stations) ? round.stations : []),
+    [round?.stations],
   );
-  const stationFull =
-    currentStation && round
-      ? currentStation.shots.length >= round.shotsPerStation
-      : false;
-  const isLastStation = round
-    ? round.currentStation >= round.totalStations
-    : false;
+  const stationIndex = Math.max(0, stations.length - 1);
+  const currentStation = stations[stationIndex];
+  const stationNumber = currentStation?.station_number ?? 1;
 
-  const stationMissFeedback = useMemo(() => {
-    if (!currentStation) return null;
-    const tally = {};
-    currentStation.shots.forEach(s => {
-      if (!s.hit && s.missCategory) {
-        tally[s.missCategory] = (tally[s.missCategory] || 0) + 1;
-      }
-    });
-    const top = Object.entries(tally).sort((a, b) => b[1] - a[1])[0];
-    if (!top) return null;
-    const cat = MISS_CATEGORIES.find(c => c.id === top[0]);
-    const totalMisses = currentStation.shots.filter(s => !s.hit).length;
-    return cat
-      ? { cat, pct: Math.round((top[1] / Math.max(totalMisses, 1)) * 100) }
-      : null;
-  }, [currentStation]);
+  const setupComplete = isStationSetupComplete(currentStation);
+  const shots = currentStation?.shots || [];
+  const stationScore = scoreFromShots(shots);
+  const filledOnStation = stationScore.taken;
+  const stationFull =
+    setupComplete &&
+    shots.length > 0 &&
+    shots.every(s => s.result !== '' && s.result !== 'empty');
+
+  // Milestone Field: Score = hits / shots taken (empty slots ignored)
+  const roundScore = useMemo(() => scoreFromStations(stations), [stations]);
+  const totalHits = roundScore.hits;
+  const totalTaken = roundScore.taken;
+
+  const sequence = Array.isArray(round?.station_sequence)
+    ? round.station_sequence
+    : [];
+  const maxStations =
+    round?.total_stations || (sequence.length ? sequence.length : 16);
+  const isLastPlannedStation =
+    sequence.length > 0
+      ? stations.length >= sequence.length
+      : stations.length >= maxStations;
+  const canAddStation =
+    !isLastPlannedStation && totalTaken < 100 && stations.length < maxStations;
+
+  useEffect(() => {
+    if (!round?.roundId) {
+      resetToFieldMode(navigation, 'CourseHomeScreen');
+    }
+  }, [round?.roundId, navigation]);
 
   useEffect(() => {
     if (stationFull && !showStationFeedback) setShowStationFeedback(true);
   }, [stationFull, showStationFeedback]);
 
-  if (!round) return null;
-
-  const onHit = () => recordShot(true);
-  const onMiss = () => {
-    recordShot(false);
-    setOverlayOpen(true);
-  };
-  const onTagMiss = id => {
-    updateLastShotMiss(id);
-    setOverlayOpen(false);
-  };
-
-  const handleNextStation = () => {
+  useEffect(() => {
     setShowStationFeedback(false);
-    if (isLastStation) {
-      finishRound();
-      navigation.replace('CourseRoundSummaryScreen');
-    } else {
-      nextStation();
+    setEditSetupStep(null);
+  }, [stationNumber]);
+
+  const patchCurrentStation = useCallback(
+    updater => {
+      if (!round) return;
+      const next = stations.map((s, i) =>
+        i === stationIndex ? updater({ ...s }) : s,
+      );
+      updateDraftStations(next);
+    },
+    [round, stations, stationIndex, updateDraftStations],
+  );
+
+  const onSelectTargetPairs = n => {
+    const newShots = pairOfTargets[n].map(shot => ({ ...shot }));
+    const prior =
+      stations
+        .slice(0, stationIndex)
+        .reduce((acc, st) => acc + (st?.selectedTargetPairs || 0) * 2, 0) || 0;
+    if (prior + n * 2 > 100) {
+      showMessage({
+        message: 'Selecting this many pairs would exceed 100 targets.',
+        bgColor: COLORS.primary,
+      });
+      return;
     }
+    patchCurrentStation(st => ({
+      ...st,
+      selectedTargetPairs: n,
+      shots: newShots,
+    }));
   };
 
-  const stationHits = currentStation?.shots.filter(s => s.hit).length ?? 0;
-  const stationTotal = currentStation?.shots.length ?? 0;
+  const onSelectPairType = pairType => {
+    patchCurrentStation(st => ({ ...st, pair_type: pairType }));
+  };
+
+  const onSelectPresentation = (data, trapId, type = 'id') => {
+    patchCurrentStation(st => {
+      let traps = [...(st.traps || [])];
+      const tid = Number(trapId);
+
+      if (type === 'id') {
+        if (!traps.some(t => Number(t.trap_id) === Number(data.trap_id))) {
+          traps.push(data);
+        }
+      } else if (type === 'presentation') {
+        const slug = data?.slug || '';
+        const exists = traps.some(t => Number(t.trap_id) === tid);
+        if (exists) {
+          traps = traps.map(t =>
+            Number(t.trap_id) === tid ? { ...t, presentation: slug } : t,
+          );
+        } else {
+          traps.push({ trap_id: tid, presentation: slug });
+        }
+        // Same update: after Trap 1, seed Trap 2 so next pick works without re-tap
+        if (tid === 1 && !traps.some(t => Number(t.trap_id) === 2)) {
+          traps.push({ trap_id: 2, presentation: '' });
+        }
+      }
+
+      return { ...st, traps };
+    });
+  };
+
+  const applyShot = result => {
+    const msg = validateLastStation(currentStation, false);
+    if (msg) {
+      showMessage({ message: msg, bgColor: COLORS.primary });
+      return;
+    }
+    patchCurrentStation(st => {
+      const nextShots = (st.shots || []).map(s => ({ ...s }));
+      const idx = nextShots.findIndex(s => s.result === 'empty');
+      if (idx !== -1) nextShots[idx] = { ...nextShots[idx], result };
+      return { ...st, shots: nextShots };
+    });
+  };
+
+  const handleUndo = () => {
+    patchCurrentStation(st => {
+      const nextShots = (st.shots || []).map(s => ({ ...s }));
+      const lastFilled = [...nextShots]
+        .reverse()
+        .findIndex(s => s.result !== 'empty');
+      if (lastFilled !== -1) {
+        const real = nextShots.length - 1 - lastFilled;
+        nextShots[real] = { ...nextShots[real], result: 'empty' };
+      }
+      return { ...st, shots: nextShots };
+    });
+    setShowStationFeedback(false);
+  };
+
+  const goNextStation = () => {
+    const msg = validateLastStation(currentStation, true);
+    if (msg) {
+      showMessage({ message: msg, bgColor: COLORS.primary });
+      return;
+    }
+    if (!canAddStation) {
+      setConfirmCompleteVisible(true);
+      return;
+    }
+    const nextIndex = stations.length;
+    const nextNum = sequence.length > 0 ? sequence[nextIndex] : nextIndex + 1;
+    const seeded = {
+      ...initialStation,
+      station_number: nextNum,
+      name: `Station ${nextNum}`,
+      traps: [{ trap_id: 1, presentation: '' }],
+      shots: [],
+      selectedTargetPairs: '',
+    };
+    updateDraftStations([...stations, seeded]);
+    setShowStationFeedback(false);
+  };
+
+  const { mutate: submitStations, isPending } = useCustomMutation({
+    mutationFn: postStations,
+    onSuccess: async () => {
+      clearRound();
+      await queryClient.invalidateQueries({ queryKey: ['rounds'] });
+      navigation.replace('CompleteRoundScreen', { roundId: round.roundId });
+    },
+    on422Error: error => {
+      showMessage({
+        message:
+          Object.values(error || {})?.[0] || 'Error submitting round.',
+        bgColor: COLORS.primary,
+      });
+    },
+  });
+
+  const handleComplete = () => {
+    const msg = validateLastStation(currentStation, true);
+    if (msg) {
+      showMessage({ message: msg, bgColor: COLORS.primary });
+      return;
+    }
+    if (scoreFromStations(stations).taken !== 100) {
+      showMessage({
+        message: 'Complete all 100 targets before submitting.',
+        bgColor: COLORS.primary,
+      });
+      return;
+    }
+    setConfirmCompleteVisible(true);
+  };
+
+  const leaveToField = useCallback(() => {
+    setMode('course');
+    resetToFieldMode(navigation, 'CourseHomeScreen');
+  }, [navigation, setMode]);
+
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setLeaveVisible(true);
+      return true;
+    });
+    return () => sub.remove();
+  }, []);
+
+  if (!round?.roundId || !currentStation) return null;
+
+  const stationHits = stationScore.hits;
+  const revisitingSetup = editSetupStep != null;
+  const showPlay =
+    setupComplete && !showStationFeedback && !revisitingSetup;
+  const showSetup = !setupComplete || revisitingSetup;
 
   return (
-    <CourseLayout showTabs={false}>
+    <CourseLayout showTabs={false} showModeIndicator={false}>
       <View style={styles.topBar}>
         <View style={styles.topBarLeft}>
           <Typography
@@ -102,10 +291,16 @@ const CourseRoundScreen = ({ navigation }) => {
             fFamily="barlowBold700"
             style={styles.uppercase}
           >
-            {round.course}
+            {round.course_name || 'Round'}
           </Typography>
-          <Typography fFamily="barlowBold700" size={14} lineHeight={21} color={COLORS.white100}>
-            Station {round.currentStation} / {round.totalStations}
+          <Typography
+            fFamily="barlowBold700"
+            size={14}
+            lineHeight={21}
+            color={COLORS.white100}
+          >
+            Station {stationNumber}
+            {maxStations ? ` / ${maxStations}` : ''}
           </Typography>
         </View>
         <View style={styles.topBarScore}>
@@ -126,46 +321,72 @@ const CourseRoundScreen = ({ navigation }) => {
             color={COLORS.primary}
             textAlign="right"
           >
-            {totalHits}/{totalShotsTaken || 0}
+            {totalHits}/{totalTaken || 0}
           </Typography>
         </View>
         <TouchableOpacity
           style={styles.pauseBtn}
-          onPress={() => navigateToFieldMode(navigation, 'CourseHomeScreen')}
+          onPress={() => setLeaveVisible(true)}
           accessibilityLabel="Pause round"
         >
           <Icon name="pause" iconFamily="Ionicons" size={18} color={COLORS.white100} />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.dotsRow}>
-        {Array.from({ length: round.shotsPerStation }).map((_, i) => {
-          const shot = currentStation?.shots[i];
-          return (
+      <StationProgressStrip
+        stations={stations}
+        currentStationNumber={stationNumber}
+      />
+
+      {showPlay ? (
+        <View style={styles.setupStepsOnPlay}>
+          <SetupStepDots
+            current={0}
+            maxStep={3}
+            dimmed
+            onSelectStep={n => setEditSetupStep(n)}
+          />
+        </View>
+      ) : null}
+
+      {showSetup ? (
+        <StationSetupPanel
+          station={currentStation}
+          trapsCatalog={trapsCatalog}
+          onSelectTargetPairs={onSelectTargetPairs}
+          onSelectPairType={onSelectPairType}
+          onSelectPresentation={onSelectPresentation}
+          editStep={editSetupStep}
+          onContinueScoring={() => setEditSetupStep(null)}
+        />
+      ) : null}
+
+      {setupComplete ? (
+        <View style={styles.dotsRow}>
+          {shots.map((shot, i) => (
             <View
               key={i}
               style={[
                 styles.dot,
-                shot?.hit === true && styles.dotHit,
-                shot?.hit === false && styles.dotMiss,
+                shot.result === 'dead' && styles.dotHit,
+                shot.result === 'lost' && styles.dotMiss,
               ]}
             />
-          );
-        })}
-      </View>
+          ))}
+        </View>
+      ) : null}
 
       {showStationFeedback ? (
         <View style={styles.feedbackWrap}>
           <View style={styles.stationDoneCard}>
             <Typography
               size={12}
-              lineHeight={17}
               color={COLORS.courseTextMuted}
               fFamily="barlowBold700"
               style={styles.uppercase}
               textAlign="center"
             >
-              Station {round.currentStation} Done
+              Station {stationNumber} Done
             </Typography>
             <Typography
               fFamily="barlowBold700"
@@ -175,63 +396,54 @@ const CourseRoundScreen = ({ navigation }) => {
               textAlign="center"
               mT={8}
             >
-              {stationHits}/{stationTotal}
+              {stationHits}/{filledOnStation || 0}
             </Typography>
           </View>
 
-          {stationMissFeedback ? (
-            <View
-              style={[
-                styles.missInsightCard,
-                {
-                  backgroundColor: stationMissFeedback.cat.colorBg,
-                  borderColor: stationMissFeedback.cat.colorBorder,
-                },
-              ]}
+          {canAddStation ? (
+            <TouchableOpacity
+              style={styles.nextStationBtn}
+              onPress={goNextStation}
+              activeOpacity={0.88}
             >
-              <Typography
-                size={12}
-                lineHeight={17}
-                color="rgba(255,255,255,0.6)"
-                fFamily="barlowBold700"
-                style={styles.uppercase}
-              >
-                Primary Issue
+              <Typography fFamily="barlowBold700" size={20} color={COLORS.white100}>
+                Next Station
               </Typography>
-              <Typography
-                fFamily="barlowBold700"
-                size={20}
-                lineHeight={26}
-                color={stationMissFeedback.cat.accent}
-                mT={4}
-              >
-                {stationMissFeedback.pct}% due to {stationMissFeedback.cat.short}
+              <Icon
+                name="chevron-forward"
+                iconFamily="Ionicons"
+                size={26}
+                color={COLORS.white100}
+              />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.nextStationBtn}
+              onPress={handleComplete}
+              activeOpacity={0.88}
+              disabled={isPending}
+            >
+              <Typography fFamily="barlowBold700" size={20} color={COLORS.white100}>
+                Complete Round
               </Typography>
-              <Typography size={14} lineHeight={21} color="rgba(255,255,255,0.7)" mT={8}>
-                {stationMissFeedback.cat.cue}
-              </Typography>
-            </View>
-          ) : null}
+            </TouchableOpacity>
+          )}
 
-          <TouchableOpacity
-            style={styles.nextStationBtn}
-            onPress={handleNextStation}
-            activeOpacity={0.88}
-          >
-            <Typography fFamily="barlowBold700" size={20} lineHeight={26} color={COLORS.white100}>
-              {isLastStation ? 'Finish Round' : `Station ${round.currentStation + 1}`}
+          <TouchableOpacity onPress={handleUndo} style={styles.undoLink}>
+            <Typography size={14} color={COLORS.courseTextMuted}>
+              Undo last shot
             </Typography>
-            <Icon
-              name="chevron-forward"
-              iconFamily="Ionicons"
-              size={26}
-              color={COLORS.white100}
-            />
           </TouchableOpacity>
         </View>
-      ) : (
+      ) : null}
+
+      {showPlay ? (
         <View style={styles.tapZones}>
-          <TouchableOpacity style={styles.hitZone} onPress={onHit} activeOpacity={0.88}>
+          <TouchableOpacity
+            style={styles.hitZone}
+            onPress={() => applyShot('dead')}
+            activeOpacity={0.88}
+          >
             <Icon name="checkmark" iconFamily="Ionicons" size={88} color={COLORS.white100} />
             <Typography
               fFamily="barlowBold700"
@@ -244,7 +456,11 @@ const CourseRoundScreen = ({ navigation }) => {
               HIT
             </Typography>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.missZone} onPress={onMiss} activeOpacity={0.88}>
+          <TouchableOpacity
+            style={styles.missZone}
+            onPress={() => applyShot('lost')}
+            activeOpacity={0.88}
+          >
             <Icon name="close" iconFamily="Ionicons" size={88} color="#F87171" />
             <Typography
               fFamily="barlowBold700"
@@ -257,13 +473,41 @@ const CourseRoundScreen = ({ navigation }) => {
               MISS
             </Typography>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.undoBar} onPress={handleUndo} activeOpacity={0.88}>
+            <Icon name="arrow-undo" iconFamily="Ionicons" size={22} color={COLORS.white100} />
+            <Typography fFamily="barlowSemiBold600" size={16} color={COLORS.white100} mL={8}>
+              Undo
+            </Typography>
+          </TouchableOpacity>
         </View>
-      )}
+      ) : null}
 
-      <MissOverlay
-        visible={overlayOpen}
-        onClose={() => setOverlayOpen(false)}
-        onSelect={onTagMiss}
+      <ConfirmModal
+        variant="field"
+        visible={leaveVisible}
+        setVisibility={setLeaveVisible}
+        title="Leave Round?"
+        message="Your progress is saved on this device. You can resume anytime from Field Mode."
+        confirmText="Stay"
+        cancelText="Leave"
+        handleCancel={leaveToField}
+      />
+
+      <ConfirmModal
+        variant="field"
+        visible={confirmCompleteVisible}
+        setVisibility={setConfirmCompleteVisible}
+        title="Complete Round?"
+        message="Submit this round to the server? Local draft will be cleared."
+        confirmText="Submit"
+        cancelText="Cancel"
+        handleComplete={() => {
+          setConfirmCompleteVisible(false);
+          submitStations({
+            roundId: round.roundId,
+            payload: buildStationsPayload(stations),
+          });
+        }}
       />
     </CourseLayout>
   );
@@ -272,8 +516,6 @@ const CourseRoundScreen = ({ navigation }) => {
 export default CourseRoundScreen;
 
 const styles = StyleSheet.create({
-  // sticky top-0 → position handled by CourseLayout; bg-[#0D0D0D] → backgroundColor
-  // border-b border-[#2A2A2A] → borderBottomWidth + borderBottomColor
   topBar: {
     backgroundColor: COLORS.courseBg,
     borderBottomWidth: StyleSheet.hairlineWidth,
@@ -286,9 +528,10 @@ const styles = StyleSheet.create({
   },
   topBarLeft: { flex: 1 },
   topBarScore: { alignItems: 'flex-end', marginRight: Sizer.hSize(12) },
-  // text-caption uppercase → fontSize 12, letterSpacing, textTransform
   uppercase: { letterSpacing: 1.2, textTransform: 'uppercase' },
-  // w-10 h-10 rounded-full bg-[#1A1A1A] → 40×40 circle
+  setupStepsOnPlay: {
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+  },
   pauseBtn: {
     width: Sizer.hSize(40),
     height: Sizer.hSize(40),
@@ -297,33 +540,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // px-screen-px pb-3 flex gap-2 justify-center → horizontal padding 16, gap 8
   dotsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: Sizer.hSize(8),
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
-    paddingBottom: Sizer.vSize(12),
+    paddingVertical: Sizer.vSize(12),
   },
-  // h-2 flex-1 rounded-full → height 8, flex 1
   dot: {
     flex: 1,
     height: Sizer.vSize(8),
     borderRadius: Sizer.vSize(4),
     backgroundColor: COLORS.courseBorder,
   },
-  // bg-cm-orange → #EB6C0F; bg-red-500 → #EF4444
   dotHit: { backgroundColor: COLORS.primary },
   dotMiss: { backgroundColor: '#EF4444' },
-  // px-screen-px py-4 space-y-3 flex flex-col → column, gap 12, flex 1
   tapZones: {
     flex: 1,
     flexDirection: 'column',
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
-    paddingVertical: Sizer.vSize(16),
+    paddingVertical: Sizer.vSize(12),
     gap: Sizer.vSize(12),
   },
-  // flex-1 bg-cm-orange rounded-2xl flex-col center → full-width stacked zone
   hitZone: {
     flex: 1,
     backgroundColor: COLORS.primary,
@@ -331,7 +569,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // flex-1 bg-[#1A1A1A] border-2 border-red-500/40 rounded-2xl
   missZone: {
     flex: 1,
     backgroundColor: COLORS.courseSurface,
@@ -342,14 +579,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   hitMissLabel: { letterSpacing: 2 },
-  // px-screen-px py-6 space-y-5 → padding 16/24, gap 20
+  undoBar: {
+    height: Sizer.vSize(52),
+    borderRadius: Sizer.hSize(12),
+    backgroundColor: COLORS.courseBorder,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   feedbackWrap: {
     flex: 1,
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingVertical: Sizer.vSize(24),
     gap: Sizer.vSize(20),
   },
-  // bg-[#1A1A1A] rounded-xl p-6 border border-[#2A2A2A]
   stationDoneCard: {
     backgroundColor: COLORS.courseSurface,
     borderRadius: Sizer.hSize(12),
@@ -358,12 +601,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.courseBorder,
     alignItems: 'center',
   },
-  missInsightCard: {
-    borderRadius: Sizer.hSize(12),
-    padding: Sizer.hSize(20),
-    borderWidth: 2,
-  },
-  // w-full h-16 bg-cm-orange rounded-xl flex-row center gap-2
   nextStationBtn: {
     width: '100%',
     height: Sizer.vSize(64),
@@ -374,4 +611,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: Sizer.hSize(8),
   },
+  undoLink: { alignItems: 'center', paddingVertical: Sizer.vSize(8) },
 });

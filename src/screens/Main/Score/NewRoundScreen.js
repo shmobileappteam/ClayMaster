@@ -2,14 +2,11 @@ import {
   BackHandler,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useQueries } from '@tanstack/react-query';
-//----
-import { Container, Flex, Typography } from '../../../atomComponents';
+import { Container, Typography } from '../../../atomComponents';
 import {
   BooleanRadioSelector,
   Button,
@@ -25,12 +22,12 @@ import {
   COLORS,
   FONTS,
   GLOBALSTYLE,
-  WINDOW,
 } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import SlideInView from '../../../animations/SlideView';
 import StationCard from '../../../components/Round/StationCard';
-import { CircleSvg, SlashSvg, UndoSvg } from '../../../assets/svgs';
+import { UndoSvg } from '../../../assets/svgs';
+import Icon from '../../../helpers/Icon';
 import {
   createRoundDropData,
   disableStation,
@@ -39,60 +36,55 @@ import {
   initialStation,
   pairOfTargets,
   validateLastStation,
-  validateRoundData,
 } from '../../../constants/dummydata';
-import { getClasses, getCourses, postRound } from '../../../api/roundService';
+import {
+  buildActiveDraft,
+  buildStationsPayload,
+} from '../../../constants/rounds';
+import { getClasses, postRound } from '../../../api/roundService';
 import { useCustomMutation } from '../../../query/useCustomMutation';
 import { queryClient } from '../../../api/api';
-import {
-  formatBackendErrors,
-  formatDate,
-  formatUsDate,
-  showMessage,
-} from '../../../utils';
-import {
-  getTraps,
-  postStations,
-  sendToClayMaster,
-} from '../../../api/stationService';
+import { formatUsDate, showMessage } from '../../../utils';
+import { getTraps, postStations } from '../../../api/stationService';
 import { useCustomQuery } from '../../../query/useCustomQuery';
-import { object } from 'yup';
+import { useAppMode } from '../../../context/AppModeContext';
+import { resetToFieldMode } from '../../../navigation/navigationHelpers';
+import CourseLayout from '../../../components/course/CourseLayout';
 
 const NewRoundScreen = ({ navigation, route }) => {
   const roundDetails = route.params?.roundDetails;
-  // At the top with other refs
+  const fromDraft = route.params?.fromDraft;
+  const { activeRound, setActiveDraft, updateDraftStations, clearRound } =
+    useAppMode();
+
   const scrollRef = useRef();
   const stationLayoutsRef = useRef({});
   const pendingScrollRef = useRef(null);
+  const hydratedRef = useRef(false);
 
   const [sectionNumber, setSectionNumber] = useState(1);
   const [addStation, setAddStation] = useState([initialStation]);
   const [isEuropeanRotation, setIsEuropeanRotation] = useState(false);
   const [stationSequence, setStationSequence] = useState([]);
   const [maxStations, setMaxStations] = useState(16);
-  //Modal States
   const [confirmVisible, setConfirmVisible] = useState(false);
   const [backPressModalVisible, setBackPressModalVisible] = useState(false);
+  const [incompleteCompleteVisible, setIncompleteCompleteVisible] =
+    useState(false);
   const [isLeaveGameModalVisible, setIsLeaveGameModalVisible] = useState(false);
 
-  console.log('🚀 ~ NewRoundScreen ~ addStation:', roundDetails);
-
-  //Check if Active/Last Staion shots are fullfiled or not:
   const lastStation = addStation[addStation?.length - 1];
-  const IsAllFilled = lastStation?.shots.every(
+  const IsAllFilled = lastStation?.shots?.every(
     shot => shot.result !== '' && shot.result !== 'empty',
   );
   const totalSelectedShots =
-    // 100;
     (addStation?.reduce((acc, st) => acc + (st?.selectedTargetPairs || 0), 0) ||
       0) * 2;
 
-  // Check if at least one station has been played (has at least one shot filled)
   const hasPlayedAtLeastOneStation = addStation.some(station =>
     station?.shots?.some(shot => shot.result !== '' && shot.result !== 'empty'),
   );
 
-  // QueryData for classes:
   const { data: classes } = useCustomQuery({
     queryKey: ['classes'],
     queryFn: getClasses,
@@ -110,7 +102,6 @@ const NewRoundScreen = ({ navigation, route }) => {
     value: '1',
   });
 
-  // European Rotation controls
   const stationOptions = Array.from({ length: 16 }, (_, i) => {
     const v = String(i + 1);
     return { label: v, value: v };
@@ -127,11 +118,52 @@ const NewRoundScreen = ({ navigation, route }) => {
     label: '16',
     value: '16',
   });
+  const [roundId, setRoundId] = useState(null);
+  const [expandedStations, setExpandedStations] = useState(
+    expandedStationCardsObject,
+  );
 
-  const [roundId, setRoundId] = useState('1');
 
+  // Station play lives on dark Field CourseRoundScreen
   useEffect(() => {
+    if ((fromDraft || roundDetails) && activeRound?.roundId) {
+      navigation.replace('CourseRoundScreen');
+    }
+  }, [fromDraft, roundDetails, activeRound?.roundId, navigation]);
+
+  const goToFieldHome = useCallback(() => {
+    resetToFieldMode(navigation, 'CourseHomeScreen');
+  }, [navigation]);
+
+  // Hydrate from MMKV draft or route roundDetails
+  useEffect(() => {
+    if (hydratedRef.current) return;
+
+    const draftMatches =
+      fromDraft &&
+      activeRound?.roundId &&
+      (!roundDetails?.id || activeRound.roundId === roundDetails.id) &&
+      Array.isArray(activeRound.stations) &&
+      activeRound.stations.length;
+
+    if (draftMatches) {
+      hydratedRef.current = true;
+      setRoundId(activeRound.roundId);
+      setSectionNumber(2);
+      setAddStation(activeRound.stations);
+      setIsEuropeanRotation(!!activeRound.european_rotation);
+      setStationSequence(activeRound.station_sequence || []);
+      setMaxStations(
+        activeRound.total_stations ||
+          activeRound.station_sequence?.length ||
+          16,
+      );
+      setSelectedCourse(activeRound.course_name || '');
+      return;
+    }
+
     if (roundDetails) {
+      hydratedRef.current = true;
       setRoundId(roundDetails?.id);
       setSectionNumber(2);
 
@@ -143,7 +175,6 @@ const NewRoundScreen = ({ navigation, route }) => {
         roundDetails?.station_sequence?.length > 0;
 
       if (hasEuropeanRotationFields) {
-        // Initialize European rotation flow
         setIsEuropeanRotation(roundDetails?.european_rotation);
         setStartingStation({
           label: String(roundDetails?.starting_station),
@@ -158,41 +189,43 @@ const NewRoundScreen = ({ navigation, route }) => {
           roundDetails?.total_stations ||
             roundDetails?.station_sequence?.length,
         );
-
         const firstStationNumber = roundDetails?.station_sequence?.[0];
-        setAddStation([
+        const seeded = [
           {
             ...initialStation,
             station_number: firstStationNumber,
             name: `Station ${firstStationNumber}`,
           },
-        ]);
+        ];
+        setAddStation(seeded);
         setExpandedStations(prev => ({
           ...prev,
           [firstStationNumber]: true,
         }));
       } else {
-        // Normal flow - no European rotation
-        setAddStation([
+        const seeded = [
           {
             ...initialStation,
             station_number: 1,
             name: 'Station 1',
           },
-        ]);
-        setExpandedStations(prev => ({
-          ...prev,
-          1: true,
-        }));
+        ];
+        setAddStation(seeded);
+        setExpandedStations(prev => ({ ...prev, 1: true }));
       }
     }
-  }, [roundDetails]);
+  }, [roundDetails, fromDraft, activeRound]);
+
+  // Persist stations to MMKV while playing
+  useEffect(() => {
+    if (sectionNumber !== 2 || !roundId) return;
+    updateDraftStations(addStation);
+  }, [addStation, sectionNumber, roundId, updateDraftStations]);
 
   useEffect(() => {
     if (pendingScrollRef.current !== null && scrollRef.current) {
       const stationNumber = pendingScrollRef.current;
       const layout = stationLayoutsRef.current[stationNumber];
-
       if (layout) {
         setTimeout(() => {
           scrollRef.current?.scrollTo({
@@ -204,17 +237,16 @@ const NewRoundScreen = ({ navigation, route }) => {
       }
     }
   }, [addStation.length]);
-  // Post Round Mutation:
+
   const { mutateAsync: createRound, isPending } = useCustomMutation({
     mutationFn: postRound,
   });
 
-
-  // Post Station Mutation:
   const { mutate: postStationtoDb, isPending: isPendingPostStation } =
     useCustomMutation({
       mutationFn: postStations,
       onSuccess: async () => {
+        clearRound();
         await queryClient.invalidateQueries({ queryKey: ['rounds'] });
         navigation.replace('CompleteRoundScreen', {
           roundId: roundDetails?.id || roundId,
@@ -229,10 +261,6 @@ const NewRoundScreen = ({ navigation, route }) => {
       },
     });
 
-  const [expandedStations, setExpandedStations] = useState(
-    expandedStationCardsObject,
-  );
-
   const toggleStation = stationId => {
     setExpandedStations(prev => ({
       ...prev,
@@ -241,18 +269,12 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const HandleAddStation = () => {
-    const lastStation = addStation[addStation.length - 1];
-    const message = validateLastStation(lastStation);
-
+    const last = addStation[addStation.length - 1];
+    const message = validateLastStation(last);
     if (message) {
-      showMessage({
-        type: 'danger',
-        message,
-        bgColor: COLORS.primary,
-      });
+      showMessage({ type: 'danger', message, bgColor: COLORS.primary });
       return;
     }
-
     if (totalSelectedShots >= 100) {
       showMessage({
         type: 'danger',
@@ -283,24 +305,19 @@ const NewRoundScreen = ({ navigation, route }) => {
           bgColor: COLORS.primary,
         });
         return prev;
-      } else {
-        toggleStation(lastStation?.station_number);
       }
+      toggleStation(last?.station_number);
 
       const newStation = {
         ...initialStation,
         station_number: nextStationNumber,
         name: `Station ${nextStationNumber}`,
       };
-
-      // Mark this station for scrolling
       pendingScrollRef.current = nextStationNumber;
-
       return [...prev, newStation];
     });
   };
 
-  //Request Create Round:
   const HandleContinue = () => {
     if (!selectedCourse) {
       showMessage({
@@ -309,7 +326,6 @@ const NewRoundScreen = ({ navigation, route }) => {
       });
       return;
     }
-    // Validate Squad Sequence vs Squad Size
     const sequence = parseInt(squadSequence?.value, 10);
     const size = parseInt(noOfPeople?.value, 10);
     if (
@@ -331,15 +347,6 @@ const NewRoundScreen = ({ navigation, route }) => {
       });
       return;
     }
-    // console.log({
-    //   course_name: selectedCourse,
-    //   ncsca_class: selectedClass,
-    //   squad_sequence: squadSequence?.value,
-    //   people_in_squad: noOfPeople?.value,
-    //   european_rotation: isEuropeanRotation,
-    //   starting_station: isEuropeanRotation ? startingStation?.value : null,
-    //   total_stations: isEuropeanRotation ? totalStations?.value : null,
-    // });
 
     createRound({
       course_name: selectedCourse,
@@ -352,13 +359,18 @@ const NewRoundScreen = ({ navigation, route }) => {
     })
       .then(res => {
         const round = res?.round || {};
-        console.log('res: ', res);
-        console.log(round);
-
+        const id = round?.id;
         setSectionNumber(2);
-        setRoundId(round?.id);
+        setRoundId(id);
 
-        // If backend provides a station sequence and total stations, adopt them
+        let stations = [
+          {
+            ...initialStation,
+            station_number: 1,
+            name: 'Station 1',
+          },
+        ];
+
         if (
           Array.isArray(round?.station_sequence) &&
           round?.station_sequence?.length
@@ -367,22 +379,43 @@ const NewRoundScreen = ({ navigation, route }) => {
           setMaxStations(
             round?.total_stations || round.station_sequence.length,
           );
-
-          // Initialize the first station to the provided starting station
           const firstStationNumber = round.station_sequence[0];
-          setAddStation([
+          stations = [
             {
               ...initialStation,
               station_number: firstStationNumber,
               name: `Station ${firstStationNumber}`,
             },
-          ]);
+          ];
+          setAddStation(stations);
           setExpandedStations(prev => ({
             ...prev,
             [firstStationNumber]: true,
           }));
+        } else {
+          setAddStation(stations);
         }
+
+        setActiveDraft(
+          buildActiveDraft({
+            round: {
+              ...round,
+              course_name: selectedCourse,
+              ncsca_class: selectedClass,
+              european_rotation: isEuropeanRotation,
+              starting_station: isEuropeanRotation
+                ? Number(startingStation?.value)
+                : null,
+              total_stations: isEuropeanRotation
+                ? Number(totalStations?.value)
+                : null,
+            },
+            stations,
+            courseName: selectedCourse,
+          }),
+        );
         queryClient.invalidateQueries({ queryKey: ['rounds'] });
+        navigation.replace('CourseRoundScreen');
       })
       .catch(err => {
         showMessage({
@@ -406,28 +439,22 @@ const NewRoundScreen = ({ navigation, route }) => {
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
-      const lastStation = updated[lastIndex];
-      const traps = [...lastStation.traps];
+      const last = updated[lastIndex];
+      const traps = [...last.traps];
 
       if (type === 'id') {
         const exists = traps.some(trap => trap.trap_id === data.trap_id);
-        if (!exists) {
-          traps.push(data);
-        }
+        if (!exists) traps.push(data);
       } else if (type === 'presentation') {
         const updatedTraps = traps.map(trap =>
           trap.trap_id === trapId ? { ...trap, presentation: data.slug } : trap,
         );
-        updated.splice(lastIndex, 1, { ...lastStation, traps: updatedTraps });
-        handleStationChange({ ...lastStation, traps: updatedTraps }, scrollRef);
+        updated.splice(lastIndex, 1, { ...last, traps: updatedTraps });
+        handleStationChange({ ...last, traps: updatedTraps }, scrollRef);
         return updated;
       }
 
-      updated[lastIndex] = {
-        ...lastStation,
-        traps,
-      };
-      // handleStationChange(updated[lastIndex], scrollRef);
+      updated[lastIndex] = { ...last, traps };
       return updated;
     });
   };
@@ -436,11 +463,7 @@ const NewRoundScreen = ({ navigation, route }) => {
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
-      updated[lastIndex] = {
-        ...updated[lastIndex],
-        shots: shotsData,
-      };
-
+      updated[lastIndex] = { ...updated[lastIndex], shots: shotsData };
       return updated;
     });
   };
@@ -449,253 +472,261 @@ const NewRoundScreen = ({ navigation, route }) => {
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
-      const shotsCount = targetPair * 2; //TP multipy by 2 to get shots
-      const totalSelectedShots =
+      const shotsCount = targetPair * 2;
+      const priorShots =
         (addStation
           ?.slice(0, lastIndex)
           .reduce((acc, st) => acc + (st?.selectedTargetPairs || 0), 0) || 0) *
         2;
-      const totalShots = shotsCount + totalSelectedShots;
-      if (totalShots > 100) {
+      if (shotsCount + priorShots > 100) {
         setIsLeaveGameModalVisible(true);
         return updated;
       }
-      // Deep copy pairOfTargets[targetPair] to avoid reference sharing
       const newShots = pairOfTargets[targetPair].map(shot => ({ ...shot }));
       updated[lastIndex] = {
         ...updated[lastIndex],
         selectedTargetPairs: targetPair,
         shots: newShots,
       };
-
       handleStationChange(updated[lastIndex], scrollRef);
       return updated;
     });
   };
 
-  //----
-  const handlePressDead = () => {
-    const lastStation = addStation[addStation.length - 1];
-    const message = validateLastStation(lastStation, false);
-
+  const applyShotResult = result => {
+    const last = addStation[addStation.length - 1];
+    const message = validateLastStation(last, false);
     if (message) {
-      showMessage({
-        type: 'danger',
-        message,
-        bgColor: COLORS.primary,
-      });
+      showMessage({ type: 'danger', message, bgColor: COLORS.primary });
       return;
     }
-
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
-      const lastStation = updated[lastIndex];
-      const shots = [...lastStation.shots];
-
+      const st = updated[lastIndex];
+      const shots = st.shots.map(s => ({ ...s }));
       const nextIndex = shots.findIndex(item => item.result === 'empty');
-      if (nextIndex !== -1) {
-        shots[nextIndex].result = 'dead';
-      }
-
-      updated[lastIndex] = { ...lastStation, shots };
+      if (nextIndex !== -1) shots[nextIndex].result = result;
+      updated[lastIndex] = { ...st, shots };
       return updated;
     });
   };
 
-  const handlePressLost = () => {
-    const lastStation = addStation[addStation.length - 1];
-    const message = validateLastStation(lastStation, false);
-
-    if (message) {
-      showMessage({
-        type: 'danger',
-        message,
-        bgColor: COLORS.primary,
-      });
-      return;
-    }
-
-    setAddStation(prev => {
-      const updated = [...prev];
-      const lastIndex = updated.length - 1;
-      const lastStation = updated[lastIndex];
-      const shots = [...lastStation.shots];
-
-      const nextIndex = shots.findIndex(item => item.result === 'empty');
-      if (nextIndex !== -1) {
-        shots[nextIndex].result = 'lost';
-      }
-
-      updated[lastIndex] = { ...lastStation, shots };
-      return updated;
-    });
-  };
+  const handlePressHit = () => applyShotResult('dead');
+  const handlePressMiss = () => applyShotResult('lost');
 
   const handleUndo = () => {
     setAddStation(prev => {
       const updated = [...prev];
       const lastIndex = updated.length - 1;
-      const lastStation = updated[lastIndex];
-      const shots = [...lastStation.shots];
-
+      const st = updated[lastIndex];
+      const shots = st.shots.map(s => ({ ...s }));
       const lastFilledIndex = [...shots]
         .reverse()
         .findIndex(item => item.result !== 'empty');
-
       if (lastFilledIndex !== -1) {
         const realIndex = shots.length - 1 - lastFilledIndex;
         shots[realIndex].result = 'empty';
       }
-
-      updated[lastIndex] = { ...lastStation, shots };
+      updated[lastIndex] = { ...st, shots };
       return updated;
     });
   };
 
-  //Handle Complete Round Post:
+  const submitStations = () => {
+    postStationtoDb({
+      roundId: roundDetails?.id || roundId,
+      payload: buildStationsPayload(addStation),
+    });
+  };
+
   const handleCompleteRound = () => {
-    const lastStation = addStation[addStation.length - 1];
-    const message = validateLastStation(lastStation);
+    const last = addStation[addStation.length - 1];
+    const message = validateLastStation(last);
     if (message) {
-      showMessage({
-        type: 'danger',
-        message,
-        bgColor: COLORS.primary,
-      });
+      showMessage({ type: 'danger', message, bgColor: COLORS.primary });
       return;
     }
     if (totalSelectedShots != 100) {
-      setBackPressModalVisible(true);
+      setIncompleteCompleteVisible(true);
       return;
     }
-
     setConfirmVisible(true);
   };
 
-  // Handle back navigation
   const handleBackNavigation = useCallback(() => {
-    if (hasPlayedAtLeastOneStation && sectionNumber === 2) {
+    if (sectionNumber === 2 && (hasPlayedAtLeastOneStation || roundId)) {
       setBackPressModalVisible(true);
-      return true; // Prevent default back action
+      return true;
     }
-    navigation.goBack();
-    return false;
-  }, [hasPlayedAtLeastOneStation, sectionNumber, navigation]);
+    goToFieldHome();
+    return true;
+  }, [hasPlayedAtLeastOneStation, sectionNumber, roundId, goToFieldHome]);
 
   useEffect(() => {
-    const onBackPress = () => {
-      return handleBackNavigation();
-    };
-
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
-      onBackPress,
+      () => handleBackNavigation(),
     );
-
     return () => backHandler.remove();
   }, [handleBackNavigation]);
+
+  const fieldDropdownProps = {
+    dropdownStyle: styles.fieldDropdown,
+    selectedTextStyle: styles.fieldDropdownText,
+    placeholderStyle: styles.fieldDropdownPlaceholder,
+    containerStyle: styles.fieldDropdownList,
+    itemTextStyle: styles.fieldDropdownItem,
+    activeColor: COLORS.primary,
+    iconColor: COLORS.courseTextMuted,
+  };
+
+  // Form only — play happens on CourseRoundScreen (field theme)
+  if (!roundDetails && sectionNumber === 1) {
+    return (
+      <CourseLayout showTabs={false} showModeIndicator={false}>
+        <View style={styles.fieldTopBar}>
+          <TouchableOpacity
+            style={styles.fieldBackBtn}
+            onPress={handleBackNavigation}
+            hitSlop={12}
+          >
+            <Icon
+              name="arrow-back"
+              iconFamily="Ionicons"
+              size={22}
+              color={COLORS.primary}
+            />
+          </TouchableOpacity>
+          <Typography
+            fFamily="barlowBold700"
+            size={18}
+            color={COLORS.white100}
+            style={styles.fieldTitle}
+          >
+            New Round
+          </Typography>
+          <View style={styles.fieldBackBtn} />
+        </View>
+
+        <ScrollView
+          style={styles.fieldScroll}
+          contentContainerStyle={styles.fieldScrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Label title="Squad Sequence" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
+          <CustomDropdown
+            data={createRoundDropData}
+            placeholder="Squad Sequence"
+            defaultValue={squadSequence}
+            onChange={item => setSquadSequence(item)}
+            mode={'default'}
+            {...fieldDropdownProps}
+          />
+
+          <Label title="Course Name" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
+          <TextField
+            placeholder="Course Name"
+            handleChange={text => setSelectedCourse(text)}
+            value={selectedCourse}
+            placeholderColor={COLORS.courseTextMuted}
+            borderInactiveColor={COLORS.courseBorder}
+            containerSt={styles.fieldInputContainer}
+            inputStyle={styles.fieldInputText}
+          />
+
+          <Label title="Squad Size" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
+          <CustomDropdown
+            data={createRoundDropData}
+            placeholder="Squad Size"
+            defaultValue={noOfPeople}
+            onChange={item => setNoOfPeople(item)}
+            mode={'default'}
+            dropdownPosition={'top'}
+            {...fieldDropdownProps}
+          />
+
+          <Label title="Your Current NSCA Class" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
+          <View style={styles.nscaClassContainer}>
+            {classes?.length
+              ? classes.map((item, index) => (
+                  <Box
+                    item={item}
+                    key={index}
+                    onSelectClass={setSelectedClass}
+                    selectedClass={selectedClass}
+                    field
+                  />
+                ))
+              : null}
+          </View>
+
+          <Label title="European Rotation?" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
+          <BooleanRadioSelector
+            variant="field"
+            onSetBoleanValue={setIsEuropeanRotation}
+            boleanValue={isEuropeanRotation}
+          />
+
+          {isEuropeanRotation ? (
+            <SlideInView slide="down">
+              <Label title="Starting Station #" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
+              <CustomDropdown
+                data={stationOptions}
+                placeholder="Starting Station"
+                defaultValue={startingStation}
+                onChange={item => setStartingStation(item)}
+                {...fieldDropdownProps}
+              />
+              <Label title="Total number of stations" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
+              <CustomDropdown
+                data={totalStationOptions}
+                placeholder="Total Stations"
+                defaultValue={totalStations}
+                onChange={item => setTotalStations(item)}
+                {...fieldDropdownProps}
+              />
+            </SlideInView>
+          ) : null}
+
+          <Button
+            mb={54}
+            mt={24}
+            label="Continue"
+            onPress={HandleContinue}
+            loader={isPending}
+          />
+        </ScrollView>
+
+        <ConfirmModal
+          variant="field"
+          visible={backPressModalVisible}
+          setVisibility={setBackPressModalVisible}
+          title="Leave Round?"
+          message="Your progress is saved on this device. You can resume this round anytime from Field Mode."
+          confirmText="Stay"
+          cancelText="Leave"
+          handleCancel={() => {
+            goToFieldHome();
+          }}
+        />
+      </CourseLayout>
+    );
+  }
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <Header type="app" title="New Round" onPresBack={handleBackNavigation} />
       <View style={[GLOBALSTYLE.paddingHor, { flex: 1 }]}>
-        {!roundDetails && sectionNumber == 1 ? (
-          <ScrollView showsVerticalScrollIndicator={false}>
-            <View>
-              <Label title="Squad Sequence" />
-              <CustomDropdown
-                data={createRoundDropData}
-                placeholder="Squad Sequence"
-                defaultValue={squadSequence}
-                onChange={item => {
-                  setSquadSequence(item);
-                }}
-                mode={'default'}
-              />
-
-              <Label title="Course Name" />
-              <TextField
-                placeholder="Course Name"
-                handleChange={text => {
-                  setSelectedCourse(text);
-                }}
-                value={selectedCourse}
-              />
-
-              <Label title="Squad Size" />
-              <CustomDropdown
-                data={createRoundDropData}
-                placeholder="Squad Size"
-                defaultValue={noOfPeople}
-                onChange={item => {
-                  setNoOfPeople(item);
-                }}
-                mode={'default'}
-                dropdownPosition={'top'}
-              />
-
-              <Label title="Your Current NSCA Class" />
-              <View style={styles.nscaClassContainer}>
-                {classes?.length &&
-                  classes?.map((item, index) => (
-                    <Box
-                      item={item}
-                      key={index}
-                      onSelectClass={setSelectedClass}
-                      selectedClass={selectedClass}
-                    />
-                  ))}
-              </View>
-
-              <Label title="European Rotation?" />
-
-              <BooleanRadioSelector
-                onSetBoleanValue={setIsEuropeanRotation}
-                boleanValue={isEuropeanRotation}
-              />
-
-              {isEuropeanRotation && (
-                <SlideInView slide="down">
-                  <Label title="Starting Station #" />
-                  <CustomDropdown
-                    data={stationOptions}
-                    placeholder="Starting Station"
-                    defaultValue={startingStation}
-                    onChange={item => setStartingStation(item)}
-                  />
-
-                  <Label title="Total number of stations" />
-                  <CustomDropdown
-                    data={totalStationOptions}
-                    placeholder="Total Stations"
-                    defaultValue={totalStations}
-                    onChange={item => setTotalStations(item)}
-                  />
-                </SlideInView>
-              )}
-            </View>
-            <Button
-              mb={54}
-              mt={24}
-              label="Continue"
-              onPress={HandleContinue}
-              loader={isPending}
-            />
-          </ScrollView>
-        ) : roundDetails || sectionNumber == 2 ? (
+        {roundDetails || sectionNumber == 2 ? (
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ flexGrow: 1 }}
             ref={scrollRef}
           >
-            <View
-              style={{
-                justifyContent: 'space-between',
-                flex: 1,
-              }}
-            >
-              <View style={{}}>
+            <View style={{ justifyContent: 'space-between', flex: 1 }}>
+              <View>
                 <Label
                   title={`${
                     roundDetails?.course_name || selectedCourse || 'Course'
@@ -706,14 +737,12 @@ const NewRoundScreen = ({ navigation, route }) => {
 
                 {addStation.map((station, index) => (
                   <View
-                    key={index}
+                    key={`${station?.station_number}-${index}`}
                     onLayout={event => {
                       const { y } = event.nativeEvent.layout;
                       stationLayoutsRef.current[station?.station_number] = {
                         y,
                       };
-
-                      // Trigger scroll if this is the pending station
                       if (
                         pendingScrollRef.current === station?.station_number &&
                         scrollRef.current
@@ -761,75 +790,76 @@ const NewRoundScreen = ({ navigation, route }) => {
                   />
                 </View>
               </View>
-              <View>
+
+              <View style={{ marginTop: Sizer.vSize(24) }}>
                 <Button
                   mb={13}
                   label="Complete Record"
-                  mt={60}
                   loader={isPendingPostStation}
-                  // loader={isPendingPostStation || isSendToClayMasterPending}
-                  onPress={() => {
-                    sectionNumber == 2
-                      ? handleCompleteRound()
-                      : setSectionNumber(2);
-                  }}
+                  onPress={handleCompleteRound}
                 />
                 <SlideInView slide="down" slideDuration={700}>
-                  <Flex gap={10} mB={34}>
+                  <View style={styles.hitMissCol}>
+                    <TouchableOpacity
+                      activeOpacity={BASEOPACITY}
+                      style={styles.hitZone}
+                      onPress={handlePressHit}
+                      disabled={IsAllFilled}
+                    >
+                      <Icon
+                        name="checkmark"
+                        iconFamily="Ionicons"
+                        size={56}
+                        color={COLORS.white100}
+                      />
+                      <Typography
+                        color={COLORS.white100}
+                        fFamily="barlowBold700"
+                        size={28}
+                        mT={4}
+                        style={styles.hitMissLabel}
+                      >
+                        HIT
+                      </Typography>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      activeOpacity={BASEOPACITY}
+                      style={styles.missZone}
+                      onPress={handlePressMiss}
+                      disabled={IsAllFilled}
+                    >
+                      <Icon
+                        name="close"
+                        iconFamily="Ionicons"
+                        size={56}
+                        color="#F87171"
+                      />
+                      <Typography
+                        color="#F87171"
+                        fFamily="barlowBold700"
+                        size={28}
+                        mT={4}
+                        style={styles.hitMissLabel}
+                      >
+                        MISS
+                      </Typography>
+                    </TouchableOpacity>
                     <TouchableOpacity
                       activeOpacity={BASEOPACITY}
                       onPress={handleUndo}
-                      style={[
-                        styles.actionBxo,
-                        { backgroundColor: COLORS.grey100, flex: 0.6 },
-                      ]}
+                      style={styles.undoBtn}
                     >
                       <UndoSvg color={COLORS.black100} />
                       <Typography
                         color={COLORS.black100}
                         fFamily="barlowSemiBold600"
-                        mT={5}
-                        size={18}
+                        mT={4}
+                        size={16}
                       >
                         Undo
                       </Typography>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      activeOpacity={BASEOPACITY}
-                      style={styles.actionBxo}
-                      onPress={handlePressDead}
-                      disabled={IsAllFilled}
-                    >
-                      <SlashSvg />
-                      <Typography
-                        color={COLORS.white100}
-                        fFamily="barlowSemiBold600"
-                        size={18}
-                        mT={5}
-                      >
-                        Dead
-                      </Typography>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      activeOpacity={BASEOPACITY}
-                      disabled={IsAllFilled}
-                      onPress={handlePressLost}
-                      style={[
-                        styles.actionBxo,
-                        { backgroundColor: COLORS.black500 },
-                      ]}
-                    >
-                      <CircleSvg />
-                      <Typography
-                        color={COLORS.white100}
-                        fFamily="barlowSemiBold600"
-                        size={18}
-                        mT={5}
-                      >
-                        Lost
-                      </Typography>
-                    </TouchableOpacity>
-                  </Flex>
+                  </View>
                 </SlideInView>
               </View>
             </View>
@@ -838,82 +868,83 @@ const NewRoundScreen = ({ navigation, route }) => {
       </View>
 
       <ConfirmModal
+        variant="field"
         visible={confirmVisible}
         setVisibility={setConfirmVisible}
         handleComplete={() => {
           setConfirmVisible(false);
-          postStationtoDb({
-            roundId: roundDetails?.id || roundId,
-            payload: addStation,
-          });
+          submitStations();
         }}
       />
 
       <ConfirmModal
-        // visible={true}
+        variant="field"
         visible={backPressModalVisible}
         setVisibility={setBackPressModalVisible}
         title="Leave Round?"
-        // message={`Your current score is ${currentScore} shot${
-        //   currentScore !== 1 ? 's' : ''
-        // }. If you leave now, your progress won't be saved.`}
-        message={
-          <View>
-            <Typography style={styles.text}>
-              You've shot less than the expected 100 targets, do you still want
-              to complete your round?{'\n'}
-            </Typography>
-            <Typography style={{ ...styles.text, fontStyle: 'italic' }}>
-              <Typography
-                style={{
-                  ...styles.text,
-                  fontStyle: 'italic',
-                  fontWeight: 'bold',
-                }}
-              >
-                Please note{' '}
-              </Typography>
-              that this practice round will not be downloaded or sent to
-              ClayMaster due to less than 100 targets.
-            </Typography>
-          </View>
-        }
+        message="Your progress is saved on this device. You can resume this round anytime from Field Mode."
         confirmText="Stay"
         cancelText="Leave"
         handleCancel={() => {
-          navigation.goBack();
+          goToFieldHome();
         }}
       />
 
       <ConfirmModal
+        variant="field"
+        visible={incompleteCompleteVisible}
+        setVisibility={setIncompleteCompleteVisible}
+        title="Leave Round?"
+        message="You've shot less than 100 targets. Leave and keep progress on this device, or stay to finish."
+        confirmText="Stay"
+        cancelText="Leave"
+        handleCancel={() => {
+          goToFieldHome();
+        }}
+      />
+
+      <ConfirmModal
+        variant="field"
         title="Score Exceeded"
-        message="Your total score has crossed the limit of 100. This round is invalid. Do you want to discard this round?"
+        message="Your total score has crossed the limit of 100. This round is invalid. Do you want to discard local progress?"
         visible={isLeaveGameModalVisible}
         setVisibility={setIsLeaveGameModalVisible}
         confirmText="Discard"
         cancelText="Cancel"
-        handleComplete={() => navigation.goBack()}
+        handleComplete={() => {
+          clearRound();
+          goToFieldHome();
+        }}
       />
     </Container>
   );
 };
 
-const Box = ({ item, selectedClass, onSelectClass }) => {
+const Box = ({ item, selectedClass, onSelectClass, field = false }) => {
+  const selected = item == selectedClass;
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       style={[
         styles.box,
-        item == selectedClass && { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+        field && styles.boxField,
+        selected && {
+          backgroundColor: COLORS.primary,
+          borderColor: COLORS.primary,
+        },
       ]}
-      onPress={() => {
-        onSelectClass(item);
-      }}
+      onPress={() => onSelectClass(item)}
     >
       <Typography
         fFamily="barlowBold700"
         size={14}
-        color={item == selectedClass ? COLORS.white100 : COLORS.black300}
+        color={
+          selected
+            ? COLORS.white100
+            : field
+              ? COLORS.courseTextMuted
+              : COLORS.black300
+        }
       >
         {item}
       </Typography>
@@ -922,10 +953,6 @@ const Box = ({ item, selectedClass, onSelectClass }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'space-between',
-    flex: 1,
-  },
   box: {
     paddingVertical: Sizer.vSize(6),
     paddingHorizontal: Sizer.hSize(16),
@@ -935,11 +962,6 @@ const styles = StyleSheet.create({
     borderRadius: Sizer.hSize(8),
     borderWidth: 1,
     borderColor: '#D4D4D4',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
   },
   nscaClassContainer: {
     flexDirection: 'row',
@@ -947,24 +969,101 @@ const styles = StyleSheet.create({
     marginBottom: Sizer.vSize(8),
     flexWrap: 'wrap',
   },
-  actionBxo: {
-    height: Sizer.vSize(120),
-    flex: 1,
+  hitMissCol: {
+    gap: Sizer.vSize(10),
+    marginBottom: Sizer.vSize(34),
+  },
+  hitZone: {
+    minHeight: Sizer.vSize(110),
     backgroundColor: COLORS.primary,
+    borderRadius: Sizer.hSize(16),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  missZone: {
+    minHeight: Sizer.vSize(110),
+    backgroundColor: COLORS.black500,
+    borderRadius: Sizer.hSize(16),
+    borderWidth: 2,
+    borderColor: 'rgba(239, 68, 68, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  undoBtn: {
+    minHeight: Sizer.vSize(64),
+    backgroundColor: COLORS.grey100,
     borderRadius: Sizer.hSize(12),
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
   },
+  hitMissLabel: { letterSpacing: 2 },
   text: {
     fontSize: 14,
     color: '#0E0E0E',
     fontFamily: FONTS.barlowMedium500,
     textAlign: 'center',
+  },
+  fieldTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Sizer.hSize(16),
+    paddingVertical: Sizer.vSize(12),
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.courseBorder,
+  },
+  fieldBackBtn: {
+    width: Sizer.hSize(40),
+    height: Sizer.hSize(40),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fieldTitle: {
+    textAlign: 'center',
+  },
+  fieldScroll: { flex: 1 },
+  fieldScrollContent: {
+    paddingHorizontal: Sizer.hSize(16),
+    paddingBottom: Sizer.vSize(40),
+  },
+  fieldDropdown: {
+    backgroundColor: COLORS.courseSurface,
+    borderColor: COLORS.courseBorder,
+    borderRadius: Sizer.hSize(10),
+  },
+  fieldDropdownText: {
+    color: COLORS.white100,
+    fontFamily: FONTS.barlowRegular400,
+    fontSize: Sizer.fS(14),
+    paddingLeft: Sizer.hSize(4),
+  },
+  fieldDropdownPlaceholder: {
+    color: COLORS.courseTextMuted,
+    fontFamily: FONTS.barlowRegular400,
+    fontSize: Sizer.fS(14),
+    paddingLeft: Sizer.hSize(4),
+  },
+  fieldDropdownList: {
+    backgroundColor: COLORS.courseSurface,
+    borderColor: COLORS.courseBorder,
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  fieldDropdownItem: {
+    color: COLORS.white100,
+    fontFamily: FONTS.barlowRegular400,
+    fontSize: Sizer.fS(14),
+  },
+  fieldInputContainer: {
+    backgroundColor: COLORS.courseSurface,
+    borderRadius: Sizer.hSize(10),
+  },
+  fieldInputText: {
+    color: COLORS.white100,
+  },
+  boxField: {
+    backgroundColor: COLORS.courseSurface,
+    borderColor: COLORS.courseBorder,
   },
 });
 

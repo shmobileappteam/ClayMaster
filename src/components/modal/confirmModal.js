@@ -2,7 +2,6 @@ import React from 'react';
 import { Modal, Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ActivityIndicator } from 'react-native-paper';
 import { COLORS, FONTS } from '../../globalStyle/Theme';
-// import { LogoutSvg } from '../assets/svgs';
 
 const ConfirmModal = ({
   visible,
@@ -13,7 +12,11 @@ const ConfirmModal = ({
   message = '',
   confirmText = 'Yes',
   cancelText = 'Cancel',
+  /** `field` = dark Field Mode theme */
+  variant = 'default',
 }) => {
+  const isField = variant === 'field';
+
   const handleClose = () => {
     handleCancel?.();
     setVisibility(false);
@@ -27,17 +30,29 @@ const ConfirmModal = ({
       onRequestClose={handleClose}
       statusBarTranslucent
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalView}>
-          {/* <LogoutSvg /> */}
-          <Text style={styles.heading}>{title}</Text>
-          {!!message && <Text style={styles.message}>{message}</Text>}
+      <View style={[styles.modalOverlay, isField && styles.modalOverlayField]}>
+        <View style={[styles.modalView, isField && styles.modalViewField]}>
+          <Text style={[styles.heading, isField && styles.headingField]}>
+            {title}
+          </Text>
+          {!!message && (
+            <Text style={[styles.message, isField && styles.messageField]}>
+              {message}
+            </Text>
+          )}
           <View style={styles.btnView}>
-            {!!cancelText && <Button text={cancelText} onPress={handleClose} />}
+            {!!cancelText && (
+              <Button
+                text={cancelText}
+                onPress={handleClose}
+                field={isField}
+              />
+            )}
             {!!confirmText && (
               <Button
                 text={confirmText}
                 primary
+                field={isField}
                 onPress={() => {
                   handleComplete();
                   setVisibility(false);
@@ -56,12 +71,25 @@ const Button = ({
   primary = false,
   onPress = () => {},
   loading = false,
+  field = false,
 }) => {
+  const bg = primary
+    ? COLORS.primary
+    : field
+      ? COLORS.courseSurface
+      : COLORS.white100;
+  const color = primary
+    ? COLORS.white100
+    : field
+      ? COLORS.courseTextMuted
+      : '#C50E0E';
+
   return (
     <TouchableOpacity
       style={[
         styles.button,
-        { backgroundColor: primary ? COLORS.primary : COLORS.white100 },
+        { backgroundColor: bg },
+        field && !primary && styles.buttonFieldSecondary,
       ]}
       onPress={onPress}
       activeOpacity={0.8}
@@ -69,14 +97,7 @@ const Button = ({
       {loading ? (
         <ActivityIndicator size="small" color="#fff" />
       ) : (
-        <Text
-          style={[
-            styles.buttonText,
-            { color: primary ? COLORS.white100 : '#C50E0E' },
-          ]}
-        >
-          {text}
-        </Text>
+        <Text style={[styles.buttonText, { color }]}>{text}</Text>
       )}
     </TouchableOpacity>
   );
@@ -90,6 +111,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     paddingHorizontal: 20,
   },
+  modalOverlayField: {
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
+  },
   modalView: {
     width: '100%',
     backgroundColor: COLORS.white100,
@@ -98,17 +122,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 15,
   },
+  modalViewField: {
+    backgroundColor: COLORS.courseSurface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.courseBorder,
+  },
   heading: {
     fontSize: 17,
     color: '#0E0E0E',
     fontFamily: FONTS.barlowBold700,
     textAlign: 'center',
   },
+  headingField: {
+    color: COLORS.white100,
+  },
   message: {
     fontSize: 14,
     color: '#0E0E0E',
     fontFamily: FONTS.barlowMedium500,
     textAlign: 'center',
+  },
+  messageField: {
+    color: COLORS.courseTextMuted,
   },
   btnView: {
     width: '100%',
@@ -119,6 +155,10 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 8,
     paddingVertical: 11,
+  },
+  buttonFieldSecondary: {
+    borderWidth: 1,
+    borderColor: COLORS.courseBorder,
   },
   buttonText: {
     color: 'white',
