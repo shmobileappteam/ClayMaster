@@ -43,6 +43,7 @@ import CommunityScreen from './Main/Community/CommunityScreen';
 import CommunityDetailScreen from './Main/Community/CommunityDetailScreen';
 import CreatePostScreen from './Main/Community/CreatePostScreen';
 import VirtualTournamentScreen from './Main/Community/VirtualTournamentScreen';
+import TournamentEntryScreen from './Main/Community/TournamentEntryScreen';
 import ShopScreen from './Main/Commerce/ShopScreen';
 import ProductDetailScreen from './Main/Commerce/ProductDetailScreen';
 import OrdersScreen from './Main/Commerce/OrdersScreen';
@@ -115,6 +116,7 @@ export {
   CommunityDetailScreen,
   CreatePostScreen,
   VirtualTournamentScreen,
+  TournamentEntryScreen,
   ShopScreen,
   ProductDetailScreen,
   OrdersScreen,

@@ -55,11 +55,11 @@ export const FIELD_DRILL_ACCESS = {
   previewBeforeDetail: true,
 };
 
-/** PAGE 15–17 — Tournament portal: library-only leaderboard; no guidelines PDF or submit entry in app */
+/** PAGE 15–17 — Tournament portal: library-only leaderboard + submit entry (live API). */
 export const TOURNAMENT_PORTAL = {
   libraryOnly: true,
   guidelinesSupported: false,
-  submitEntrySupported: false,
+  submitEntrySupported: true,
 };
 
 /** Core sequence shared by both modes (order must stay aligned). */

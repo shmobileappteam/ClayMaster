@@ -53,6 +53,10 @@ export const ENDPOINTS = {
   GET_REVIEWS: 'reviews',
   POST_REVIEW: 'reviews',
 
+  // --- Tournament ---
+  SUBMIT_TOURNAMENT: 'tournament/submit',
+  GET_TOURNAMENT_LEADERBOARD: 'tournament/leaderboard',
+
   // --- Academy / Library ---
   GET_TUTORIAL_VIDEOS: 'tutorial-videos/',
   GET_TUTORIAL_VIDEO: id => `tutorial-videos/${id}`,
