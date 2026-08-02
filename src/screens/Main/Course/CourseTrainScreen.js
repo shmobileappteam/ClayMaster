@@ -96,7 +96,7 @@ const CourseTrainScreen = ({ navigation }) => {
   };
 
   return (
-    <CourseLayout>
+    <CourseLayout showModeIndicator>
       <CourseHeader title="Practice Drills" />
 
       <ScrollView

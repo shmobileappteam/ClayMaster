@@ -242,7 +242,6 @@ const SubscriptionScreen = ({ navigation, route }) => {
         title="Membership Plan"
         showBack={canGoBack}
         showNotification={false}
-        showModeIndicator={!fromAuth}
         onBack={() => navigation.goBack()}
         rightSlot={
           fromAuth ? (

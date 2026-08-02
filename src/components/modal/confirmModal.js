@@ -14,10 +14,15 @@ const ConfirmModal = ({
   cancelText = 'Cancel',
   /** `field` = dark Field Mode theme */
   variant = 'default',
+  /** Show spinner on confirm; blocks dismiss while true */
+  confirmLoading = false,
+  /** Set false to keep modal open after confirm (e.g. async submit with confirmLoading) */
+  dismissOnConfirm = true,
 }) => {
   const isField = variant === 'field';
 
   const handleClose = () => {
+    if (confirmLoading) return;
     handleCancel?.();
     setVisibility(false);
   };
@@ -46,6 +51,7 @@ const ConfirmModal = ({
                 text={cancelText}
                 onPress={handleClose}
                 field={isField}
+                disabled={confirmLoading}
               />
             )}
             {!!confirmText && (
@@ -53,9 +59,12 @@ const ConfirmModal = ({
                 text={confirmText}
                 primary
                 field={isField}
+                loading={confirmLoading}
+                disabled={confirmLoading}
                 onPress={() => {
+                  if (confirmLoading) return;
                   handleComplete();
-                  setVisibility(false);
+                  if (dismissOnConfirm) setVisibility(false);
                 }}
               />
             )}
@@ -71,6 +80,7 @@ const Button = ({
   primary = false,
   onPress = () => {},
   loading = false,
+  disabled = false,
   field = false,
 }) => {
   const bg = primary
@@ -90,9 +100,11 @@ const Button = ({
         styles.button,
         { backgroundColor: bg },
         field && !primary && styles.buttonFieldSecondary,
+        (loading || disabled) && styles.buttonDisabled,
       ]}
       onPress={onPress}
       activeOpacity={0.8}
+      disabled={loading || disabled}
     >
       {loading ? (
         <ActivityIndicator size="small" color="#fff" />
@@ -155,6 +167,9 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 8,
     paddingVertical: 11,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonFieldSecondary: {
     borderWidth: 1,

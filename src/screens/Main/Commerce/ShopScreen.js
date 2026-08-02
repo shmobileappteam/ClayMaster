@@ -35,6 +35,7 @@ const ShopScreen = ({ navigation }) => {
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
         title="Shop"
+        showModeIndicator
         rightSlot={
           <CartBadgeButton
             onPress={() => navigateFromTabToStack(navigation, 'CartScreen')}

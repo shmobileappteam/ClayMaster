@@ -19,13 +19,14 @@ import { KEYS } from '../../constants';
 
 /**
  * Web AppHeader parity — sticky library-mode header with menu + notifications.
+ * Mode switcher only on Library bottom tabs — pass showModeIndicator there.
  */
 const LibraryHeader = ({
   title,
   showBack,
   showMenu,
   showNotification = true,
-  showModeIndicator = true,
+  showModeIndicator = false,
   onBack,
   rightSlot,
 }) => {

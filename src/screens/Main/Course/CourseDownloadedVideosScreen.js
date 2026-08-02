@@ -27,7 +27,7 @@ const CourseDownloadedVideosScreen = ({ navigation }) => {
   );
 
   return (
-    <CourseLayout>
+    <CourseLayout showModeIndicator>
       <CourseHeader title="Downloaded Videos" />
 
       <ScrollView

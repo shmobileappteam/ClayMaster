@@ -57,6 +57,26 @@ export function resetToFieldMode(navigation, tabScreen = 'CourseHomeScreen') {
   );
 }
 
+/** Reload while actively playing — Field home under play screen so goBack/pause works. */
+export function resetToActiveRoundPlay(navigation) {
+  const stack = getStackNavigation(navigation) ?? navigation;
+  stack.dispatch(
+    CommonActions.reset({
+      index: 1,
+      routes: [
+        {
+          name: FIELD_MODE_ROUTE,
+          state: {
+            routes: [{ name: 'CourseHomeScreen' }],
+            index: 0,
+          },
+        },
+        { name: 'CourseRoundScreen' },
+      ],
+    }),
+  );
+}
+
 /** Push a stack overlay from inside Field Mode (round, miss fix, etc.). */
 export function navigateFromFieldToStack(navigation, screenName, params) {
   const stack = getStackNavigation(navigation);

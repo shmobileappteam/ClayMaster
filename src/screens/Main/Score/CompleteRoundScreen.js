@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
+  BackHandler,
   Linking,
   ScrollView,
   StyleSheet,
@@ -22,17 +23,16 @@ import {
   scoreFromShots,
   scoreFromStations,
 } from '../../../constants/rounds';
-import { resetToFieldMode } from '../../../navigation/navigationHelpers';
 
 const SUCCESS_GREEN = COLORS.green;
 
 /**
  * Field Mode round complete / completed detail —
  * Score uses milestone logic: hits / taken (empty ignored).
+ * Back (header, bottom, or hardware) → navigation.goBack() only.
  */
 const CompleteRoundScreen = ({ navigation, route }) => {
   const roundId = route.params?.roundId;
-  const viewingPast = !!route.params?.viewingPast;
 
   const { data: round, isLoading: roundLoading } = useCustomQuery({
     queryKey: ['round', roundId],
@@ -86,13 +86,20 @@ const CompleteRoundScreen = ({ navigation, route }) => {
     : 0;
 
   const isLoading = roundLoading || stationsLoading;
-  const goHome = () => resetToFieldMode(navigation, 'CourseHomeScreen');
+
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      navigation.goBack();
+      return true;
+    });
+    return () => sub.remove();
+  }, [navigation]);
 
   return (
     <CourseLayout showTabs={false} showModeIndicator={false}>
       <CourseHeader
-        title={viewingPast ? 'Scorecard' : 'Round Complete'}
-        showBack={viewingPast}
+        title="Scorecard"
+        showBack
         onBack={() => navigation.goBack()}
       />
 
@@ -252,24 +259,22 @@ const CompleteRoundScreen = ({ navigation, route }) => {
           <TouchableOpacity
             style={styles.homeBtn}
             activeOpacity={0.88}
-            onPress={viewingPast ? () => navigation.goBack() : goHome}
+            onPress={() => navigation.goBack()}
           >
-            {!viewingPast ? (
-              <Icon
-                name="home-outline"
-                iconFamily="Ionicons"
-                size={18}
-                color={COLORS.white100}
-              />
-            ) : null}
+            <Icon
+              name="arrow-back"
+              iconFamily="Ionicons"
+              size={18}
+              color={COLORS.white100}
+            />
             <Typography
               fFamily="barlowMedium500"
               size={14}
               lineHeight={21}
               color={COLORS.white100}
-              mL={viewingPast ? 0 : 8}
+              mL={8}
             >
-              {viewingPast ? 'Close' : 'Back to Field Home'}
+              Back to Recent Rounds
             </Typography>
           </TouchableOpacity>
         </ScrollView>

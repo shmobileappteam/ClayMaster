@@ -13,15 +13,16 @@ export const isRoundComplete = round =>
 
 export const isRoundResumable = round => !isRoundComplete(round);
 
-/** Incomplete first (resume on top), then newest */
-export const sortRoundsForFieldList = (rounds = []) => {
+/** Keep API sequence. Optionally pin the active (in-progress) round at top only. */
+export const sortRoundsForFieldList = (rounds = [], activeRoundId = null) => {
   const list = Array.isArray(rounds) ? [...rounds] : [];
-  return list.sort((a, b) => {
-    const aDone = isRoundComplete(a) ? 1 : 0;
-    const bDone = isRoundComplete(b) ? 1 : 0;
-    if (aDone !== bDone) return aDone - bDone;
-    return new Date(b?.updated_at || b?.created_at || 0) - new Date(a?.updated_at || a?.created_at || 0);
-  });
+  if (activeRoundId == null || activeRoundId === '') return list;
+  const activeIdx = list.findIndex(
+    r => Number(r?.id) === Number(activeRoundId),
+  );
+  if (activeIdx <= 0) return list;
+  const [active] = list.splice(activeIdx, 1);
+  return [active, ...list];
 };
 
 export const seedStationFromRound = round => {
@@ -95,6 +96,7 @@ export const buildActiveDraft = ({
     stations: stationList,
     currentStation: current?.station_number ?? 1,
     finished: false,
+    playing: false,
   };
 };
 

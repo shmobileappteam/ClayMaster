@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
-import { COLORS, RADIUS, SHADOWS, SPACING } from '../../../globalStyle/Theme';
+import { COLORS, RADIUS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import Icon from '../../../helpers/Icon';
 import {
@@ -17,60 +17,45 @@ import {
   LIBRARY_PORTAL_SECTIONS,
   MODE_LABELS,
 } from '../../../constants/modeSections';
+import EuropeanBadge from '../../../components/course/EuropeanBadge';
 
 /**
  * CONTENT INVENTORY — ClayMaster-App-UI `Home.tsx`
  * Header: 1 (title "Library", showMenu, showNotification — no back)
- * CTAs: 1 course-switch row
- * Section labels: 2 ("Your Game Right Now", "Core Training" + portal)
+ * Section: "Your Game Right Now" — Resume (active draft) OR primary miss OR Start a round
  * Training Library grid cards: 6+
- * Conditional issue card: 1 (when primary miss exists) OR empty-state card: 1
  * Continue Training → Field Mode Practice Drills tab (PAGE 7.1.1)
  */
 const DashboardScreen = ({ navigation }) => {
-  const { activeRound, lastPrimaryMiss } = useAppMode();
+  const { activeRound, lastPrimaryMiss, setRoundPlaying } = useAppMode();
   const { switchToFieldMode } = useModeSwitch();
   const primary = getMissCategory(lastPrimaryMiss);
+  const hasActiveDraft = !!(activeRound?.roundId && !activeRound?.finished);
+
+  /** Resume play without switching APP_MODE to Field — reload stays Library unless Pause. */
+  const resumeRound = () => {
+    setRoundPlaying(true);
+    navigateFromTabToStack(navigation, 'CourseRoundScreen');
+  };
+
+  /** Start a new round intentionally enters Field Mode. */
+  const startRound = () => {
+    switchToFieldMode('CourseHomeScreen');
+  };
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <LibraryHeader title={MODE_LABELS.library} showMenu showNotification />
+      <LibraryHeader
+        title={MODE_LABELS.library}
+        showMenu
+        showNotification
+        showModeIndicator
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        {/* w-full bg-foreground rounded-lg p-4 flex-row items-center gap-3 */}
-        <TouchableOpacity
-          style={styles.courseSwitch}
-          activeOpacity={0.88}
-          onPress={() => {
-            if (activeRound?.roundId && !activeRound.finished) {
-              switchToFieldMode('CourseHomeScreen');
-              navigateFromTabToStack(navigation, 'CourseRoundScreen');
-            } else {
-              switchToFieldMode('CourseHomeScreen');
-            }
-          }}
-        >
-          <View style={styles.courseSwitchIcon}>
-            <Icon name="locate" iconFamily="Ionicons" size={22} color={COLORS.white100} />
-          </View>
-          <View style={styles.courseSwitchText}>
-            <Typography fFamily="barlowBold700" size={14} lineHeight={21} color={COLORS.white100}>
-              {activeRound?.roundId && !activeRound.finished
-                ? 'Resume Round'
-                : MODE_LABELS.field}
-            </Typography>
-            <Typography size={12} lineHeight={17} color="rgba(255,255,255,0.7)" mT={2}>
-              {activeRound?.roundId && !activeRound.finished
-                ? `${activeRound.course_name || 'Round'} · Station ${activeRound.currentStation}`
-                : `Switch to ${MODE_LABELS.field}`}
-            </Typography>
-          </View>
-          <Icon name="chevron-forward" iconFamily="Ionicons" size={20} color="rgba(255,255,255,0.6)" />
-        </TouchableOpacity>
-
         <View style={[styles.section, styles.gameSection]}>
           <View style={styles.sectionHeadingRow}>
             <Icon name="sparkles-outline" iconFamily="Ionicons" size={16} color={COLORS.primary} />
@@ -79,7 +64,44 @@ const DashboardScreen = ({ navigation }) => {
             </Typography>
           </View>
 
-          {primary ? (
+          {hasActiveDraft ? (
+            <TouchableOpacity
+              style={styles.resumeCard}
+              onPress={resumeRound}
+              activeOpacity={0.88}
+            >
+              <View style={styles.resumeIcon}>
+                <Icon name="locate" iconFamily="Ionicons" size={22} color={COLORS.white100} />
+              </View>
+              <View style={styles.resumeText}>
+                <View style={styles.resumeTitleRow}>
+                  <Typography
+                    fFamily="barlowBold700"
+                    size={14}
+                    lineHeight={21}
+                    color={COLORS.white100}
+                    style={{ flexShrink: 1 }}
+                    numberOfLines={1}
+                  >
+                    Resume Round
+                  </Typography>
+                  {activeRound.european_rotation ? (
+                    <EuropeanBadge variant="library" style={styles.resumeEu} />
+                  ) : null}
+                </View>
+                <Typography size={12} lineHeight={17} color="rgba(255,255,255,0.7)" mT={2}>
+                  {activeRound.course_name || 'Round'} · Station{' '}
+                  {activeRound.currentStation}
+                </Typography>
+              </View>
+              <Icon
+                name="chevron-forward"
+                iconFamily="Ionicons"
+                size={20}
+                color="rgba(255,255,255,0.6)"
+              />
+            </TouchableOpacity>
+          ) : primary ? (
             <View
               style={[
                 styles.issueCard,
@@ -112,7 +134,6 @@ const DashboardScreen = ({ navigation }) => {
                   {primary.drillTitle}
                 </Typography>
               </View>
-              {/* flex gap-2 mt-4 — two equal-width buttons in a row (NOT stacked) */}
               <View style={styles.issueActions}>
                 <TouchableOpacity
                   style={styles.issuePrimaryBtn}
@@ -141,7 +162,7 @@ const DashboardScreen = ({ navigation }) => {
                 Use the digital scorecard to record your 100-target practice round.
               </Typography>
               <TouchableOpacity
-                onPress={() => switchToFieldMode('CourseHomeScreen')}
+                onPress={startRound}
                 activeOpacity={0.88}
                 style={styles.startRoundLink}
               >
@@ -236,10 +257,10 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: Sizer.vSize(SPACING.section),
   },
-  /** Extra space above "Your Game Right Now" after course switch (web space-y-section) */
+  /** "Your Game Right Now" — first section under header */
   gameSection: {
-    marginTop: Sizer.vSize(SPACING.md),
-    paddingTop: Sizer.vSize(SPACING.component),
+    marginTop: 0,
+    paddingTop: 0,
   },
   suggestedFixRow: {
     flexDirection: 'row',
@@ -251,8 +272,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Sizer.vSize(SPACING.component),
   },
-  // w-full bg-foreground (#1A1A1A) rounded-lg (12) p-4 (16) flex-row gap-3 (12)
-  courseSwitch: {
+  resumeCard: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
@@ -261,8 +281,7 @@ const styles = StyleSheet.create({
     padding: Sizer.hSize(SPACING.cardP),
     gap: Sizer.hSize(12),
   },
-  // w-11 h-11 (44) rounded-full bg-cm-orange
-  courseSwitchIcon: {
+  resumeIcon: {
     width: Sizer.hSize(44),
     height: Sizer.hSize(44),
     borderRadius: Sizer.hSize(22),
@@ -270,7 +289,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  courseSwitchText: { flex: 1, minWidth: 0 },
+  resumeText: { flex: 1, minWidth: 0 },
+  resumeTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  resumeEu: {
+    marginLeft: Sizer.hSize(8),
+  },
   uppercase: { letterSpacing: 1.5, textTransform: 'uppercase' },
   // rounded-lg border-2 p-card-p (16)
   issueCard: {

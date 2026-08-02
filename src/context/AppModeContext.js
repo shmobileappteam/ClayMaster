@@ -13,6 +13,7 @@ import { KEYS } from '../constants';
  * @typedef {'course' | 'library'} AppMode
  *
  * Active round draft (MMKV) — stations stay local until Complete posts to API.
+ * `playing` = user is on the play screen (not paused). Reload reopens play only when true.
  * @typedef {{
  *   roundId: number,
  *   course_name: string,
@@ -25,6 +26,7 @@ import { KEYS } from '../constants';
  *   stations: object[],
  *   currentStation: number,
  *   finished?: boolean,
+ *   playing?: boolean,
  * }} ActiveRound
  */
 
@@ -66,25 +68,25 @@ export const AppModeProvider = ({ children }) => {
     }
   }, [activeRound]);
 
-  /** Replace the single active draft (resuming another round discards prior local stations). */
-  const setActiveDraft = useCallback(
-    draft => {
-      if (!draft?.roundId) {
-        setActiveRound(null);
-        return;
-      }
-      setActiveRound({
-        ...draft,
-        finished: false,
-        currentStation:
-          draft.currentStation ??
-          draft.stations?.[draft.stations.length - 1]?.station_number ??
-          1,
-      });
-      setMode('course');
-    },
-    [setMode],
-  );
+  /**
+   * Replace the single active draft.
+   * Does NOT change APP_MODE — mode only changes via explicit Field/Library switch or Pause.
+   */
+  const setActiveDraft = useCallback(draft => {
+    if (!draft?.roundId) {
+      setActiveRound(null);
+      return;
+    }
+    setActiveRound({
+      ...draft,
+      finished: false,
+      playing: draft.playing === true,
+      currentStation:
+        draft.currentStation ??
+        draft.stations?.[draft.stations.length - 1]?.station_number ??
+        1,
+    });
+  }, []);
 
   const updateDraftStations = useCallback(stations => {
     setActiveRound(r => {
@@ -92,6 +94,14 @@ export const AppModeProvider = ({ children }) => {
       const current =
         stations?.[stations.length - 1]?.station_number ?? r.currentStation;
       return { ...r, stations, currentStation: current, finished: false };
+    });
+  }, []);
+
+  /** Mark play session active (reload → CourseRound) or paused (reload → mode home). */
+  const setRoundPlaying = useCallback(playing => {
+    setActiveRound(r => {
+      if (!r?.roundId) return r;
+      return { ...r, playing: !!playing, finished: false };
     });
   }, []);
 
@@ -104,6 +114,7 @@ export const AppModeProvider = ({ children }) => {
       activeRound,
       setActiveDraft,
       updateDraftStations,
+      setRoundPlaying,
       clearRound,
       lastPrimaryMiss,
       setLastPrimaryMiss,
@@ -114,6 +125,7 @@ export const AppModeProvider = ({ children }) => {
       activeRound,
       setActiveDraft,
       updateDraftStations,
+      setRoundPlaying,
       clearRound,
       lastPrimaryMiss,
     ],

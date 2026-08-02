@@ -29,6 +29,7 @@ import {
   sortRoundsForFieldList,
 } from '../../../constants/rounds';
 import AppLoader from '../../../atomComponents/AppLoader';
+import EuropeanBadge from '../../../components/course/EuropeanBadge';
 
 /** Digital scorecard — completed rounds only (live API). */
 const LibraryScorecardScreen = ({ navigation, route }) => {
@@ -87,23 +88,35 @@ const LibraryScorecardScreen = ({ navigation, route }) => {
               No completed rounds yet.
             </Typography>
           ) : null}
-          {completedRounds.map(item => (
-            <TouchableOpacity
-              key={String(item.id)}
-              style={[GLOBALSTYLE.screenCard, styles.listCard]}
-              activeOpacity={0.88}
-              onPress={() =>
-                navigation.push('LibraryScorecardScreen', { roundId: item.id })
-              }
-            >
-              <Typography fFamily="barlowSemiBold600" size={16} color={COLORS.textPrimary}>
-                {item.course_name || 'Round'}
-              </Typography>
-              <Typography size={12} color={COLORS.textSecondary} mT={4}>
-                {formatRoundMetaLine(item)}
-              </Typography>
-            </TouchableOpacity>
-          ))}
+          {completedRounds.map(item => {
+            const isEuropean = !!item.european_rotation;
+            return (
+              <TouchableOpacity
+                key={String(item.id)}
+                style={[GLOBALSTYLE.screenCard, styles.listCard]}
+                activeOpacity={0.88}
+                onPress={() =>
+                  navigation.push('LibraryScorecardScreen', { roundId: item.id })
+                }
+              >
+                <View style={styles.listTopRow}>
+                  <Typography
+                    fFamily="barlowSemiBold600"
+                    size={16}
+                    color={COLORS.textPrimary}
+                    numberOfLines={1}
+                    style={styles.listTitle}
+                  >
+                    {item.course_name || 'Round'}
+                  </Typography>
+                  {isEuropean ? <EuropeanBadge variant="light" /> : null}
+                </View>
+                <Typography size={12} color={COLORS.textSecondary} mT={4}>
+                  {formatRoundMetaLine(item)}
+                </Typography>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </Container>
     );
@@ -270,6 +283,16 @@ const styles = StyleSheet.create({
     padding: Sizer.hSize(SPACING.cardP),
     marginBottom: Sizer.vSize(12),
     ...SHADOWS.card,
+  },
+  listTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  listTitle: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: Sizer.hSize(8),
   },
   summary: {
     backgroundColor: COLORS.primary,

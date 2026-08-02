@@ -246,11 +246,12 @@ const NewRoundScreen = ({ navigation, route }) => {
     useCustomMutation({
       mutationFn: postStations,
       onSuccess: async () => {
-        clearRound();
+        const completedRoundId = roundDetails?.id || roundId;
         await queryClient.invalidateQueries({ queryKey: ['rounds'] });
         navigation.replace('CompleteRoundScreen', {
-          roundId: roundDetails?.id || roundId,
+          roundId: completedRoundId,
         });
+        clearRound();
       },
       on422Error: error => {
         showMessage({
@@ -396,8 +397,8 @@ const NewRoundScreen = ({ navigation, route }) => {
           setAddStation(stations);
         }
 
-        setActiveDraft(
-          buildActiveDraft({
+        setActiveDraft({
+          ...buildActiveDraft({
             round: {
               ...round,
               course_name: selectedCourse,
@@ -413,7 +414,8 @@ const NewRoundScreen = ({ navigation, route }) => {
             stations,
             courseName: selectedCourse,
           }),
-        );
+          playing: true,
+        });
         queryClient.invalidateQueries({ queryKey: ['rounds'] });
         navigation.replace('CourseRoundScreen');
       })
@@ -555,13 +557,32 @@ const NewRoundScreen = ({ navigation, route }) => {
   };
 
   const handleBackNavigation = useCallback(() => {
+    // Create-round form (section 1): always pop with goBack
+    if (sectionNumber === 1) {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        goToFieldHome();
+      }
+      return true;
+    }
     if (sectionNumber === 2 && (hasPlayedAtLeastOneStation || roundId)) {
       setBackPressModalVisible(true);
       return true;
     }
-    goToFieldHome();
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      goToFieldHome();
+    }
     return true;
-  }, [hasPlayedAtLeastOneStation, sectionNumber, roundId, goToFieldHome]);
+  }, [
+    hasPlayedAtLeastOneStation,
+    sectionNumber,
+    roundId,
+    goToFieldHome,
+    navigation,
+  ]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -677,6 +698,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                 placeholder="Starting Station"
                 defaultValue={startingStation}
                 onChange={item => setStartingStation(item)}
+                mode="modal"
                 {...fieldDropdownProps}
               />
               <Label title="Total number of stations" color={COLORS.courseTextMuted} size={13} fFamily="barlowBold700" />
@@ -685,6 +707,7 @@ const NewRoundScreen = ({ navigation, route }) => {
                 placeholder="Total Stations"
                 defaultValue={totalStations}
                 onChange={item => setTotalStations(item)}
+                mode="modal"
                 {...fieldDropdownProps}
               />
             </SlideInView>

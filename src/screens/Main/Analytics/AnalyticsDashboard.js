@@ -64,7 +64,7 @@ const AnalyticsDashboard = ({ navigation }) => {
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <LibraryHeader title="Analytics" />
+      <LibraryHeader title="Analytics" showModeIndicator />
 
       <ScrollView
         contentContainerStyle={styles.scroll}

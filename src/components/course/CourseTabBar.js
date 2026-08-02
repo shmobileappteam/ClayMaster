@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingTop: Sizer.vSize(8),
     paddingBottom: Sizer.vSize(12),
-    backgroundColor: '#1A1A1A',
+    backgroundColor: COLORS.courseSurface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: COLORS.courseBorder,
   },

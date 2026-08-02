@@ -36,7 +36,7 @@ const VirtualTournamentScreen = () => {
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <LibraryHeader title="Virtual Tournament" />
+      <LibraryHeader title="Virtual Tournament" showModeIndicator />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}

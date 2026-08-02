@@ -9,7 +9,7 @@ import { getTraps } from '../../api/stationService';
 import { getPackages } from '../../api/packageService';
 import { getNotificationCounts } from '../../api/notificationService';
 import { getProfile } from '../../api/userService';
-import { resetToBottomTab, resetToFieldMode } from '../../navigation/navigationHelpers';
+import { resetToBottomTab, resetToFieldMode, resetToActiveRoundPlay } from '../../navigation/navigationHelpers';
 import { fetchNetworkStatus } from '../../utils/networkStatus';
 
 async function Prefetching() {
@@ -65,7 +65,7 @@ export const onLoginSuccess = async (
   { email, password } = {},
   setIsLoading = () => {},
   subscriptionEnabled,
-  { showModeSelect = true } = {},
+  { showModeSelect = true, afterAuth = null } = {},
 ) => {
 
   console.log('response', response);
@@ -103,6 +103,33 @@ export const onLoginSuccess = async (
         }
 
         if (!showModeSelect) {
+          // Splash / session restore: honor explicit route, then saved mode
+          if (afterAuth === 'playing') {
+            resetToActiveRoundPlay(navigation);
+            return;
+          }
+          if (afterAuth === 'field') {
+            resetToFieldMode(navigation, 'CourseHomeScreen');
+            return;
+          }
+          if (afterAuth === 'library') {
+            const net = await fetchNetworkStatus();
+            if (!net.isStable) {
+              storage.set(KEYS.APP_MODE, 'course');
+              showMessage({
+                type: 'default',
+                title: 'Field Mode',
+                message:
+                  'No stable internet — opening Field Mode. Full Library is available when you are online.',
+                duration: 3500,
+              });
+              resetToFieldMode(navigation, 'CourseHomeScreen');
+              return;
+            }
+            resetToBottomTab(navigation, 'Home');
+            return;
+          }
+
           const storedMode = storage.getString(KEYS.APP_MODE);
           if (storedMode === 'course') {
             resetToFieldMode(navigation, 'CourseHomeScreen');

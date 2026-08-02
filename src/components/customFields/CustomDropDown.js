@@ -14,6 +14,8 @@ const data = [
   { label: '4', value: '4' },
 ];
 
+const LIST_MAX_HEIGHT = Sizer.vSize(280);
+
 function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
   const [value, setValue] = useState(defaultValue);
   const [isFocus, setIsFocus] = useState(false);
@@ -27,7 +29,6 @@ function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
           props?.dropdownStyle,
         ]}
         placeholderStyle={styles.placeholderStyle}
-        containerStyle={styles.listContainer}
         selectedStyle={styles.selectStyle}
         itemTextStyle={styles.itemText}
         selectedTextStyle={styles.selectedTextStyle}
@@ -38,6 +39,7 @@ function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
         labelField="label"
         valueField="value"
         mode="modal"
+        maxHeight={LIST_MAX_HEIGHT}
         placeholder={props?.placeholder}
         value={value}
         onFocus={() => setIsFocus(true)}
@@ -50,6 +52,11 @@ function CustomDropdown({ onChange = () => {}, defaultValue, ...props }) {
           onChange(item);
         }}
         {...props}
+        containerStyle={[
+          styles.listContainer,
+          props?.containerStyle,
+          { maxHeight: LIST_MAX_HEIGHT },
+        ]}
       />
     </>
   );
@@ -80,9 +87,7 @@ const styles = StyleSheet.create({
   },
   listContainer: {
     backgroundColor: COLORS.white100,
-    borderWidth: 0,
     borderRadius: 6,
-    maxHeight: '50%',
     marginVertical: Sizer.vSize(4),
     borderWidth: Sizer.fS(1.3),
     borderColor: COLORS.grey700,

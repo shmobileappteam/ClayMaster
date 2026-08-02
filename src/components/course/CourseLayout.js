@@ -5,8 +5,14 @@ import { COLORS } from '../../globalStyle/Theme';
 import CourseTabBar from './CourseTabBar';
 import ModeIndicatorBar from '../layout/ModeIndicatorBar';
 
-/** Field tab screens use FieldModeNavigator tab bar — pass showTabs={false}. */
-const CourseLayout = ({ children, showTabs = false, showModeIndicator = true }) => {
+/** Field tab screens use FieldModeNavigator tab bar — pass showTabs={false}.
+ * Mode switcher only on Field bottom tabs — pass showModeIndicator on those screens.
+ */
+const CourseLayout = ({
+  children,
+  showTabs = false,
+  showModeIndicator = false,
+}) => {
   return (
     <SafeAreaView style={styles.root} edges={['top']}>
       {showModeIndicator ? <ModeIndicatorBar variant="field" /> : null}

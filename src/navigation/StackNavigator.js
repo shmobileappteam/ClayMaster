@@ -67,6 +67,13 @@ import { COLORS } from '../globalStyle/Theme';
 import MainDrawer from './MainDrawer';
 import FieldModeNavigator from './FieldModeNavigator';
 
+/** Android system nav bar (back / home / recents) — match each mode’s bottom chrome. */
+const NATIVE_NAV_BAR = {
+  library: COLORS.surface,
+  field: COLORS.courseSurface,
+  auth: COLORS.mainBg,
+};
+
 const StackNavigator = () => {
   const Stack = createNativeStackNavigator();
 
@@ -77,28 +84,67 @@ const StackNavigator = () => {
         headerTransparent: true,
         animationTypeForReplace: 'push',
         animation: 'slide_from_right',
-        navigationBarColor: COLORS.mainBg,
+        navigationBarColor: NATIVE_NAV_BAR.library,
       }}
       initialRouteName="SplashScreen"
     >
-      <Stack.Screen name="SplashScreen" component={SplashScreen} />
-      <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
-      <Stack.Screen name="ModeSelectScreen" component={ModeSelectScreen} />
+      <Stack.Screen
+        name="SplashScreen"
+        component={SplashScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.auth }}
+      />
+      <Stack.Screen
+        name="OnboardingScreen"
+        component={OnboardingScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.auth }}
+      />
+      <Stack.Screen
+        name="ModeSelectScreen"
+        component={ModeSelectScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.auth }}
+      />
 
-      <Stack.Screen name="SignupScreen" component={SignupScreen} />
-      <Stack.Screen name="LoginScreen" component={LoginScreen} />
-      <Stack.Screen name="VerifyEmailScreen" component={VerifyEmailScreen} />
+      <Stack.Screen
+        name="SignupScreen"
+        component={SignupScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.auth }}
+      />
+      <Stack.Screen
+        name="LoginScreen"
+        component={LoginScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.auth }}
+      />
+      <Stack.Screen
+        name="VerifyEmailScreen"
+        component={VerifyEmailScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.auth }}
+      />
       <Stack.Screen
         name="ForgotPasswordScreen"
-        options={{ animation: 'slide_from_bottom' }}
+        options={{
+          animation: 'slide_from_bottom',
+          navigationBarColor: NATIVE_NAV_BAR.auth,
+        }}
         component={ForgotPasswordScreen}
       />
-      <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
+      <Stack.Screen
+        name="ResetPasswordScreen"
+        component={ResetPasswordScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.auth }}
+      />
 
-      <Stack.Screen name="NewRoundScreen" component={NewRoundScreen} />
+      <Stack.Screen
+        name="NewRoundScreen"
+        component={NewRoundScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
       <Stack.Screen name="LibraryScorecardScreen" component={LibraryScorecardScreen} />
       <Stack.Screen name="ScoringScreen" component={ScoringScreen} />
-      <Stack.Screen name="CompleteRoundScreen" component={CompleteRoundScreen} />
+      <Stack.Screen
+        name="CompleteRoundScreen"
+        component={CompleteRoundScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
       <Stack.Screen name="NotificationScreen" component={NotificationScreen} />
       <Stack.Screen name="SubscriptionScreen" component={SubscriptionScreen} />
       <Stack.Screen
@@ -120,7 +166,11 @@ const StackNavigator = () => {
       />
       <Stack.Screen name="InAppSubscriptionScreen" component={InAppSubscriptionScreen} />
 
-      <Stack.Screen name="BottomTabs" component={MainDrawer} />
+      <Stack.Screen
+        name="BottomTabs"
+        component={MainDrawer}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.library }}
+      />
       <Stack.Screen name="DashboardScreen" component={DashboardScreen} />
 
       <Stack.Screen name="AnalyticsDashboard" component={AnalyticsDashboard} />
@@ -158,18 +208,66 @@ const StackNavigator = () => {
       <Stack.Screen name="MoreHubScreen" component={MoreHubScreen} />
 
       {/* Field Mode — 4 tabs (isolated from library BottomTabs) */}
-      <Stack.Screen name="FieldMode" component={FieldModeNavigator} />
-      <Stack.Screen name="CourseMissFixVideoScreen" component={CourseMissFixVideoScreen} />
-      <Stack.Screen name="CourseMissFixAudioScreen" component={CourseMissFixAudioScreen} />
-      <Stack.Screen name="CourseMissFixDrillScreen" component={CourseMissFixDrillScreen} />
-      <Stack.Screen name="CourseTrainDetailScreen" component={CourseTrainDetailScreen} />
-      <Stack.Screen name="CourseAudioTipScreen" component={CourseAudioTipScreen} />
-      <Stack.Screen name="CourseProgressScreen" component={CourseProgressScreen} />
-      <Stack.Screen name="CourseProgressDetailScreen" component={CourseProgressDetailScreen} />
-      <Stack.Screen name="CourseAddScoreScreen" component={CourseAddScoreScreen} />
-      <Stack.Screen name="CourseScorecardScreen" component={CourseScorecardScreen} />
-      <Stack.Screen name="CourseRoundScreen" component={CourseRoundScreen} />
-      <Stack.Screen name="CourseRoundSummaryScreen" component={CourseRoundSummaryScreen} />
+      <Stack.Screen
+        name="FieldMode"
+        component={FieldModeNavigator}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseMissFixVideoScreen"
+        component={CourseMissFixVideoScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseMissFixAudioScreen"
+        component={CourseMissFixAudioScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseMissFixDrillScreen"
+        component={CourseMissFixDrillScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseTrainDetailScreen"
+        component={CourseTrainDetailScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseAudioTipScreen"
+        component={CourseAudioTipScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseProgressScreen"
+        component={CourseProgressScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseProgressDetailScreen"
+        component={CourseProgressDetailScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseAddScoreScreen"
+        component={CourseAddScoreScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseScorecardScreen"
+        component={CourseScorecardScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseRoundScreen"
+        component={CourseRoundScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
+      <Stack.Screen
+        name="CourseRoundSummaryScreen"
+        component={CourseRoundSummaryScreen}
+        options={{ navigationBarColor: NATIVE_NAV_BAR.field }}
+      />
     </Stack.Navigator>
   );
 };

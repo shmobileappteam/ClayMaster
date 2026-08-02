@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
-  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -9,6 +8,7 @@ import {
 } from 'react-native';
 import { Typography } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
+import EuropeanBadge from '../../../components/course/EuropeanBadge';
 import Icon from '../../../helpers/Icon';
 import { COLORS } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
@@ -30,19 +30,18 @@ import { showMessage } from '../../../utils';
 
 /**
  * Field Mode home — START ROUND → New Round form; Recent from GET /rounds.
+ * No pull-to-refresh on the scorecard tab.
  */
 const CourseHomeScreen = ({ navigation }) => {
-  const { setMode, activeRound, setActiveDraft } = useAppMode();
+  const { setMode, activeRound, setActiveDraft, setRoundPlaying } = useAppMode();
 
-  const {
-    data: roundsRaw,
-    isLoading,
-    isRefetching,
-    refetch,
-  } = useCustomQuery({
+  const { data: roundsRaw, isLoading } = useCustomQuery({
     queryKey: ['rounds'],
     queryFn: getRounds,
   });
+
+  const hasActiveDraft =
+    !!(activeRound?.roundId && !activeRound?.finished);
 
   const rounds = useMemo(() => {
     const list = Array.isArray(roundsRaw)
@@ -50,11 +49,11 @@ const CourseHomeScreen = ({ navigation }) => {
       : Array.isArray(roundsRaw?.data)
         ? roundsRaw.data
         : [];
-    return sortRoundsForFieldList(list);
-  }, [roundsRaw]);
-
-  const hasActiveDraft =
-    activeRound?.roundId && !activeRound?.finished;
+    return sortRoundsForFieldList(
+      list,
+      hasActiveDraft ? activeRound.roundId : null,
+    );
+  }, [roundsRaw, hasActiveDraft, activeRound?.roundId]);
 
   const openNewRoundForm = () => {
     setMode('course');
@@ -63,6 +62,7 @@ const CourseHomeScreen = ({ navigation }) => {
 
   const resumeActive = () => {
     if (!hasActiveDraft) return;
+    setRoundPlaying(true);
     navigateFromFieldToStack(navigation, 'CourseRoundScreen');
   };
 
@@ -107,6 +107,7 @@ const CourseHomeScreen = ({ navigation }) => {
           );
         }
 
+        setRoundPlaying(true);
         navigateFromFieldToStack(navigation, 'CourseRoundScreen');
       } catch (err) {
         showMessage({
@@ -116,21 +117,14 @@ const CourseHomeScreen = ({ navigation }) => {
         });
       }
     },
-    [activeRound, navigation, setActiveDraft],
+    [activeRound, navigation, setActiveDraft, setRoundPlaying],
   );
 
   return (
-    <CourseLayout>
+    <CourseLayout showModeIndicator>
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor={COLORS.primary}
-          />
-        }
       >
         {hasActiveDraft ? (
           <TouchableOpacity
@@ -139,14 +133,19 @@ const CourseHomeScreen = ({ navigation }) => {
             activeOpacity={0.9}
           >
             <View style={{ flex: 1 }}>
-              <Typography
-                size={11}
-                color={COLORS.primary}
-                fFamily="barlowBold700"
-                style={styles.uppercase}
-              >
-                Round in progress
-              </Typography>
+              <View style={styles.resumeHeader}>
+                <Typography
+                  size={11}
+                  color={COLORS.primary}
+                  fFamily="barlowBold700"
+                  style={styles.uppercase}
+                >
+                  Round in progress
+                </Typography>
+                {activeRound.european_rotation ? (
+                  <EuropeanBadge variant="field" />
+                ) : null}
+              </View>
               <Typography
                 fFamily="barlowBold700"
                 size={20}
@@ -183,10 +182,11 @@ const CourseHomeScreen = ({ navigation }) => {
         </TouchableOpacity>
 
         <Typography
-          size={11}
-          color="#999"
+          size={12}
+          color={COLORS.courseTextMuted}
           fFamily="barlowBold700"
-          style={[styles.uppercase, { marginBottom: Sizer.vSize(12) }]}
+          mB={8}
+          style={styles.uppercase}
         >
           Recent Rounds
         </Typography>
@@ -204,6 +204,7 @@ const CourseHomeScreen = ({ navigation }) => {
         {rounds.map(item => {
           const resumable = isRoundResumable(item);
           const isActive = hasActiveDraft && activeRound.roundId === item.id;
+          const isEuropean = !!item.european_rotation;
           return (
             <TouchableOpacity
               key={String(item.id)}
@@ -211,30 +212,48 @@ const CourseHomeScreen = ({ navigation }) => {
               onPress={() => handleRoundPress(item)}
               activeOpacity={0.9}
             >
-              <View style={{ flex: 1 }}>
-                <Typography fFamily="barlowBold700" size={18} color={COLORS.white100}>
+              <View style={styles.roundTopRow}>
+                <Typography
+                  fFamily="barlowBold700"
+                  size={18}
+                  color={COLORS.white100}
+                  numberOfLines={1}
+                  style={styles.roundTitle}
+                >
                   {item.course_name || 'Round'}
                 </Typography>
+                {isEuropean ? (
+                  <View style={styles.roundTopRight}>
+                    <EuropeanBadge variant="field" />
+                  </View>
+                ) : null}
+              </View>
+              <View style={styles.roundBottomRow}>
                 <View style={styles.roundMeta}>
-                  <Icon name="time-outline" iconFamily="Ionicons" size={12} color="#666" />
-                  <Typography size={11} color="#666" mL={4}>
+                  <Icon
+                    name="time-outline"
+                    iconFamily="Ionicons"
+                    size={14}
+                    color={COLORS.courseTextMuted}
+                  />
+                  <Typography size={13} color={COLORS.courseTextMuted} mL={4} style={{ flexShrink: 1 }}>
                     {formatRoundMetaLine(item)}
                   </Typography>
                 </View>
-              </View>
-              <View
-                style={[
-                  styles.badge,
-                  resumable ? styles.badgeResume : styles.badgeDone,
-                ]}
-              >
-                <Typography
-                  size={11}
-                  fFamily="barlowBold700"
-                  color={resumable ? COLORS.primary : COLORS.white100}
+                <View
+                  style={[
+                    styles.badge,
+                    resumable ? styles.badgeResume : styles.badgeDone,
+                  ]}
                 >
-                  {resumable ? 'Resume' : 'Completed'}
-                </Typography>
+                  <Typography
+                    size={12}
+                    fFamily="barlowBold700"
+                    color={resumable ? COLORS.primary : '#4ADE80'}
+                  >
+                    {resumable ? 'Resume' : 'Completed'}
+                  </Typography>
+                </View>
               </View>
             </TouchableOpacity>
           );
@@ -263,6 +282,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
   },
+  resumeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: Sizer.hSize(8),
+  },
   startBtn: {
     backgroundColor: COLORS.primary,
     borderRadius: Sizer.hSize(16),
@@ -274,30 +299,57 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.courseSurface,
     borderRadius: Sizer.hSize(12),
     padding: Sizer.hSize(16),
-    marginBottom: Sizer.vSize(10),
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: Sizer.vSize(9),
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.courseBorder,
   },
   roundCardActive: {
     borderColor: COLORS.primary,
   },
-  roundMeta: {
+  roundTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: Sizer.vSize(4),
+    justifyContent: 'space-between',
+  },
+  roundTitle: {
+    flex: 1,
+    minWidth: 0,
+    paddingRight: Sizer.hSize(8),
+  },
+  roundTopRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  roundBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: Sizer.vSize(6),
+  },
+  roundMeta: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    minWidth: 0,
+    paddingRight: Sizer.hSize(8),
   },
   badge: {
     paddingHorizontal: Sizer.hSize(10),
     paddingVertical: Sizer.vSize(6),
     borderRadius: Sizer.hSize(6),
-    marginLeft: Sizer.hSize(8),
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexShrink: 0,
   },
+
+
   badgeResume: {
     backgroundColor: 'rgba(235, 108, 15, 0.15)',
   },
   badgeDone: {
-    backgroundColor: '#2A2A2A',
+    backgroundColor: 'rgba(74, 222, 128, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(74, 222, 128, 0.35)',
   },
 });

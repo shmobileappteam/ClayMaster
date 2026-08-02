@@ -12,10 +12,16 @@ import { useCustomMutation } from '../../query/useCustomMutation';
 import { onLoginSuccess } from '../../query/partials/responseManager';
 import { getProfile, login } from '../../api/userService';
 import { handleLogout } from '../../redux/slices/appSlice';
-import { resetToFieldMode } from '../../navigation/navigationHelpers';
 import { KEYS } from '../../constants';
 import { storage } from '../../api/api';
 
+/**
+ * Reload routing:
+ * 1. Actively playing (draft.playing) → reopen CourseRoundScreen
+ * 2. APP_MODE field → Field home
+ * 3. APP_MODE library → Library home
+ * Draft alone does NOT force Field (resume-from-library keeps library mode).
+ */
 const SplashScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const { subscriptionEnabled } = useSelector(state => state.app);
@@ -24,6 +30,14 @@ const SplashScreen = ({ navigation }) => {
   const goLogin = () => {
     dispatch(handleLogout());
     navigation.replace('LoginScreen');
+  };
+
+  const resolveAfterAuth = () => {
+    const isPlaying =
+      !!(activeRound?.roundId && !activeRound?.finished && activeRound?.playing);
+    if (isPlaying) return 'playing';
+    if (mode === 'course') return 'field';
+    return 'library';
   };
 
   const { mutate: requestLogin } = useCustomMutation({
@@ -36,13 +50,14 @@ const SplashScreen = ({ navigation }) => {
         reqData,
         () => {},
         subscriptionEnabled,
-        { showModeSelect: false },
+        { showModeSelect: false, afterAuth: resolveAfterAuth() },
       );
     },
     onError: goLogin,
   });
 
   const restoreWithProfile = async credentials => {
+    const afterAuth = resolveAfterAuth();
     try {
       const profile = await getProfile();
       if (!profile?.status || !profile?.user) {
@@ -59,7 +74,7 @@ const SplashScreen = ({ navigation }) => {
         credentials || {},
         () => {},
         subscriptionEnabled,
-        { showModeSelect: false },
+        { showModeSelect: false, afterAuth },
       );
     } catch {
       if (credentials?.email && credentials?.password) {
@@ -97,14 +112,6 @@ const SplashScreen = ({ navigation }) => {
       }
 
       if (token) {
-        // Unfinished local draft or last mode Field → Field home (resume card), not auto-play
-        if (
-          (activeRound?.roundId && !activeRound.finished) ||
-          mode === 'course'
-        ) {
-          resetToFieldMode(navigation, 'CourseHomeScreen');
-          return;
-        }
         restoreWithProfile(credentials);
         return;
       }
@@ -115,11 +122,7 @@ const SplashScreen = ({ navigation }) => {
         return;
       }
 
-      if (mode === 'course') {
-        resetToFieldMode(navigation, 'CourseHomeScreen');
-      } else {
-        navigation.replace('LoginScreen');
-      }
+      navigation.replace('LoginScreen');
     } catch {
       navigation.replace('LoginScreen');
     }

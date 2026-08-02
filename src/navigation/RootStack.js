@@ -36,7 +36,8 @@ const RootStack = () => {
 
   const handleStatusBar = () => {
     const route = navigationRef.getCurrentRoute();
-``
+    if (!route?.name) return;
+
     if (authScreens.includes(route.name)) {
       setAppBarStyle({
         bgColor: COLORS.mainBg,
@@ -59,12 +60,12 @@ const RootStack = () => {
   };
 
   useEffect(() => {
-     storage.clearAll()
-    // async()=>{
+    //  storage.clearAll() 
+    // async()=>{s
 
     // }
     // (async () => {
-    //   let fcmToken = await AsyncStorage.getItem(KEYS.FCM_TOKEN);
+    //   let fcmToken = await AsyncStorage.getItem(KEYS.FCM_TOKEN); 
     //   __DEV__ && console.log(' RootStack:83 ~ fcmToken:', !!fcmToken);
 
     //   if (!fcmToken) {

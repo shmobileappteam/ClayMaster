@@ -42,12 +42,18 @@ const StationSetupPanel = ({
   onContinueScoring,
 }) => {
   const [trapId, setTrapId] = useState(1);
-  const [viewStep, setViewStep] = useState(1);
+  // Init from editStep so Back-to-setup → Traps never flashes Pairs for a frame
+  const [viewStep, setViewStep] = useState(() =>
+    editStep != null ? editStep : 1,
+  );
 
   const autoStep = useMemo(() => getAutoStep(station), [station]);
   const revisiting = editStep != null;
   const maxStep = revisiting ? 3 : Math.min(autoStep, 3);
-  const step = Math.min(viewStep, maxStep);
+  const step = Math.min(
+    revisiting ? (viewStep || editStep) : viewStep,
+    maxStep,
+  );
 
   useEffect(() => {
     const start = editStep != null ? editStep : Math.min(getAutoStep(station), 3);
@@ -65,22 +71,16 @@ const StationSetupPanel = ({
     });
   }, [autoStep, revisiting]);
 
-  useEffect(() => {
-    const t1 = station?.traps?.find(t => Number(t.trap_id) === 1);
-    const t2 = station?.traps?.find(t => Number(t.trap_id) === 2);
-    if (t1?.presentation && String(t1.presentation).trim() && !t2?.presentation) {
-      setTrapId(2);
-    } else if (!t1?.presentation || !String(t1.presentation).trim()) {
-      setTrapId(1);
-    } else if (t2?.presentation && String(t2.presentation).trim()) {
-      setTrapId(2);
-    }
-  }, [station?.traps, station?.station_number]);
-
   const currentTrap =
     station?.traps?.find(t => Number(t.trap_id) === trapId) || {};
   const trap1 = station?.traps?.find(t => Number(t.trap_id) === 1);
   const trap2 = station?.traps?.find(t => Number(t.trap_id) === 2);
+  const trap1Filled = !!(
+    trap1?.presentation && String(trap1.presentation).trim()
+  );
+  const trap2Filled = !!(
+    trap2?.presentation && String(trap2.presentation).trim()
+  );
 
   const goStep = n => {
     if (n >= 1 && n <= maxStep) setViewStep(n);
@@ -205,19 +205,23 @@ const StationSetupPanel = ({
           <View style={styles.trapProgress}>
             {[1, 2].map(id => {
               const selected = trapId === id;
-              const filled =
-                id === 1
-                  ? !!(trap1?.presentation && String(trap1.presentation).trim())
-                  : !!(trap2?.presentation && String(trap2.presentation).trim());
+              const filled = id === 1 ? trap1Filled : trap2Filled;
               const slug = id === 1 ? trap1?.presentation : trap2?.presentation;
+              // Trap 2 only after Trap 1 is set (or Trap 2 already has a value)
+              const canSelect = id === 1 || trap1Filled || trap2Filled;
               return (
-                <View
+                <TouchableOpacity
                   key={id}
                   style={[
                     styles.trapSeg,
                     selected && styles.trapSegActive,
                     filled && !selected && styles.trapSegDone,
+                    !canSelect && styles.trapSegLocked,
                   ]}
+                  disabled={!canSelect}
+                  onPress={() => setTrapId(id)}
+                  activeOpacity={0.85}
+                  accessibilityLabel={`Select Trap ${id}`}
                 >
                   <Typography
                     size={12}
@@ -245,7 +249,7 @@ const StationSetupPanel = ({
                       {presentationLabel(trapsCatalog, slug)}
                     </Typography>
                   ) : null}
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -253,9 +257,11 @@ const StationSetupPanel = ({
           <DarkTrapsList
             trapsData={trapsCatalog}
             selectedPresentation={currentTrap?.presentation || ''}
-            onSelectPresentation={item =>
-              onSelectPresentation(item, trapId, 'presentation')
-            }
+            onSelectPresentation={item => {
+              onSelectPresentation(item, trapId, 'presentation');
+              // After Trap 1, move to Trap 2 (user can tap Trap 1 again anytime)
+              if (trapId === 1) setTrapId(2);
+            }}
           />
         </View>
       ) : null}
@@ -548,6 +554,9 @@ const styles = StyleSheet.create({
   trapSegDone: {
     borderColor: COLORS.primary,
     backgroundColor: 'rgba(235, 108, 15, 0.12)',
+  },
+  trapSegLocked: {
+    opacity: 0.45,
   },
   trapsRow: {
     flexDirection: 'row',

@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   BackHandler,
+  ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { Typography } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
-import StationSetupPanel, {
-  SetupStepDots,
-} from '../../../components/course/StationSetupPanel';
+import StationSetupPanel from '../../../components/course/StationSetupPanel';
 import StationProgressStrip from '../../../components/course/StationProgressStrip';
 import { ConfirmModal } from '../../../components';
 import Icon from '../../../helpers/Icon';
@@ -32,6 +32,7 @@ import {
   scoreFromStations,
 } from '../../../constants/rounds';
 import { showMessage } from '../../../utils';
+import { hapticHit, hapticMiss, hapticUndo } from '../../../utils/haptics';
 
 const isStationSetupComplete = station => {
   if (!station?.selectedTargetPairs || !station?.pair_type) return false;
@@ -41,14 +42,137 @@ const isStationSetupComplete = station => {
   );
 };
 
+const pairTypeLabel = pairType => {
+  if (pairType === 'report_pair') return 'Report Pair';
+  if (pairType === 'true_pair') return 'True Pair';
+  return pairType || '—';
+};
+
+/** Read-only snapshot of a finished previous station — no edits. */
+const PastStationReadOnly = ({ station, trapsCatalog = [], onBack }) => {
+  const { hits, taken } = scoreFromShots(station?.shots);
+  const shots = (station?.shots || []).filter(
+    s => s.result === 'dead' || s.result === 'lost',
+  );
+  const traps = station?.traps || [];
+  const presentationLabel = slug => {
+    if (!slug) return '—';
+    const hit = (trapsCatalog || []).find(t => t.slug === slug);
+    return hit?.label || slug;
+  };
+
+  return (
+    <ScrollView
+      style={styles.pastScroll}
+      contentContainerStyle={styles.pastScrollContent}
+      showsVerticalScrollIndicator={false}
+    >
+      <Typography
+        fFamily="barlowBold700"
+        size={22}
+        color={COLORS.white100}
+        textAlign="center"
+        mT={8}
+      >
+        Station {station?.station_number}
+      </Typography>
+      <Typography
+        fFamily="barlowBold700"
+        size={36}
+        color={COLORS.primary}
+        textAlign="center"
+        mT={4}
+      >
+        {hits}/{taken || 0}
+      </Typography>
+
+      <View style={styles.dotsRow}>
+        {shots.map((shot, i) => (
+          <View
+            key={i}
+            style={[
+              styles.dot,
+              shot.result === 'dead' && styles.dotHit,
+              shot.result === 'lost' && styles.dotMiss,
+            ]}
+          />
+        ))}
+      </View>
+
+      <View style={styles.pastMeta}>
+        <PastMetaChip
+          label="Pairs"
+          value={
+            station?.selectedTargetPairs
+              ? `${station.selectedTargetPairs}`
+              : '—'
+          }
+        />
+        <PastMetaChip label="Type" value={pairTypeLabel(station?.pair_type)} />
+        {traps.map(t => (
+          <PastMetaChip
+            key={t.trap_id}
+            label={`Trap ${t.trap_id}`}
+            value={presentationLabel(t.presentation)}
+          />
+        ))}
+      </View>
+
+      <TouchableOpacity
+        style={styles.backToCurrentBottom}
+        onPress={onBack}
+        activeOpacity={0.85}
+      >
+        <Icon
+          name="chevron-back"
+          iconFamily="Ionicons"
+          size={18}
+          color={COLORS.primary}
+        />
+        <Typography
+          fFamily="barlowSemiBold600"
+          size={14}
+          color={COLORS.primary}
+          mL={4}
+        >
+          Back to current station
+        </Typography>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
+
+const PastMetaChip = ({ label, value }) => (
+  <View style={styles.pastChip}>
+    <Typography size={10} color={COLORS.courseTextMuted} fFamily="barlowBold700">
+      {label}
+    </Typography>
+    <Typography
+      size={14}
+      fFamily="barlowSemiBold600"
+      color={COLORS.white100}
+      textTransform="capitalize"
+      mT={4}
+    >
+      {value}
+    </Typography>
+  </View>
+);
+
 const CourseRoundScreen = ({ navigation }) => {
-  const { activeRound, updateDraftStations, clearRound, setMode } =
-    useAppMode();
-  const [showStationFeedback, setShowStationFeedback] = useState(false);
+  const {
+    activeRound,
+    updateDraftStations,
+    clearRound,
+    setMode,
+    setRoundPlaying,
+  } = useAppMode();
   const [leaveVisible, setLeaveVisible] = useState(false);
   const [confirmCompleteVisible, setConfirmCompleteVisible] = useState(false);
-  /** Reopen setup steps 1–3 from HIT/MISS */
+  /** Reopen setup steps 1–3 from HIT/MISS (current station only) */
   const [editSetupStep, setEditSetupStep] = useState(null);
+  /** View a previous station — read-only; never editable */
+  const [viewingPastNumber, setViewingPastNumber] = useState(null);
 
   const { data: trapsRaw } = useCustomQuery({
     queryKey: ['traps'],
@@ -73,10 +197,10 @@ const CourseRoundScreen = ({ navigation }) => {
   const shots = currentStation?.shots || [];
   const stationScore = scoreFromShots(shots);
   const filledOnStation = stationScore.taken;
+  const isShotOpen = s =>
+    !s?.result || s.result === '' || s.result === 'empty';
   const stationFull =
-    setupComplete &&
-    shots.length > 0 &&
-    shots.every(s => s.result !== '' && s.result !== 'empty');
+    setupComplete && shots.length > 0 && shots.every(s => !isShotOpen(s));
 
   // Milestone Field: Score = hits / shots taken (empty slots ignored)
   const roundScore = useMemo(() => scoreFromStations(stations), [stations]);
@@ -98,27 +222,27 @@ const CourseRoundScreen = ({ navigation }) => {
   useEffect(() => {
     if (!round?.roundId) {
       resetToFieldMode(navigation, 'CourseHomeScreen');
+      return;
     }
-  }, [round?.roundId, navigation]);
+    // Actively playing — reload should reopen this screen until Pause
+    setRoundPlaying(true);
+  }, [round?.roundId, navigation, setRoundPlaying]);
 
   useEffect(() => {
-    if (stationFull && !showStationFeedback) setShowStationFeedback(true);
-  }, [stationFull, showStationFeedback]);
-
-  useEffect(() => {
-    setShowStationFeedback(false);
     setEditSetupStep(null);
+    setViewingPastNumber(null);
   }, [stationNumber]);
 
   const patchCurrentStation = useCallback(
     updater => {
-      if (!round) return;
+      // Only the current (last) station is ever editable
+      if (!round || viewingPastNumber != null) return;
       const next = stations.map((s, i) =>
         i === stationIndex ? updater({ ...s }) : s,
       );
       updateDraftStations(next);
     },
-    [round, stations, stationIndex, updateDraftStations],
+    [round, stations, stationIndex, updateDraftStations, viewingPastNumber],
   );
 
   const onSelectTargetPairs = n => {
@@ -180,27 +304,35 @@ const CourseRoundScreen = ({ navigation }) => {
       showMessage({ message: msg, bgColor: COLORS.primary });
       return;
     }
+    if (result === 'dead') hapticHit();
+    else if (result === 'lost') hapticMiss();
     patchCurrentStation(st => {
       const nextShots = (st.shots || []).map(s => ({ ...s }));
-      const idx = nextShots.findIndex(s => s.result === 'empty');
+      const idx = nextShots.findIndex(
+        s => !s?.result || s.result === '' || s.result === 'empty',
+      );
       if (idx !== -1) nextShots[idx] = { ...nextShots[idx], result };
       return { ...st, shots: nextShots };
     });
   };
 
   const handleUndo = () => {
+    const hasFilled = (currentStation?.shots || []).some(
+      s => s?.result && s.result !== '' && s.result !== 'empty',
+    );
+    if (!hasFilled) return;
+    hapticUndo();
     patchCurrentStation(st => {
       const nextShots = (st.shots || []).map(s => ({ ...s }));
       const lastFilled = [...nextShots]
         .reverse()
-        .findIndex(s => s.result !== 'empty');
+        .findIndex(s => s?.result && s.result !== '' && s.result !== 'empty');
       if (lastFilled !== -1) {
         const real = nextShots.length - 1 - lastFilled;
         nextShots[real] = { ...nextShots[real], result: 'empty' };
       }
       return { ...st, shots: nextShots };
     });
-    setShowStationFeedback(false);
   };
 
   const goNextStation = () => {
@@ -224,15 +356,17 @@ const CourseRoundScreen = ({ navigation }) => {
       selectedTargetPairs: '',
     };
     updateDraftStations([...stations, seeded]);
-    setShowStationFeedback(false);
   };
 
   const { mutate: submitStations, isPending } = useCustomMutation({
     mutationFn: postStations,
     onSuccess: async () => {
-      clearRound();
+      const completedRoundId = round.roundId;
       await queryClient.invalidateQueries({ queryKey: ['rounds'] });
-      navigation.replace('CompleteRoundScreen', { roundId: round.roundId });
+      // Replace play screen first — clearing draft before this triggers
+      // resetToFieldMode via the empty-round effect and breaks goBack.
+      navigation.replace('CompleteRoundScreen', { roundId: completedRoundId });
+      clearRound();
     },
     on422Error: error => {
       showMessage({
@@ -260,25 +394,47 @@ const CourseRoundScreen = ({ navigation }) => {
   };
 
   const leaveToField = useCallback(() => {
+    // Pause: stop auto-resume into play; land on Field home
+    setRoundPlaying(false);
     setMode('course');
     resetToFieldMode(navigation, 'CourseHomeScreen');
-  }, [navigation, setMode]);
+  }, [navigation, setMode, setRoundPlaying]);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (viewingPastNumber != null) {
+        setViewingPastNumber(null);
+        return true;
+      }
+      if (editSetupStep != null) {
+        setEditSetupStep(null);
+        return true;
+      }
       setLeaveVisible(true);
       return true;
     });
     return () => sub.remove();
-  }, []);
+  }, [editSetupStep, viewingPastNumber]);
 
   if (!round?.roundId || !currentStation) return null;
 
+  const viewingPast =
+    viewingPastNumber != null && viewingPastNumber !== stationNumber;
+  const pastStation = viewingPast
+    ? stations.find(s => s.station_number === viewingPastNumber)
+    : null;
+
   const stationHits = stationScore.hits;
   const revisitingSetup = editSetupStep != null;
+  // Derive from shots — same render as last HIT/MISS (no useEffect lag / miss)
+  const showStationFeedback =
+    !viewingPast && setupComplete && stationFull && !revisitingSetup;
   const showPlay =
-    setupComplete && !showStationFeedback && !revisitingSetup;
-  const showSetup = !setupComplete || revisitingSetup;
+    !viewingPast &&
+    setupComplete &&
+    !stationFull &&
+    !revisitingSetup;
+  const showSetup = !viewingPast && (!setupComplete || revisitingSetup);
 
   return (
     <CourseLayout showTabs={false} showModeIndicator={false}>
@@ -299,7 +455,8 @@ const CourseRoundScreen = ({ navigation }) => {
             lineHeight={21}
             color={COLORS.white100}
           >
-            Station {stationNumber}
+            Station{' '}
+            {viewingPast ? viewingPastNumber : stationNumber}
             {maxStations ? ` / ${maxStations}` : ''}
           </Typography>
         </View>
@@ -336,21 +493,25 @@ const CourseRoundScreen = ({ navigation }) => {
       <StationProgressStrip
         stations={stations}
         currentStationNumber={stationNumber}
+        viewingStationNumber={viewingPastNumber}
+        onSelectStation={setViewingPastNumber}
       />
 
-      {showPlay ? (
-        <View style={styles.setupStepsOnPlay}>
-          <SetupStepDots
-            current={0}
-            maxStep={3}
-            dimmed
-            onSelectStep={n => setEditSetupStep(n)}
-          />
-        </View>
+      {viewingPast && pastStation ? (
+        <PastStationReadOnly
+          station={pastStation}
+          trapsCatalog={trapsCatalog}
+          onBack={() => setViewingPastNumber(null)}
+        />
       ) : null}
 
       {showSetup ? (
         <StationSetupPanel
+          key={
+            editSetupStep != null
+              ? `edit-${editSetupStep}-${stationNumber}`
+              : `setup-${stationNumber}`
+          }
           station={currentStation}
           trapsCatalog={trapsCatalog}
           onSelectTargetPairs={onSelectTargetPairs}
@@ -361,7 +522,7 @@ const CourseRoundScreen = ({ navigation }) => {
         />
       ) : null}
 
-      {setupComplete ? (
+      {setupComplete && !revisitingSetup && !viewingPast ? (
         <View style={styles.dotsRow}>
           {shots.map((shot, i) => (
             <View
@@ -376,7 +537,31 @@ const CourseRoundScreen = ({ navigation }) => {
         </View>
       ) : null}
 
-      {showStationFeedback ? (
+      {showPlay ? (
+        <TouchableOpacity
+          style={styles.backToSetupBtn}
+          onPress={() => setEditSetupStep(3)}
+          activeOpacity={0.85}
+          accessibilityLabel="Back to traps setup"
+        >
+          <Icon
+            name="chevron-back"
+            iconFamily="Ionicons"
+            size={18}
+            color={COLORS.courseTextMuted}
+          />
+          <Typography
+            fFamily="barlowSemiBold600"
+            size={14}
+            color={COLORS.courseTextMuted}
+            mL={4}
+          >
+            Back to setup
+          </Typography>
+        </TouchableOpacity>
+      ) : null}
+
+      {!viewingPast && showStationFeedback ? (
         <View style={styles.feedbackWrap}>
           <View style={styles.stationDoneCard}>
             <Typography
@@ -423,9 +608,13 @@ const CourseRoundScreen = ({ navigation }) => {
               activeOpacity={0.88}
               disabled={isPending}
             >
-              <Typography fFamily="barlowBold700" size={20} color={COLORS.white100}>
-                Complete Round
-              </Typography>
+              {isPending ? (
+                <ActivityIndicator color={COLORS.white100} />
+              ) : (
+                <Typography fFamily="barlowBold700" size={20} color={COLORS.white100}>
+                  Complete Round
+                </Typography>
+              )}
             </TouchableOpacity>
           )}
 
@@ -501,8 +690,9 @@ const CourseRoundScreen = ({ navigation }) => {
         message="Submit this round to the server? Local draft will be cleared."
         confirmText="Submit"
         cancelText="Cancel"
+        confirmLoading={isPending}
+        dismissOnConfirm={false}
         handleComplete={() => {
-          setConfirmCompleteVisible(false);
           submitStations({
             roundId: round.roundId,
             payload: buildStationsPayload(stations),
@@ -529,9 +719,6 @@ const styles = StyleSheet.create({
   topBarLeft: { flex: 1 },
   topBarScore: { alignItems: 'flex-end', marginRight: Sizer.hSize(12) },
   uppercase: { letterSpacing: 1.2, textTransform: 'uppercase' },
-  setupStepsOnPlay: {
-    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
-  },
   pauseBtn: {
     width: Sizer.hSize(40),
     height: Sizer.hSize(40),
@@ -561,6 +748,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingVertical: Sizer.vSize(12),
     gap: Sizer.vSize(12),
+  },
+  backToSetupBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginHorizontal: Sizer.hSize(SPACING.screenPx),
+    marginBottom: Sizer.vSize(4),
+    paddingVertical: Sizer.vSize(4),
+    paddingRight: Sizer.hSize(8),
   },
   hitZone: {
     flex: 1,
@@ -612,4 +808,36 @@ const styles = StyleSheet.create({
     gap: Sizer.hSize(8),
   },
   undoLink: { alignItems: 'center', paddingVertical: Sizer.vSize(8) },
+  pastScroll: { flex: 1 },
+  pastScrollContent: {
+    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
+    paddingBottom: Sizer.vSize(28),
+  },
+  pastMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Sizer.hSize(8),
+    marginTop: Sizer.vSize(16),
+  },
+  backToCurrentBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Sizer.vSize(24),
+    paddingVertical: Sizer.vSize(14),
+    borderRadius: Sizer.hSize(12),
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: 'transparent',
+  },
+  pastChip: {
+    minWidth: '45%',
+    flexGrow: 1,
+    paddingHorizontal: Sizer.hSize(12),
+    paddingVertical: Sizer.vSize(12),
+    borderRadius: Sizer.hSize(10),
+    borderWidth: 1,
+    borderColor: COLORS.courseBorder,
+    backgroundColor: COLORS.courseSurface,
+  },
 });

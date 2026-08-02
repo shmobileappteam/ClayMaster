@@ -21,7 +21,7 @@ const CourseMissDiagnosisScreen = ({ navigation }) => {
   const selectedCat = MISS_CATEGORIES.find(c => c.id === selected);
 
   return (
-    <CourseLayout>
+    <CourseLayout showModeIndicator>
       <CourseHeader title="Miss Diagnostics" showAudio />
       <ScrollView contentContainerStyle={styles.scroll}>
         {!selected ? (
