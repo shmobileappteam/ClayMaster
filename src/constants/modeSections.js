@@ -113,9 +113,9 @@ export const SHARED_TRAINING_ORDER = [
   {
     id: 'videos',
     field: {
-      label: 'Downloaded Instructional Videos',
+      label: 'Videos',
       shortLabel: 'Videos',
-      icon: 'download-outline',
+      icon: 'play-circle-outline',
       screen: 'CourseDownloadedVideosScreen',
     },
     library: {

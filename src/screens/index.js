@@ -32,7 +32,6 @@ import AnalyticsDashboard from './Main/Analytics/AnalyticsDashboard';
 import AnalyticsScheduleScreen from './Main/Analytics/AnalyticsScheduleScreen';
 import WorkbookDetailScreen from './Main/Analytics/WorkbookDetailScreen';
 import ManagedServiceScreen from './Main/Analytics/ManagedServiceScreen';
-import AcademyScreen from './Main/Academy/AcademyScreen';
 import InstructionalVideosScreen from './Main/Academy/InstructionalVideosScreen';
 import VideoDetailScreen from './Main/Academy/VideoDetailScreen';
 import WebcastScreen from './Main/Academy/WebcastScreen';
@@ -105,7 +104,6 @@ export {
   AnalyticsScheduleScreen,
   WorkbookDetailScreen,
   ManagedServiceScreen,
-  AcademyScreen,
   InstructionalVideosScreen,
   VideoDetailScreen,
   WebcastScreen,

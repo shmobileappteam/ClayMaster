@@ -21,9 +21,15 @@ import Sizer from '../../../helpers/Sizer';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getMonthlyWebcasts } from '../../../api/academyService';
 import { mapWebcast } from '../../../constants/academy';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 
 /** ClayMaster-App-UI `MonthlyWebcasts.tsx` — recordings from API */
-const WebcastScreen = ({ navigation }) => {
+const WebcastScreen = ({ navigation, route }) => {
+  const fieldOnlineAccess = route?.params?.fieldOnlineAccess === true;
+  const blocked = useRequireLibraryMode({
+    allowOnlineInField: fieldOnlineAccess,
+  });
+
   const { data, isLoading, isError, isFetching, refetch } = useCustomQuery({
     queryKey: ['monthlyWebcasts'],
     queryFn: getMonthlyWebcasts,
@@ -33,6 +39,10 @@ const WebcastScreen = ({ navigation }) => {
     () => (data?.items || []).map(mapWebcast).filter(Boolean),
     [data?.items],
   );
+
+  if (blocked) {
+    return null;
+  }
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -85,6 +95,7 @@ const WebcastScreen = ({ navigation }) => {
                   navigation.navigate('VideoDetailScreen', {
                     video: wc,
                     source: 'webcast',
+                    fieldOnlineAccess,
                   })
                 }
               >

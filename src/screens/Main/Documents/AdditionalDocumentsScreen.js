@@ -21,7 +21,11 @@ import {
 import Sizer from '../../../helpers/Sizer';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getManualDeliveries } from '../../../api/academyService';
-import { mapManualDocument, openRemoteFile } from '../../../constants/academy';
+import {
+  isPdfFile,
+  mapManualDocument,
+  openRemoteFile,
+} from '../../../constants/academy';
 import { showMessage } from '../../../utils';
 
 /** ClayMaster-App-UI `AdditionalDocuments.tsx` → manual deliveries API */
@@ -36,7 +40,44 @@ const AdditionalDocumentsScreen = ({ navigation }) => {
     [data?.items],
   );
 
-  const openDoc = doc => openRemoteFile(doc.fileUrl, Linking, showMessage);
+  const viewDoc = doc => {
+    if (!doc.fileUrl) {
+      showMessage({
+        type: 'danger',
+        title: 'Unavailable',
+        message: 'No file is available for this item.',
+      });
+      return;
+    }
+    if (!isPdfFile(doc.type) && !isPdfFile(doc.fileUrl)) {
+      showMessage({
+        type: 'danger',
+        title: 'PDF only',
+        message: 'Only PDF files can be viewed in the app.',
+      });
+      return;
+    }
+    navigation.navigate('DrillDetailScreen', {
+      drill: {
+        id: doc.id,
+        title: doc.title,
+        fileUrl: doc.fileUrl,
+        fileType: doc.type || 'pdf',
+      },
+    });
+  };
+
+  const downloadDoc = doc => {
+    if (!isPdfFile(doc.type) && !isPdfFile(doc.fileUrl)) {
+      showMessage({
+        type: 'danger',
+        title: 'PDF only',
+        message: 'Only PDF files can be downloaded.',
+      });
+      return;
+    }
+    openRemoteFile(doc.fileUrl, Linking, showMessage);
+  };
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -104,7 +145,7 @@ const AdditionalDocumentsScreen = ({ navigation }) => {
                 <TouchableOpacity
                   style={styles.viewBtn}
                   activeOpacity={0.88}
-                  onPress={() => openDoc(doc)}
+                  onPress={() => viewDoc(doc)}
                 >
                   <Icon
                     name="eye-outline"
@@ -124,7 +165,7 @@ const AdditionalDocumentsScreen = ({ navigation }) => {
                 <TouchableOpacity
                   style={styles.downloadBtn}
                   activeOpacity={0.88}
-                  onPress={() => openDoc(doc)}
+                  onPress={() => downloadDoc(doc)}
                 >
                   <Icon
                     name="download-outline"

@@ -6,8 +6,10 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import RenderHTML from 'react-native-render-html';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
@@ -15,33 +17,110 @@ import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../../globalStyle/Them
 import Sizer from '../../../helpers/Sizer';
 import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 import { useCustomQuery } from '../../../query/useCustomQuery';
-import { getWorkbooks } from '../../../api/academyService';
-import { mapWorkbook, openRemoteFile } from '../../../constants/academy';
+import { getWorkbook, getWorkbooks } from '../../../api/academyService';
+import {
+  isPdfFile,
+  mapWorkbook,
+  openRemoteFile,
+} from '../../../constants/academy';
 import { showMessage } from '../../../utils';
 
-const WorkbookDetailScreen = ({ navigation }) => {
-  const blocked = useRequireLibraryMode();
+const htmlTagsStyles = {
+  body: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    lineHeight: 22,
+    fontFamily: 'Barlow-Regular',
+  },
+  h3: {
+    color: COLORS.textPrimary,
+    fontSize: 18,
+    lineHeight: 24,
+    fontFamily: 'Barlow-Bold',
+    marginTop: 0,
+    marginBottom: 10,
+  },
+  span: {
+    color: COLORS.textPrimary,
+  },
+  ul: {
+    marginTop: 4,
+    marginBottom: 8,
+    paddingLeft: 8,
+  },
+  li: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    lineHeight: 22,
+    marginBottom: 12,
+    fontFamily: 'Barlow-Regular',
+  },
+  p: {
+    color: COLORS.textSecondary,
+    fontSize: 14,
+    lineHeight: 22,
+    marginBottom: 8,
+  },
+};
 
-  const { data, isLoading, isError, isFetching, refetch } = useCustomQuery({
+const WorkbookDetailScreen = ({ navigation, route }) => {
+  const blocked = useRequireLibraryMode();
+  const { width } = useWindowDimensions();
+  const contentWidth = width - Sizer.hSize(SPACING.screenPx) * 2 - Sizer.hSize(SPACING.cardP) * 2;
+  const routeWorkbookId = route?.params?.workbookId ?? route?.params?.id;
+
+  const listQuery = useCustomQuery({
     queryKey: ['workbooks'],
     queryFn: getWorkbooks,
+    enabled: !routeWorkbookId,
   });
 
+  console.log('listQuery', listQuery);
 
-  console.log('data', data);
-  const workbooks = useMemo(
-    () => (data?.items || []).map(mapWorkbook).filter(Boolean),
-    [data?.items],
-  );
+  const listFeaturedId = useMemo(() => {
+    const items = (listQuery.data?.items || []).map(mapWorkbook).filter(Boolean);
+    const unlocked = items.filter(w => !w.locked);
+    return (unlocked[0] || items[0])?.id ?? null;
+  }, [listQuery.data?.items]);
 
-  const unlocked = workbooks.filter(w => !w.locked);
-  const featured = unlocked[0] || workbooks[0];
+  const workbookId = routeWorkbookId || listFeaturedId;
+
+  const detailQuery = useCustomQuery({
+    queryKey: ['workbook', workbookId],
+    queryFn: () => getWorkbook(workbookId),
+    enabled: Boolean(workbookId),
+  });
+
+  const workbook = useMemo(() => {
+    if (detailQuery.data) {
+      return mapWorkbook(detailQuery.data);
+    }
+    if (!routeWorkbookId && listQuery.data?.items) {
+      const items = listQuery.data.items.map(mapWorkbook).filter(Boolean);
+      const unlocked = items.filter(w => !w.locked);
+      return unlocked[0] || items[0] || null;
+    }
+    return null;
+  }, [detailQuery.data, listQuery.data?.items, routeWorkbookId]);
+
+  const isLoading =
+    (!routeWorkbookId && listQuery.isLoading) ||
+    (Boolean(workbookId) && detailQuery.isLoading && !workbook);
+  const isError = routeWorkbookId
+    ? detailQuery.isError
+    : listQuery.isError && !workbook;
+  const isFetching = listQuery.isFetching || detailQuery.isFetching;
+
+  const refetch = () => {
+    if (!routeWorkbookId) listQuery.refetch();
+    if (workbookId) detailQuery.refetch();
+  };
 
   if (blocked) {
     return null;
   }
 
-  const openWorkbook = wb => {
+  const ensureWorkbookAccess = wb => {
     if (wb.locked || !wb.fileUrl) {
       showMessage({
         type: 'danger',
@@ -49,8 +128,21 @@ const WorkbookDetailScreen = ({ navigation }) => {
         message: 'Upgrade your plan to access this workbook.',
         duration: 3500,
       });
-      return;
+      return false;
     }
+    if (!isPdfFile(wb.fileType) && !isPdfFile(wb.fileUrl)) {
+      showMessage({
+        type: 'danger',
+        title: 'PDF only',
+        message: 'Only PDF files can be downloaded.',
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const downloadWorkbook = wb => {
+    if (!ensureWorkbookAccess(wb)) return;
     openRemoteFile(wb.fileUrl, Linking, showMessage);
   };
 
@@ -78,114 +170,79 @@ const WorkbookDetailScreen = ({ navigation }) => {
         ) : isError ? (
           <TouchableOpacity onPress={refetch}>
             <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
-              Could not load workbooks. Tap to retry.
+              Could not load workbook. Tap to retry.
             </Typography>
           </TouchableOpacity>
-        ) : workbooks.length === 0 ? (
+        ) : !workbook ? (
           <Typography color={COLORS.textSecondary}>No workbooks yet.</Typography>
         ) : (
-          <>
-            {featured ? (
-              <View style={[GLOBALSTYLE.screenCard, styles.overview]}>
-                <View style={styles.overviewHeader}>
-                  <View style={styles.iconCircle}>
-                    <Icon
-                      name="book-outline"
-                      iconFamily="Ionicons"
-                      size={24}
-                      color={COLORS.primary}
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Typography
-                      fFamily="barlowSemiBold600"
-                      size={20}
-                      color={COLORS.textPrimary}
-                    >
-                      {featured.title}
-                    </Typography>
-                    <Typography size={12} color={COLORS.textSecondary} mT={2}>
-                      {[featured.fileType, featured.locked ? 'Locked' : null]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  </View>
-                </View>
-                {featured.description ? (
+          <View style={[GLOBALSTYLE.screenCard, styles.overview]}>
+            <View style={styles.overviewHeader}>
+              <View style={styles.iconCircle}>
+                <Icon
+                  name="book-outline"
+                  iconFamily="Ionicons"
+                  size={28}
+                  color={COLORS.primary}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Typography
+                  fFamily="barlowBold700"
+                  size={22}
+                  color={COLORS.textPrimary}
+                >
+                  {workbook.title}
+                </Typography>
+                <Typography size={13} color={COLORS.textSecondary} mT={4}>
+                  {[
+                    workbook.fileType || 'PDF',
+                    workbook.locked ? 'Locked' : 'Available',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Typography>
+              </View>
+            </View>
+
+            {workbook.descriptionHtml || workbook.description ? (
+              <View style={styles.detailBlock}>
+                {workbook.descriptionHtml ? (
+                  <RenderHTML
+                    contentWidth={contentWidth}
+                    source={{ html: workbook.descriptionHtml }}
+                    tagsStyles={htmlTagsStyles}
+                    systemFonts={['Barlow-Regular', 'Barlow-Bold', 'Barlow-SemiBold']}
+                  />
+                ) : (
                   <Typography
-                    size={13}
+                    size={14}
                     color={COLORS.textSecondary}
-                    lineHeight={20}
-                    mB={16}
-                    numberOfLines={4}
+                    lineHeight={22}
                   >
-                    {featured.description}
+                    {workbook.description}
                   </Typography>
-                ) : null}
-                <View style={styles.actions}>
-                  <TouchableOpacity
-                    style={styles.continueBtn}
-                    activeOpacity={0.88}
-                    onPress={() => openWorkbook(featured)}
-                  >
-                    <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.white100}>
-                      {featured.locked ? 'Locked' : 'Open Workbook'}
-                    </Typography>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    activeOpacity={0.88}
-                    onPress={() => openWorkbook(featured)}
-                  >
-                    <Icon
-                      name="download-outline"
-                      iconFamily="Ionicons"
-                      size={20}
-                      color={COLORS.textSecondary}
-                    />
-                  </TouchableOpacity>
-                </View>
+                )}
               </View>
             ) : null}
 
-            <Typography fFamily="barlowSemiBold600" size={20} color={COLORS.textPrimary} mB={12}>
-              All workbooks
-            </Typography>
-            <View style={[GLOBALSTYLE.screenCard, styles.chapterList]}>
-              {workbooks.map((wb, i) => (
-                <TouchableOpacity
-                  key={wb.id}
-                  style={[
-                    styles.chapterRow,
-                    i < workbooks.length - 1 && styles.chapterBorder,
-                  ]}
-                  activeOpacity={0.88}
-                  onPress={() => openWorkbook(wb)}
-                >
-                  <Icon
-                    name={wb.locked ? 'lock-closed-outline' : 'document-outline'}
-                    iconFamily="Ionicons"
-                    size={20}
-                    color={wb.locked ? COLORS.textSecondary : COLORS.primary}
-                  />
-                  <View style={{ flex: 1, marginLeft: Sizer.hSize(12) }}>
-                    <Typography
-                      fFamily="barlowMedium500"
-                      size={14}
-                      color={COLORS.textPrimary}
-                    >
-                      {wb.title}
-                    </Typography>
-                    <Typography size={12} color={COLORS.textSecondary} mT={2}>
-                      {[wb.fileType, wb.locked ? 'Upgrade to unlock' : null]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </Typography>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </>
+            <TouchableOpacity
+              style={styles.continueBtn}
+              activeOpacity={0.88}
+              onPress={() => downloadWorkbook(workbook)}
+              disabled={workbook.locked}
+            >
+              <Icon
+                name={workbook.locked ? 'lock-closed-outline' : 'download-outline'}
+                iconFamily="Ionicons"
+                size={18}
+                color={COLORS.white100}
+              />
+              <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.white100} mL={8}>
+                {workbook.locked ? 'Locked' : 'Download'}
+              </Typography>
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
     </Container>
@@ -199,50 +256,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(40),
-    gap: Sizer.vSize(SPACING.section),
   },
   overview: { padding: Sizer.hSize(SPACING.cardP), ...SHADOWS.card },
   overviewHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: Sizer.hSize(12),
     marginBottom: Sizer.vSize(16),
   },
   iconCircle: {
-    width: Sizer.hSize(48),
-    height: Sizer.hSize(48),
-    borderRadius: Sizer.hSize(24),
+    width: Sizer.hSize(56),
+    height: Sizer.hSize(56),
+    borderRadius: Sizer.hSize(28),
     backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  actions: { flexDirection: 'row', gap: Sizer.hSize(12) },
+  detailBlock: {
+    marginBottom: Sizer.vSize(20),
+    paddingTop: Sizer.vSize(4),
+  },
   continueBtn: {
-    flex: 1,
     height: Sizer.vSize(48),
     backgroundColor: COLORS.primary,
     borderRadius: Sizer.hSize(12),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  iconBtn: {
-    width: Sizer.hSize(48),
-    height: Sizer.vSize(48),
-    borderRadius: Sizer.hSize(12),
-    borderWidth: 1,
-    borderColor: COLORS.borderMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chapterList: { padding: 0, overflow: 'hidden' },
-  chapterRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Sizer.hSize(SPACING.cardP),
-    paddingVertical: Sizer.vSize(16),
-  },
-  chapterBorder: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.borderMuted,
+    justifyContent: 'center',
   },
 });

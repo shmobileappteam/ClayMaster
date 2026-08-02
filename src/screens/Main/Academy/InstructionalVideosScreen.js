@@ -79,17 +79,6 @@ const InstructionalVideosScreen = ({ navigation, route }) => {
           />
         }
       >
-        {fieldOnlineAccess ? (
-          <Typography
-            size={TYPE.caption.size}
-            color={COLORS.primary}
-            lineHeight={TYPE.caption.lineHeight}
-            mB={12}
-          >
-            Streaming over your current connection. Downloads remain available
-            offline in Field Mode.
-          </Typography>
-        ) : null}
         <Typography
           size={TYPE.body.size}
           color={COLORS.textSecondary}

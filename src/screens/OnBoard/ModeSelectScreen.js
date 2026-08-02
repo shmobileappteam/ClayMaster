@@ -108,7 +108,7 @@ const ModeSelectScreen = ({ navigation }) => {
               mT={8}
               lineHeight={TYPE.body.lineHeight}
             >
-              Digital scorecard, miss diagnostics, practice drills, and downloaded videos —
+              Digital scorecard, miss diagnostics, practice drills, and videos —
               built for the range.
             </Typography>
             <View style={styles.tags}>

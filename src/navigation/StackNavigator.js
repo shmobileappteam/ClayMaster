@@ -29,7 +29,6 @@ import {
   AnalyticsScheduleScreen,
   WorkbookDetailScreen,
   ManagedServiceScreen,
-  AcademyScreen,
   InstructionalVideosScreen,
   VideoDetailScreen,
   WebcastScreen,
@@ -178,7 +177,6 @@ const StackNavigator = () => {
       <Stack.Screen name="WorkbookDetailScreen" component={WorkbookDetailScreen} />
       <Stack.Screen name="ManagedServiceScreen" component={ManagedServiceScreen} />
 
-      <Stack.Screen name="AcademyScreen" component={AcademyScreen} />
       <Stack.Screen name="InstructionalVideosScreen" component={InstructionalVideosScreen} />
       <Stack.Screen name="VideoDetailScreen" component={VideoDetailScreen} />
       <Stack.Screen name="WebcastScreen" component={WebcastScreen} />

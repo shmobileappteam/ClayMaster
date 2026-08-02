@@ -43,7 +43,7 @@ export function getOfflineStorageSummary() {
   };
 }
 
-/** Persist clip for offline Field Mode. */
+/** Persist clip so it appears under Field Mode → Videos → Saved. */
 export function saveDownloadedVideo(video) {
   const list = getDownloadedVideos();
   if (list.some(v => v.id === video.id)) {

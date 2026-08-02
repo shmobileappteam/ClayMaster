@@ -1,12 +1,12 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   ActivityIndicator,
+  Linking,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
 import { Typography } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
 import CourseHeader from '../../../components/course/CourseHeader';
@@ -14,26 +14,15 @@ import Icon from '../../../helpers/Icon';
 import { COLORS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import { navigateFromFieldToStack } from '../../../navigation/navigationHelpers';
-import { FIELD_CONTINUE_TRAINING } from '../../../constants/modeSections';
-import { useModeSwitch } from '../../../hooks/useModeSwitch';
-import {
-  getDrillStorageSummary,
-  isDrillDownloaded,
-  removeDownloadedDrill,
-  saveDownloadedDrill,
-} from '../../../utils/downloadedDrills';
 import { showMessage } from '../../../utils';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getPracticeDrills } from '../../../api/academyService';
-import { mapPracticeDrill } from '../../../constants/academy';
+import { mapPracticeDrill, openRemoteFile } from '../../../constants/academy';
 
 /**
- * Field Practice Drills — live API list → PDF viewer.
+ * Field Practice Drills — list with View (in-app PDF) + Download (system open).
  */
 const CourseTrainScreen = ({ navigation }) => {
-  const { canUseLibrary } = useModeSwitch();
-  const [savedIds, setSavedIds] = useState([]);
-
   const { data, isLoading, isError, refetch } = useCustomQuery({
     queryKey: ['practiceDrills'],
     queryFn: getPracticeDrills,
@@ -43,14 +32,6 @@ const CourseTrainScreen = ({ navigation }) => {
     () => (data?.items || []).map(mapPracticeDrill).filter(Boolean),
     [data?.items],
   );
-
-  useFocusEffect(
-    useCallback(() => {
-      setSavedIds(drills.filter(d => isDrillDownloaded(d.id)).map(d => d.id));
-    }, [drills]),
-  );
-
-  const storage = getDrillStorageSummary();
 
   const openDrillDetail = drill => {
     if (!drill.fileUrl) {
@@ -68,31 +49,8 @@ const CourseTrainScreen = ({ navigation }) => {
     });
   };
 
-  const toggleDownload = drill => {
-    if (!drill.fileUrl) return;
-    if (savedIds.includes(drill.id)) {
-      removeDownloadedDrill(drill.id);
-      setSavedIds(prev => prev.filter(id => id !== drill.id));
-      return;
-    }
-    if (!canUseLibrary) {
-      showMessage({
-        type: 'danger',
-        title: 'Save while online',
-        message:
-          'Download drill PDFs in Full Library Mode or when you have a stable connection.',
-        duration: 4000,
-      });
-      return;
-    }
-    saveDownloadedDrill(drill);
-    setSavedIds(prev => [...prev, drill.id]);
-    showMessage({
-      type: 'success',
-      title: 'PDF saved',
-      message: `"${drill.title}" is ready offline.`,
-      duration: 3000,
-    });
+  const downloadDrill = drill => {
+    openRemoteFile(drill.fileUrl, Linking, showMessage);
   };
 
   return (
@@ -118,67 +76,9 @@ const CourseTrainScreen = ({ navigation }) => {
             </Typography>
             <Typography size={12} lineHeight={17} color={COLORS.courseTextMuted} mT={4}>
               {drills.length
-                ? `${drills.length} drills available. Tap View to open the PDF.`
-                : 'Load drills when you have a connection.'}
+                ? `${drills.length} drills available. View or download a PDF.`
+                : 'No drills loaded yet.'}
             </Typography>
-            {storage.count > 0 ? (
-              <Typography size={12} color={COLORS.primary} mT={6}>
-                {storage.count} saved on device
-              </Typography>
-            ) : null}
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Typography
-            size={12}
-            lineHeight={17}
-            color="#999999"
-            fFamily="barlowBold700"
-            style={styles.sectionLabel}
-            mB={12}
-          >
-            Continue Training
-          </Typography>
-          <View style={styles.rowGroup}>
-            {FIELD_CONTINUE_TRAINING.map(item => (
-              <TouchableOpacity
-                key={item.label}
-                style={styles.row}
-                activeOpacity={0.88}
-                onPress={() =>
-                  navigateFromFieldToStack(navigation, item.screen, item.params)
-                }
-              >
-                <View style={styles.drillIconBox}>
-                  <Icon
-                    name={item.icon}
-                    iconFamily="Ionicons"
-                    size={24}
-                    color={COLORS.primary}
-                  />
-                </View>
-                <View style={styles.rowText}>
-                  <Typography
-                    fFamily="barlowBold700"
-                    size={18}
-                    lineHeight={25}
-                    color={COLORS.white100}
-                  >
-                    {item.label}
-                  </Typography>
-                  <Typography size={12} lineHeight={17} color="#666666" mT={4}>
-                    {item.desc}
-                  </Typography>
-                </View>
-                <Icon
-                  name="chevron-forward"
-                  iconFamily="Ionicons"
-                  size={20}
-                  color="#444444"
-                />
-              </TouchableOpacity>
-            ))}
           </View>
         </View>
 
@@ -207,83 +107,81 @@ const CourseTrainScreen = ({ navigation }) => {
             </Typography>
           ) : (
             <View style={styles.rowGroup}>
-              {drills.map(drill => {
-                const saved = savedIds.includes(drill.id);
-                return (
-                  <View key={drill.id} style={styles.previewRow}>
-                    <View style={styles.previewBody}>
-                      <View style={styles.drillIconBox}>
-                        <Icon
-                          name="document-outline"
-                          iconFamily="Ionicons"
-                          size={22}
-                          color={COLORS.primary}
-                        />
-                      </View>
-                      <View style={styles.rowText}>
-                        <Typography
-                          fFamily="barlowSemiBold600"
-                          size={15}
-                          color={COLORS.white100}
-                        >
-                          {drill.title}
-                        </Typography>
-                        {drill.desc ? (
-                          <Typography
-                            size={12}
-                            color="#888"
-                            mT={2}
-                            numberOfLines={2}
-                          >
-                            {drill.desc}
-                          </Typography>
-                        ) : null}
-                        {saved ? (
-                          <Typography size={11} color={COLORS.primary} mT={4}>
-                            Saved
-                          </Typography>
-                        ) : null}
-                      </View>
+              {drills.map(drill => (
+                <View key={drill.id} style={styles.previewRow}>
+                  <View style={styles.previewBody}>
+                    <View style={styles.drillIconBox}>
+                      <Icon
+                        name="document-outline"
+                        iconFamily="Ionicons"
+                        size={22}
+                        color={COLORS.primary}
+                      />
                     </View>
-                    <View style={styles.previewActions}>
-                      <TouchableOpacity
-                        style={styles.viewBtn}
-                        activeOpacity={0.88}
-                        onPress={() => openDrillDetail(drill)}
+                    <View style={styles.rowText}>
+                      <Typography
+                        fFamily="barlowSemiBold600"
+                        size={15}
+                        color={COLORS.white100}
                       >
-                        <Icon
-                          name="eye-outline"
-                          iconFamily="Ionicons"
-                          size={14}
-                          color={COLORS.white100}
-                        />
+                        {drill.title}
+                      </Typography>
+                      {drill.desc ? (
                         <Typography
-                          fFamily="barlowSemiBold600"
-                          size={11}
-                          color={COLORS.white100}
-                          mL={4}
+                          size={12}
+                          color="#888"
+                          mT={2}
+                          numberOfLines={2}
                         >
-                          View
+                          {drill.desc}
                         </Typography>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.downloadBtn}
-                        activeOpacity={0.88}
-                        onPress={() => toggleDownload(drill)}
-                      >
-                        <Icon
-                          name={saved ? 'checkmark-circle' : 'download-outline'}
-                          iconFamily="Ionicons"
-                          size={18}
-                          color={
-                            saved ? COLORS.primary : COLORS.courseTextMuted
-                          }
-                        />
-                      </TouchableOpacity>
+                      ) : null}
                     </View>
                   </View>
-                );
-              })}
+                  <View style={styles.previewActions}>
+                    <TouchableOpacity
+                      style={styles.viewBtn}
+                      activeOpacity={0.88}
+                      onPress={() => openDrillDetail(drill)}
+                    >
+                      <Icon
+                        name="eye-outline"
+                        iconFamily="Ionicons"
+                        size={14}
+                        color={COLORS.white100}
+                      />
+                      <Typography
+                        fFamily="barlowSemiBold600"
+                        size={11}
+                        color={COLORS.white100}
+                        mL={4}
+                      >
+                        View
+                      </Typography>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.downloadBtn}
+                      activeOpacity={0.88}
+                      onPress={() => downloadDrill(drill)}
+                    >
+                      <Icon
+                        name="download-outline"
+                        iconFamily="Ionicons"
+                        size={14}
+                        color={COLORS.white100}
+                      />
+                      <Typography
+                        fFamily="barlowSemiBold600"
+                        size={11}
+                        color={COLORS.white100}
+                        mL={4}
+                      >
+                        Download
+                      </Typography>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
             </View>
           )}
         </View>
@@ -326,17 +224,6 @@ const styles = StyleSheet.create({
   },
   section: {},
   rowGroup: { gap: Sizer.vSize(8) },
-  row: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.courseSurface,
-    borderRadius: Sizer.hSize(12),
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.courseBorder,
-    padding: Sizer.hSize(16),
-    gap: Sizer.hSize(16),
-  },
   previewRow: {
     backgroundColor: COLORS.courseSurface,
     borderRadius: Sizer.hSize(12),
@@ -367,11 +254,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   downloadBtn: {
-    width: Sizer.hSize(44),
+    flex: 1,
     height: Sizer.vSize(34),
     borderRadius: Sizer.hSize(10),
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.courseBorder,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },

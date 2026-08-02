@@ -29,7 +29,7 @@ export function getLibraryBlockedMessage(status) {
     return 'Full Library Mode needs an internet connection. Connect to Wi‑Fi or cellular data, or stay in Field Mode.';
   }
   if (status.isInternetReachable === false) {
-    return 'Internet is not reachable right now. Field Mode works offline with your downloaded content.';
+    return 'Internet is not reachable right now. You can keep using Field Mode.';
   }
   return 'Full Library Mode requires a stable internet connection.';
 }

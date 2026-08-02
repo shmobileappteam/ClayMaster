@@ -26,9 +26,12 @@ import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getAdditionalVideos } from '../../../api/academyService';
 import { flattenAdditionalVideos } from '../../../constants/academy';
 
-/** PAGE 12 — Supplementary videos (Full Library). */
-const AdditionalVideosScreen = ({ navigation }) => {
-  const blocked = useRequireLibraryMode();
+/** PAGE 12 — Supplementary videos (Full Library / Field browse). */
+const AdditionalVideosScreen = ({ navigation, route }) => {
+  const fieldOnlineAccess = route?.params?.fieldOnlineAccess === true;
+  const blocked = useRequireLibraryMode({
+    allowOnlineInField: fieldOnlineAccess,
+  });
 
   const { data, isLoading, isError, isFetching, refetch } = useCustomQuery({
     queryKey: ['additionalVideos'],
@@ -47,6 +50,7 @@ const AdditionalVideosScreen = ({ navigation }) => {
   const openDetail = video => {
     navigateFromTabToStack(navigation, 'VideoDetailScreen', {
       video: { ...video, source: 'additional' },
+      fieldOnlineAccess,
     });
   };
 

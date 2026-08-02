@@ -118,10 +118,15 @@ export const mapPracticeDrill = item => {
 export const mapWorkbook = item => {
   if (!item) return null;
   const locked = item.can_access === false || !item.file_url;
+  const rawDescription =
+    typeof item.description === 'string' ? item.description : '';
   return {
     id: item.id,
     title: item.title || '',
-    description: stripHtml(item.description),
+    /** Plain-text fallback (lists/headings flattened). Prefer descriptionHtml for UI. */
+    description: stripHtml(rawDescription),
+    /** Original API HTML so bullets / headings can render. */
+    descriptionHtml: rawDescription,
     fileType: (item.file_type || '').toUpperCase(),
     fileUrl: item.file_url || null,
     canAccess: !locked,
@@ -143,6 +148,14 @@ export const mapManualDocument = item => {
   };
 };
 
+/** True when URL / mime / extension looks like a PDF. */
+export const isPdfFile = (urlOrType) => {
+  if (!urlOrType) return false;
+  const s = String(urlOrType).toLowerCase();
+  return s.includes('pdf') || s.endsWith('.pdf');
+};
+
+/** Same behavior as scorecard "Download File" — open remote URL in system handler. */
 export const openRemoteFile = async (url, Linking, showMessage) => {
   if (!url) {
     showMessage?.({
