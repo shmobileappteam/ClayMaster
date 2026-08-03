@@ -57,6 +57,22 @@ export const ENDPOINTS = {
   SUBMIT_TOURNAMENT: 'tournament/submit',
   GET_TOURNAMENT_LEADERBOARD: 'tournament/leaderboard',
 
+  // --- Forum / Community ---
+  GET_FORUM_CATEGORIES: 'forum-categories',
+  GET_FORUMS: 'forums',
+  GET_FORUM: slug => `forums/${slug}`,
+  CREATE_FORUM: 'forums',
+  UPDATE_FORUM: id => `forums/${id}/update`,
+  DELETE_FORUM: id => `forums/${id}`,
+  POST_FORUM_REPLY: slug => `forums/${slug}/replies`,
+  TOGGLE_REPLY_HELPFUL: id => `forum-replies/${id}/helpful`,
+  DELETE_FORUM_REPLY: id => `forum-replies/${id}`,
+  MARK_BEST_ANSWER: id => `forum-replies/${id}/best-answer`,
+  REPORT_FORUM: id => `forums/${id}/report`,
+  REPORT_FORUM_REPLY: id => `forum-replies/${id}/report`,
+  VOTE_FORUM_POLL: id => `forums/${id}/poll/vote`,
+  GET_FORUM_POLL: id => `forums/${id}/poll`,
+
   // --- Academy / Library ---
   GET_TUTORIAL_VIDEOS: 'tutorial-videos/',
   GET_TUTORIAL_VIDEO: id => `tutorial-videos/${id}`,

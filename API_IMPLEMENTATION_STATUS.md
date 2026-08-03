@@ -52,12 +52,13 @@ Multipart: `edit-profile`, forum reply attachment → `multipart/form-data`.
 | Subscription / Packages / Stripe | ✅ Live |
 | Rounds & Stations | ✅ Live (Field Mode + MMKV draft) |
 | Notifications | ✅ Live |
-| Academy / Library | ✅ Live |
-| Tournament | ❌ Not implemented |
+| Library content (videos / drills / docs / workbooks) | ✅ Live · Academy **hub UI removed** |
+| Tournament | ✅ Live (leaderboard + submit) |
 | Reviews | ✅ Live |
 | Shop / Cart / Orders | ✅ Live |
-| Forum / Community | ❌ Not implemented |
+| Forum / Community | ✅ Live (full forum flow) |
 | Online Coaching / Sessions | ✅ Live |
+| Field Miss Diagnostics | ❌ UI placeholder only (Coming soon — no API) |
 
 ---
 
@@ -276,22 +277,24 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 ---
 
-## 6. Academy / Library
+## 6. Library content (videos / drills / documents / workbooks)
+
+**UI standing (updated 2 Aug 2026):** `AcademyScreen` hub **removed** (drawer/More + stack). Shared list/detail screens stay for Full Library + Field Mode.
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/tutorial-videos/` | Bearer | ✅ Live (`InstructionalVideosScreen` `catalog=tutorial`) |
+| `GET` | `/api/tutorial-videos/` | Bearer | ✅ Live (`InstructionalVideosScreen` `catalog=tutorial`; Field Videos browse) |
 | `GET` | `/api/tutorial-videos/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
-| `GET` | `/api/workbooks` | Bearer | ✅ Live (`WorkbookDetailScreen`) |
-| `GET` | `/api/workbooks/{id}` | Bearer | ✅ Live (service ready) |
-| `GET` | `/api/instructional-videos` | Bearer | ✅ Live (`InstructionalVideosScreen`, `AcademyScreen`) |
+| `GET` | `/api/workbooks` | Bearer | ✅ Live (`WorkbookDetailScreen` — featured / list resolve) |
+| `GET` | `/api/workbooks/{id}` | Bearer | ✅ Live (`WorkbookDetailScreen` detail fetch) |
+| `GET` | `/api/instructional-videos` | Bearer | ✅ Live (`InstructionalVideosScreen`; Field Videos browse) |
 | `GET` | `/api/instructional-videos/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
-| `GET` | `/api/additional-videos` | Bearer | ✅ Live (`AdditionalVideosScreen`) |
+| `GET` | `/api/additional-videos` | Bearer | ✅ Live (`AdditionalVideosScreen`; Field Videos browse) |
 | `GET` | `/api/additional-videos/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
 | `GET` | `/api/additional-videos/categories` | Bearer | ✅ Live (service ready) |
-| `GET` | `/api/practice-drills` | Bearer | ✅ Live (`DrillsScreen`, `AcademyScreen`) |
-| `GET` | `/api/practice-drills/{id}` | Bearer | ✅ Live (service ready) |
-| `GET` | `/api/monthly-webcasts` | Bearer | ✅ Live (`WebcastScreen`) |
+| `GET` | `/api/practice-drills` | Bearer | ✅ Live (`DrillsScreen` Library; `CourseTrainScreen` Field) |
+| `GET` | `/api/practice-drills/{id}` | Bearer | ✅ Live (service ready; list payload usually enough for PDF) |
+| `GET` | `/api/monthly-webcasts` | Bearer | ✅ Live (`WebcastScreen`; Field Videos browse) |
 | `GET` | `/api/monthly-webcasts/{id}` | Bearer | ✅ Live (`VideoDetailScreen`) |
 | `GET` | `/api/manual-deliveries` | Bearer | ✅ Live (`AdditionalDocumentsScreen`) |
 | `GET` | `/api/manual-deliveries/{id}` | Bearer | ✅ Live (service ready) |
@@ -308,10 +311,14 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 - Package gating via `can_access` / null `video_url` or `file_url` — locked state shown in UI.
 - Playback via `react-native-video` in `LibraryVideoPlayer` on `VideoDetailScreen`.
-- PDFs / workbooks / manuals open via `Linking.openURL`.
+- **Save for Field Mode** on `VideoDetailScreen` → MMKV `@cm_downloaded_videos`; Field tab **Videos** shows Browse (by type) + Saved.
+- **PDFs (drills / manuals):** View → in-app `DrillDetailScreen` (`react-native-pdf`); Download → `openRemoteFile` / `Linking.openURL` (same pattern as scorecard Download File). PDF-only for view/download where gated.
+- **Workbooks:** single detail card (no “All workbooks” list, no View). Description rendered as **HTML** (`descriptionHtml` + `react-native-render-html`); Download only via `Linking`.
+- Field **Practice Drills:** live list + View/Download; no offline-save messaging.
+- Field **Miss Diagnostics:** Coming soon UI only — **no API**.
 - ⚠️ Monthly webcasts **list** URL was mis-pasted in docs as `practice-drills/33`; use `/api/monthly-webcasts`.
 - Envelope usually `{ status, message, data }`; manuals list nests `data.documents[]`.
-- Drawer: **Academy**, **Instructional Videos**, **Additional Videos**, **Documents**, **Practice Drills**, **Monthly Webcasts**; Analytics → Workbooks / Video Tutorials.
+- Drawer / More: **Instructional Videos**, **Additional Videos**, **Documents**, **Practice Drills**, **Monthly Webcasts** (no Academy hub). Analytics → Workbooks / Video Tutorials. Field: Drills + Videos tabs.
 
 ---
 
@@ -319,8 +326,8 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `POST` | `/api/tournament/submit` | Bearer | ❌ Not implemented |
-| `GET` | `/api/tournament/leaderboard` | Bearer | ❌ Not implemented |
+| `POST` | `/api/tournament/submit` | Bearer | ✅ Live (`TournamentEntryScreen`) |
+| `GET` | `/api/tournament/leaderboard` | Bearer | ✅ Live (`VirtualTournamentScreen`) |
 
 ### Query (leaderboard)
 
@@ -331,11 +338,16 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 | Code | Notes |
 |------|--------|
 | `401` | Unauthenticated |
+| `422` | Submit validation — mapped via Formik / `formatBackendErrors` when present |
 | `500` | DB failure (list-style endpoints) |
 
 ### Dev notes
 
-- Submit entries appear on leaderboard (`total_adj_score = event_score + adj_factor`).
+- Service: `src/api/tournamentService.js` · mappers/schema: `src/constants/tournament.js`.
+- Leaderboard UI: month navigation, All / My filter, awards (`standings`), entries table (rank, competitor, class, total adj). No dummy rows.
+- Submit body matches docs: `nsca_class`, `competitor_name`, `event_score`, `adj_factor`, `tournament_name`, `tournament_date` (`YYYY-MM-DD`). NSCA class from `GET /classes`.
+- `total_adj_score = event_score + adj_factor` (shown on success payload / list; client preview on form).
+- Guidelines screen removed (no API; was dummy-only). Tab: **Tournament** → `VirtualTournamentScreen`.
 
 ---
 
@@ -401,20 +413,20 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/forum-categories` | Bearer | ❌ Not implemented |
-| `GET` | `/api/forums` | Bearer | ❌ Not implemented |
-| `GET` | `/api/forums/{slug}` | Bearer | ❌ Not implemented |
-| `POST` | `/api/forums` | Bearer | ❌ Not implemented |
-| `POST` | `/api/forums/{id}/update` | Bearer | ❌ Not implemented |
-| `DELETE` | `/api/forums/{id}` | Bearer | ❌ Not implemented |
-| `POST` | `/api/forums/{slug}/replies` | Bearer · multipart | ❌ Not implemented |
-| `POST` | `/api/forum-replies/{id}/helpful` | Bearer | ❌ Not implemented |
-| `DELETE` | `/api/forum-replies/{id}` | Bearer | ❌ Not implemented |
-| `POST` | `/api/forum-replies/{id}/best-answer` | Bearer | ❌ Not implemented |
-| `POST` | `/api/forums/{id}/report` | Bearer | ❌ Not implemented |
-| `POST` | `/api/forum-replies/{id}/report` | Bearer | ❌ Not implemented |
-| `POST` | `/api/forums/{id}/poll/vote` | Bearer | ❌ Not implemented |
-| `GET` | `/api/forums/{id}/poll` | Bearer | ❌ Not implemented |
+| `GET` | `/api/forum-categories` | Bearer | ✅ Live |
+| `GET` | `/api/forums` | Bearer | ✅ Live |
+| `GET` | `/api/forums/{slug}` | Bearer | ✅ Live |
+| `POST` | `/api/forums` | Bearer | ✅ Live |
+| `POST` | `/api/forums/{id}/update` | Bearer | ✅ Live (owner edit) |
+| `DELETE` | `/api/forums/{id}` | Bearer | ✅ Live (owner delete) |
+| `POST` | `/api/forums/{slug}/replies` | Bearer · multipart | ✅ Live (text + image) |
+| `POST` | `/api/forum-replies/{id}/helpful` | Bearer | ✅ Live |
+| `DELETE` | `/api/forum-replies/{id}` | Bearer | ✅ Live (owner delete) |
+| `POST` | `/api/forum-replies/{id}/best-answer` | Bearer | ✅ Live (topic owner) |
+| `POST` | `/api/forums/{id}/report` | Bearer | ✅ Live |
+| `POST` | `/api/forum-replies/{id}/report` | Bearer | ✅ Live |
+| `POST` | `/api/forums/{id}/poll/vote` | Bearer | ✅ Live |
+| `GET` | `/api/forums/{id}/poll` | Bearer | ✅ Via detail (`getForum` includes poll) |
 
 ### Errors
 
@@ -432,14 +444,14 @@ Replies / reactions / reports / polls: auth only (subscription check not applied
 
 ### Dev notes
 
-- All forum routes behind `auth:sanctum` + `force.json`.
-- Attachments: **2 MB**; `jpg, jpeg, png, pdf, doc, docx`.
-- Update is **`POST /forums/{id}/update`** (not PUT), even if comments mention `_method=PUT`.
-- Delete topic: **owner-only** (admin bypass not implemented for delete).
-- Optional `X-Device-Id` on detail for unique view tracking.
+- App: `forumService.js` (full CRUD + replies/poll/report), `constants/community.js`, Formik+Yup `CreateForumSchema`.
+- Screens: `CommunityScreen` (list/sort/category), `CommunityDetailScreen` (detail, replies, helpful, best-answer, report topic/reply, poll vote, delete topic/reply, reply image), `CreatePostScreen` (create + owner edit).
+- Optional `X-Device-Id` on detail for unique view tracking (MMKV `KEYS.DEVICE_ID`).
+- List/create need active subscription → **403** otherwise.
+- Reply is **multipart** (content + optional jpg/png via gallery).
+- Standalone `GET /forums/{id}/poll` available in service; UI uses poll embedded on detail.
+- Update is **`POST /forums/{id}/update`** (not PUT).
 - List query: `sort`, `alpha`, `category`, `per_page` (1–50), `page`.
-- DB validation may reference `forum_category,id` (singular table) — confirm schema if create fails oddly.
-- Postman order: Login → Categories → Create → Detail → Reply → helpful/report/poll → Delete last.
 
 ---
 
@@ -493,15 +505,15 @@ Always check **body `status` / `success`** where HTTP is always 200 (notificatio
 | Item | Detail |
 |------|--------|
 | Base URL | App: `claymaster.net` · Forum Postman sample: `claymaster.net/beta` |
-| Password/OTP/logout | In app stubs; thin or missing in v2 doc |
-| `GET /profile` | Documented; not wired |
+| Password/OTP/logout | Thin or missing samples in v2 doc (app is live) |
 | Courses / traps / send / round detail | Docs say “not used in mobile”; app uses them |
 | Monthly webcast list | Doc URL typo |
 | Cart delete | Doc `//api` typo |
 | Packages / rounds lists | Raw arrays — don’t assume `{ status, data }` |
 | Profile 401 message | Wrong copy (“delete your account”) |
 | Change password wrong current | `400` not `422` |
+| Academy hub | Removed from app UI; library APIs unchanged |
 
 ---
 
-*Update status columns as endpoints are wired. Full request/response JSON lives in `docs/api/request-response/` (index: `API_REQUEST_RESPONSE.md`).*
+*Last UI/API standing sync: 2 Aug 2026 (`milestone02`). Update status columns as endpoints are wired. Full request/response JSON lives in `docs/api/request-response/` (index: `API_REQUEST_RESPONSE.md`).*

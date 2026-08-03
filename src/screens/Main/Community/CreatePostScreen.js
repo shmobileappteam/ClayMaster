@@ -1,163 +1,418 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
-  TextInput,
+  Switch,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import { Container, Typography } from '../../../atomComponents';
+import {
+  Container,
+  FormController,
+  Typography,
+} from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
+import ProfileField from '../../../components/profile/ProfileField';
+import CustomDropdown from '../../../components/customFields/CustomDropDown';
 import Icon from '../../../helpers/Icon';
-import { COLORS, SPACING, TYPE } from '../../../globalStyle/Theme';
+import { COLORS, GLOBALSTYLE, SHADOWS, SPACING, TYPE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
+import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { useCustomMutation } from '../../../query/useCustomMutation';
+import {
+  createForum,
+  getForumCategories,
+  updateForum,
+} from '../../../api/forumService';
 import {
   getInitials,
+  mapForumCategory,
   SUGGESTED_TAGS,
-} from '../../../constants/communityPosts';
+} from '../../../constants/community';
+import validatoinSchema from '../../../validations';
 import { showToast } from '../../../utils';
 
-/**
- * ClayMaster-App-UI `CreatePost.tsx`
- */
-const CreatePostScreen = ({ navigation }) => {
+/** Create or edit forum topic — FormController + Yup. */
+const CreatePostScreen = ({ navigation, route }) => {
+  const blocked = useRequireLibraryMode();
+  const queryClient = useQueryClient();
   const { user } = useSelector(state => state.app);
-  const [content, setContent] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
 
-  const displayName =
-    `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim() || 'John Smith';
+  const editParams = route?.params || {};
+  const isEdit = editParams.mode === 'edit' && editParams.forumId != null;
+  const forumId = editParams.forumId;
+  const editSlug = editParams.slug;
 
-  const toggleTag = tag => {
-    setSelectedTags(prev =>
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag],
-    );
-  };
+  const { data: catData, isLoading: catsLoading } = useCustomQuery({
+    queryKey: ['forumCategories'],
+    queryFn: getForumCategories,
+  });
 
-  const handlePublish = () => {
-    showToast({ title: 'Post published' });
-    navigation.goBack();
-  };
+  const categoryOptions = useMemo(() => {
+    return (catData?.items || [])
+      .map(mapForumCategory)
+      .filter(Boolean)
+      .map(c => ({ label: c.name, value: String(c.id) }));
+  }, [catData?.items]);
+
+  const displayName = useMemo(() => {
+    const full = `${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim();
+    return full || user?.username || 'Member';
+  }, [user]);
+
+  const initialValues = useMemo(() => {
+    if (isEdit) {
+      const cat =
+        editParams.categoryId != null
+          ? String(editParams.categoryId)
+          : categoryOptions[0]?.value || '';
+      return {
+        title: editParams.title || '',
+        category_id: cat,
+        description: editParams.description || '',
+        tags: Array.isArray(editParams.tags) ? editParams.tags : [],
+        enable_poll: false,
+        poll_question: '',
+        poll_option_a: '',
+        poll_option_b: '',
+      };
+    }
+    return {
+      title: '',
+      category_id: categoryOptions[0]?.value || '',
+      description: '',
+      tags: [],
+      enable_poll: false,
+      poll_question: '',
+      poll_option_a: '',
+      poll_option_b: '',
+    };
+  }, [isEdit, editParams, categoryOptions]);
+
+  const { mutate, isPending } = useCustomMutation({
+    mutationFn: values => {
+      if (isEdit) {
+        return updateForum(forumId, values);
+      }
+      return createForum(values);
+    },
+    onSuccess: body => {
+      queryClient.invalidateQueries({ queryKey: ['forums'] });
+      if (isEdit && editSlug) {
+        queryClient.invalidateQueries({ queryKey: ['forum', editSlug] });
+      }
+      showToast({
+        title:
+          body?.message ||
+          (isEdit ? 'Topic updated successfully!' : 'Topic created successfully!'),
+        type: 'success',
+      });
+      if (isEdit) {
+        navigation.goBack();
+        return;
+      }
+      const slug = body?.data?.slug;
+      const id = body?.data?.id;
+      if (slug) {
+        navigation.replace('CommunityDetailScreen', {
+          slug,
+          id,
+          title: body?.data?.title,
+        });
+      } else {
+        navigation.goBack();
+      }
+    },
+    onError: res => {
+      if (res?.status === 422) return;
+      showToast({
+        title:
+          res?.status === 403
+            ? res?.data?.message ||
+              'An active subscription is required to post.'
+            : res?.data?.message ||
+              (isEdit ? 'Could not update topic.' : 'Could not create topic.'),
+        type: 'danger',
+      });
+    },
+    on422Error: () => {
+      showToast({
+        title: 'Please check the highlighted fields.',
+        type: 'danger',
+      });
+    },
+  });
+
+  if (blocked) {
+    return null;
+  }
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
-        title="Create Post"
+        title={isEdit ? 'Edit Post' : 'Create Post'}
         showBack
         showNotification={false}
         onBack={() => navigation.goBack()}
       />
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.authorRow}>
-          <View style={styles.authorAvatar}>
-            <Typography
-              size={TYPE.caption.size}
-              color={COLORS.white100}
-              fFamily="barlowBold700"
-            >
-              {getInitials(displayName)}
-            </Typography>
-          </View>
-          <View>
-            <Typography
-              fFamily="barlowSemiBold600"
-              size={TYPE.body.size}
-              color={COLORS.textPrimary}
-            >
-              {displayName}
-            </Typography>
-            <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
-              Posting publicly
-            </Typography>
-          </View>
-        </View>
-
-        <TextInput
-          value={content}
-          onChangeText={setContent}
-          placeholder="What's on your mind? Share your shooting experience..."
-          placeholderTextColor={COLORS.textSecondary}
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
-          style={styles.textArea}
-          autoFocus
-        />
-
-        <View style={styles.attachRow}>
-          <TouchableOpacity style={styles.attachBtn} activeOpacity={0.88}>
-            <Icon
-              name="image-outline"
-              iconFamily="Ionicons"
-              size={20}
-              color={COLORS.textSecondary}
-            />
-            <Typography size={TYPE.body.size} color={COLORS.textSecondary} mL={8}>
-              Add Photo
-            </Typography>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.attachBtn} activeOpacity={0.88}>
-            <Icon
-              name="pricetag-outline"
-              iconFamily="Ionicons"
-              size={20}
-              color={COLORS.textSecondary}
-            />
-            <Typography size={TYPE.body.size} color={COLORS.textSecondary} mL={8}>
-              Add Tag
-            </Typography>
-          </TouchableOpacity>
-        </View>
-
-        <Typography
-          fFamily="barlowMedium500"
-          size={TYPE.body.size}
-          color={COLORS.textPrimary}
-          mB={SPACING.component}
-        >
-          Suggested Tags
-        </Typography>
-        <View style={styles.tagsWrap}>
-          {SUGGESTED_TAGS.map(tag => {
-            const active = selectedTags.includes(tag);
-            return (
-              <TouchableOpacity
-                key={tag}
-                style={[styles.tag, active && styles.tagActive]}
-                onPress={() => toggleTag(tag)}
-                activeOpacity={0.88}
-              >
-                <Typography
-                  size={TYPE.caption.size}
-                  color={COLORS.primary}
-                  fFamily="barlowMedium500"
-                >
-                  {tag}
-                </Typography>
-              </TouchableOpacity>
+        <FormController
+          initialValues={initialValues}
+          enableReinitialize
+          validationSchema={
+            validatoinSchema.communityValidations.CreateForumSchema
+          }
+          onSubmit={values => {
+            const tags = (values.tags || []).map(t =>
+              String(t).replace(/^#/, '').trim(),
             );
-          })}
-        </View>
-
-        <TouchableOpacity
-          style={styles.publishBtn}
-          onPress={handlePublish}
-          activeOpacity={0.88}
+            mutate({
+              title: values.title.trim(),
+              category_id: values.category_id,
+              description: values.description.trim(),
+              tags,
+              enable_poll: !isEdit && Boolean(values.enable_poll),
+              poll_question: values.poll_question?.trim(),
+              poll_options:
+                !isEdit && values.enable_poll
+                  ? [values.poll_option_a.trim(), values.poll_option_b.trim()]
+                  : undefined,
+            });
+          }}
         >
-          <Typography
-            fFamily="barlowSemiBold600"
-            size={TYPE.h3.size}
-            color={COLORS.white100}
-          >
-            Publish Post
-          </Typography>
-        </TouchableOpacity>
-      </ScrollView>
+          {({
+            values,
+            errors,
+            handleChange,
+            handleBlur,
+            handleSubmit,
+            setFieldValue,
+          }) => {
+            const toggleTag = tag => {
+              const clean = tag.replace(/^#/, '');
+              const current = values.tags || [];
+              const next = current.includes(clean)
+                ? current.filter(t => t !== clean)
+                : [...current, clean];
+              setFieldValue('tags', next);
+            };
+
+            return (
+              <ScrollView
+                contentContainerStyle={styles.scroll}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View style={styles.authorRow}>
+                  <View style={styles.authorAvatar}>
+                    <Typography
+                      size={TYPE.caption.size}
+                      color={COLORS.white100}
+                      fFamily="barlowBold700"
+                    >
+                      {getInitials(displayName)}
+                    </Typography>
+                  </View>
+                  <View>
+                    <Typography
+                      fFamily="barlowSemiBold600"
+                      size={TYPE.body.size}
+                      color={COLORS.textPrimary}
+                    >
+                      {displayName}
+                    </Typography>
+                    <Typography size={TYPE.caption.size} color={COLORS.textSecondary}>
+                      {isEdit
+                        ? 'Editing your topic'
+                        : 'Posting to Private Community'}
+                    </Typography>
+                  </View>
+                </View>
+
+                <ProfileField
+                  label="Title"
+                  value={values.title}
+                  onChangeText={handleChange('title')}
+                  onBlur={handleBlur('title')}
+                  placeholder="What’s your topic?"
+                  error={errors.title}
+                />
+
+                <View style={styles.fieldGroup}>
+                  <Typography
+                    fFamily="barlowMedium500"
+                    size={TYPE.body.size}
+                    color={COLORS.textPrimary}
+                    mB={6}
+                  >
+                    Category
+                  </Typography>
+                  {catsLoading ? (
+                    <ActivityIndicator color={COLORS.primary} />
+                  ) : (
+                    <CustomDropdown
+                      key={`cat-${categoryOptions.length}-${values.category_id}`}
+                      data={categoryOptions}
+                      defaultValue={values.category_id}
+                      placeholder="Select category"
+                      onChange={item =>
+                        setFieldValue('category_id', item?.value ?? item)
+                      }
+                    />
+                  )}
+                  {errors.category_id ? (
+                    <Typography size={12} color={COLORS.destructive} mT={4}>
+                      {errors.category_id}
+                    </Typography>
+                  ) : null}
+                </View>
+
+                <ProfileField
+                  label="Description"
+                  value={values.description}
+                  onChangeText={handleChange('description')}
+                  onBlur={handleBlur('description')}
+                  placeholder="Share context, questions, or what worked for you..."
+                  multiline
+                  numberOfLines={6}
+                  error={errors.description}
+                />
+
+                <Typography
+                  fFamily="barlowMedium500"
+                  size={TYPE.body.size}
+                  color={COLORS.textPrimary}
+                  mB={8}
+                >
+                  Tags
+                </Typography>
+                <View style={styles.tagsWrap}>
+                  {SUGGESTED_TAGS.map(tag => {
+                    const active = (values.tags || []).includes(tag);
+                    return (
+                      <TouchableOpacity
+                        key={tag}
+                        style={[styles.tag, active && styles.tagActive]}
+                        onPress={() => toggleTag(tag)}
+                        activeOpacity={0.88}
+                      >
+                        <Typography
+                          size={TYPE.caption.size}
+                          color={COLORS.primary}
+                          fFamily="barlowMedium500"
+                        >
+                          #{tag}
+                        </Typography>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+
+                {!isEdit ? (
+                  <View style={[GLOBALSTYLE.screenCard, styles.pollCard]}>
+                    <View style={styles.pollHeader}>
+                      <View style={{ flex: 1 }}>
+                        <Typography
+                          fFamily="barlowSemiBold600"
+                          size={15}
+                          color={COLORS.textPrimary}
+                        >
+                          Add a poll
+                        </Typography>
+                        <Typography size={12} color={COLORS.textSecondary} mT={2}>
+                          Optional — needs at least two options
+                        </Typography>
+                      </View>
+                      <Switch
+                        value={Boolean(values.enable_poll)}
+                        onValueChange={v => setFieldValue('enable_poll', v)}
+                        trackColor={{
+                          false: COLORS.borderMuted,
+                          true: 'rgba(235,108,15,0.45)',
+                        }}
+                        thumbColor={
+                          values.enable_poll ? COLORS.primary : COLORS.white100
+                        }
+                      />
+                    </View>
+
+                    {values.enable_poll ? (
+                      <View
+                        style={{
+                          marginTop: Sizer.vSize(12),
+                          gap: Sizer.vSize(4),
+                        }}
+                      >
+                        <ProfileField
+                          label="Poll question"
+                          value={values.poll_question}
+                          onChangeText={handleChange('poll_question')}
+                          onBlur={handleBlur('poll_question')}
+                          placeholder="What should members vote on?"
+                          error={errors.poll_question}
+                        />
+                        <ProfileField
+                          label="Option 1"
+                          value={values.poll_option_a}
+                          onChangeText={handleChange('poll_option_a')}
+                          onBlur={handleBlur('poll_option_a')}
+                          placeholder="First choice"
+                          error={errors.poll_option_a}
+                        />
+                        <ProfileField
+                          label="Option 2"
+                          value={values.poll_option_b}
+                          onChangeText={handleChange('poll_option_b')}
+                          onBlur={handleBlur('poll_option_b')}
+                          placeholder="Second choice"
+                          error={errors.poll_option_b}
+                        />
+                      </View>
+                    ) : null}
+                  </View>
+                ) : null}
+
+                <TouchableOpacity
+                  style={[styles.publishBtn, isPending && styles.publishDisabled]}
+                  onPress={handleSubmit}
+                  activeOpacity={0.88}
+                  disabled={isPending}
+                >
+                  {isPending ? (
+                    <ActivityIndicator color={COLORS.white100} />
+                  ) : (
+                    <>
+                      <Icon
+                        name={isEdit ? 'checkmark' : 'send'}
+                        iconFamily="Ionicons"
+                        size={16}
+                        color={COLORS.white100}
+                      />
+                      <Typography
+                        fFamily="barlowSemiBold600"
+                        size={TYPE.h3.size}
+                        color={COLORS.white100}
+                        mL={8}
+                      >
+                        {isEdit ? 'Save changes' : 'Publish Post'}
+                      </Typography>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
+            );
+          }}
+        </FormController>
+      </KeyboardAvoidingView>
     </Container>
   );
 };
@@ -169,12 +424,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(40),
-    gap: Sizer.vSize(SPACING.section),
+    gap: Sizer.vSize(SPACING.component),
   },
   authorRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Sizer.hSize(12),
+    marginBottom: Sizer.vSize(4),
   },
   authorAvatar: {
     width: Sizer.hSize(40),
@@ -184,37 +440,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textArea: {
-    minHeight: Sizer.vSize(144),
-    paddingHorizontal: Sizer.hSize(16),
-    paddingVertical: Sizer.vSize(12),
-    backgroundColor: COLORS.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.borderMuted,
-    borderRadius: Sizer.hSize(12),
-    fontFamily: 'Barlow-Regular',
-    fontSize: Sizer.fS(TYPE.body.size),
-    color: COLORS.textPrimary,
-  },
-  attachRow: {
-    flexDirection: 'row',
-    gap: Sizer.hSize(12),
-  },
-  attachBtn: {
-    flex: 1,
-    height: Sizer.vSize(48),
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.borderMuted,
-    borderRadius: Sizer.hSize(12),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.surface,
-  },
+  fieldGroup: { marginBottom: Sizer.vSize(4) },
   tagsWrap: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Sizer.hSize(8),
+    marginBottom: Sizer.vSize(4),
   },
   tag: {
     paddingHorizontal: Sizer.hSize(12),
@@ -226,12 +457,23 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.primary,
   },
+  pollCard: {
+    padding: Sizer.hSize(SPACING.cardP),
+    ...SHADOWS.card,
+  },
+  pollHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Sizer.hSize(12),
+  },
   publishBtn: {
     height: Sizer.vSize(48),
     backgroundColor: COLORS.primary,
     borderRadius: Sizer.hSize(12),
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: Sizer.vSize(8),
   },
+  publishDisabled: { opacity: 0.7 },
 });

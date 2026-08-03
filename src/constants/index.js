@@ -15,6 +15,8 @@ export const KEYS = {
   DOWNLOADED_VIDEOS: '@cm_downloaded_videos',
   /** PAGE 13 — practice drill PDFs saved for Field Mode offline access */
   DOWNLOADED_DRILLS: '@cm_downloaded_drills',
+  /** Forum unique view tracking (X-Device-Id) */
+  DEVICE_ID: '@cm_device_id',
 };
 
 export const STRIPE_PUBLISHABLE_KEY =
