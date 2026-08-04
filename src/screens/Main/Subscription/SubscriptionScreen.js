@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
+  FlatList,
+  Modal,
   Platform,
   ScrollView,
   StyleSheet,
   ToastAndroid,
   TouchableOpacity,
   View,
-  Modal,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { CardField, useStripe } from '@stripe/stripe-react-native';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
-import { Button } from '../../../components';
+import { Button, ConfirmModal } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import {
   COLORS,
-  GLOBALSTYLE,
   SHADOWS,
   SPACING,
   TYPE,
@@ -37,6 +38,31 @@ import { setUser } from '../../../redux/slices/appSlice';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import { performLogout } from '../../../navigation/navigationHelpers';
 
+const SCREEN_W = Dimensions.get('window').width;
+const PLAN_GAP = Sizer.hSize(14);
+const PLAN_SIDE = Sizer.hSize(SPACING.screenPx);
+/** Wider card, light peek of next plan */
+const PLAN_CARD_W = SCREEN_W - PLAN_SIDE * 2 - Sizer.hSize(20);
+const PLAN_SNAP = PLAN_CARD_W + PLAN_GAP;
+const PLAN_INNER_W = PLAN_CARD_W - Sizer.hSize(36);
+
+const decodeHtmlEntities = text =>
+  String(text || '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const capitalizeFeature = text => {
+  const t = decodeHtmlEntities(text);
+  if (!t) return '';
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
+
 /** Parse feature bullets from package description / front_description HTML */
 const parseFeatures = html => {
   if (!html) return [];
@@ -45,17 +71,32 @@ const parseFeatures = html => {
   const liRegex = /<li[^>]*>(.*?)<\/li>/gis;
   let match = liRegex.exec(html);
   while (match) {
-    const text = match[1].replace(/<[^>]+>/g, '').trim();
+    const text = capitalizeFeature(match[1].replace(/<[^>]+>/g, ''));
     if (text) items.push(text);
     match = liRegex.exec(html);
   }
   if (items.length) return items;
 
-  return html
-    .replace(/<[^>]+>/g, '\n')
-    .split('\n')
-    .map(s => s.trim())
+  let plain = String(html)
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<[^>]+>/g, '\n');
+
+  let lines = plain
+    .split(/\n+/)
+    .map(capitalizeFeature)
     .filter(Boolean);
+
+  // If API returns one long blob, split after closing parens before next feature
+  if (lines.length === 1 && lines[0].length > 90) {
+    lines = lines[0]
+      .split(/(?<=\))\s+(?=[a-zA-Z$])/g)
+      .map(capitalizeFeature)
+      .filter(Boolean);
+  }
+
+  return lines;
 };
 
 const formatPlanPrice = price => {
@@ -72,6 +113,192 @@ const formatPeriod = duration => {
   return `/${duration}`;
 };
 
+const formatRenewLabel = expiryString => {
+  if (!expiryString) return 'Active subscription';
+  const label = formatExpiryDate(expiryString);
+  if (!label || label === 'Invalid date') return 'Active subscription';
+  if (/left$/i.test(label)) {
+    return label.replace(/left$/i, 'remaining').trim();
+  }
+  return `Renews on ${label}`;
+};
+
+const PlanFeaturesList = ({ features }) => {
+  if (!features.length) {
+    return (
+      <Typography size={13} color={COLORS.textSecondary}>
+        Plan details coming soon.
+      </Typography>
+    );
+  }
+  return (
+    <View style={styles.featuresContent}>
+      {features.map((feature, index) => (
+        <View key={`f-${index}`} style={styles.featureRow}>
+          <View style={styles.checkCircle}>
+            <Icon
+              name="checkmark"
+              iconFamily="Ionicons"
+              size={12}
+              color={COLORS.primary}
+            />
+          </View>
+          <Typography
+            size={13}
+            lineHeight={18}
+            color={COLORS.textPrimary}
+            style={styles.featureText}
+          >
+            {feature}
+          </Typography>
+        </View>
+      ))}
+    </View>
+  );
+};
+
+const PlanCard = ({
+  plan,
+  current,
+  isPopular,
+  loading,
+  selected,
+  onPress,
+  actionLabel,
+  featuresHeight,
+}) => {
+  const features = useMemo(
+    () => parseFeatures(plan?.description || plan?.front_description),
+    [plan?.description, plan?.front_description],
+  );
+
+  return (
+    <View
+      style={[
+        styles.planCard,
+        current ? styles.planCardCurrent : styles.planCardDefault,
+        selected && styles.planCardFocused,
+      ]}
+    >
+      <View style={styles.planTop}>
+        <View style={styles.planTitleRow}>
+          <Typography
+            fFamily="barlowBold700"
+            size={22}
+            color={COLORS.textPrimary}
+            numberOfLines={1}
+            style={styles.planTitle}
+          >
+            {plan.title}
+          </Typography>
+          {current ? (
+            <View style={styles.inlineBadge}>
+              <Icon
+                name="checkmark-circle"
+                iconFamily="Ionicons"
+                size={12}
+                color={COLORS.white100}
+              />
+              <Typography
+                size={10}
+                color={COLORS.white100}
+                fFamily="barlowBold700"
+                mL={4}
+              >
+                CURRENT
+              </Typography>
+            </View>
+          ) : isPopular ? (
+            <View style={[styles.inlineBadge, styles.inlineBadgePopular]}>
+              <Typography
+                size={10}
+                color={COLORS.white100}
+                fFamily="barlowBold700"
+              >
+                POPULAR
+              </Typography>
+            </View>
+          ) : null}
+        </View>
+
+        <View style={styles.priceBlock}>
+          <Typography
+            fFamily="barlowBold700"
+            size={34}
+            lineHeight={38}
+            color={COLORS.primary}
+          >
+            {formatPlanPrice(plan.price)}
+          </Typography>
+          <Typography
+            size={14}
+            color={COLORS.textSecondary}
+            fFamily="barlowMedium500"
+            mL={6}
+            style={styles.periodLabel}
+          >
+            {formatPeriod(plan.duration)}
+          </Typography>
+        </View>
+      </View>
+
+      <View style={styles.divider} />
+
+      <Typography
+        size={11}
+        color={COLORS.textSecondary}
+        fFamily="barlowBold700"
+        style={styles.includesLabel}
+        mB={8}
+      >
+        WHAT'S INCLUDED
+      </Typography>
+
+      <View
+        style={[
+          styles.featuresArea,
+          featuresHeight != null ? { height: featuresHeight } : null,
+        ]}
+      >
+        <ScrollView
+          style={styles.featuresScroll}
+          contentContainerStyle={styles.featuresScrollContent}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+          bounces={false}
+        >
+          <PlanFeaturesList features={features} />
+        </ScrollView>
+      </View>
+
+      <TouchableOpacity
+        style={[
+          styles.planBtn,
+          current ? styles.planBtnCurrent : styles.planBtnSwitch,
+        ]}
+        activeOpacity={0.88}
+        disabled={current || loading}
+        onPress={onPress}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={current ? COLORS.textSecondary : COLORS.white100}
+          />
+        ) : (
+          <Typography
+            fFamily="barlowBold700"
+            size={15}
+            color={current ? COLORS.textSecondary : COLORS.white100}
+            numberOfLines={1}
+          >
+            {actionLabel}
+          </Typography>
+        )}
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 /**
  * ClayMaster-App-UI `MembershipPlan.tsx` — Stripe/payment API unchanged.
  */
@@ -82,15 +309,24 @@ const SubscriptionScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const { confirmSetupIntent } = useStripe();
   const { keyboardOpen } = useKeyboard();
+  const plansListRef = useRef(null);
+  const [activePlanIndex, setActivePlanIndex] = useState(0);
+  /** Measured natural height of each plan's feature list — keyed by plan id */
+  const [featureHeights, setFeatureHeights] = useState({});
 
-  const { data: packagesData = [], isLoading: isLoadingPackages, isError: isPackagesError, refetch: refetchPackages } =
-    useCustomQuery({
-      queryKey: ['packages'],
-      queryFn: getPackages,
-    });
+  const {
+    data: packagesData = [],
+    isLoading: isLoadingPackages,
+    isError: isPackagesError,
+    refetch: refetchPackages,
+  } = useCustomQuery({
+    queryKey: ['packages'],
+    queryFn: getPackages,
+  });
 
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [logoutVisible, setLogoutVisible] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [cardDetails, setCardDetails] = useState(null);
@@ -98,13 +334,69 @@ const SubscriptionScreen = ({ navigation, route }) => {
   const currentPackage = packagesData.find(pkg => pkg.id == user?.package_id);
   const isActive = user?.subscription_status === 'active';
 
+  const sortedPlans = useMemo(
+    () =>
+      [...packagesData].sort(
+        (a, b) => parseFloat(a?.price || 0) - parseFloat(b?.price || 0),
+      ),
+    [packagesData],
+  );
+
+  const plansWithFeatures = useMemo(
+    () =>
+      sortedPlans.map(plan => ({
+        plan,
+        features: parseFeatures(
+          plan?.description || plan?.front_description,
+        ),
+      })),
+    [sortedPlans],
+  );
+
+  /** Tallest description block — applied to every plan for equal card heights */
+  const maxFeaturesHeight = useMemo(() => {
+    if (!sortedPlans.length) return null;
+    const measured = sortedPlans
+      .map(p => featureHeights[String(p.id)])
+      .filter(h => typeof h === 'number' && h > 0);
+    if (measured.length < sortedPlans.length) return null;
+    return Math.ceil(Math.max(...measured));
+  }, [featureHeights, sortedPlans]);
+
+  const onMeasureFeatures = useCallback((planId, height) => {
+    if (!planId || !(height > 0)) return;
+    const key = String(planId);
+    setFeatureHeights(prev => {
+      if (prev[key] === height) return prev;
+      // Keep the larger measurement if re-layout reports slightly different values
+      if (typeof prev[key] === 'number' && prev[key] >= height) return prev;
+      return { ...prev, [key]: height };
+    });
+  }, []);
+
   useEffect(() => {
-    if (packagesData.length && !selectedPlan) {
-      const userPkg = packagesData.find(p => p.id == user?.package_id);
-      const popular = packagesData.find(p => p.is_popular);
-      setSelectedPlan(userPkg || popular || packagesData[0]);
-    }
-  }, [packagesData, user?.package_id, selectedPlan]);
+    setFeatureHeights({});
+  }, [sortedPlans]);
+
+  useEffect(() => {
+    if (!sortedPlans.length || selectedPlan) return;
+    const userPkg = sortedPlans.find(p => p.id == user?.package_id);
+    const popular = sortedPlans.find(p => p.is_popular);
+    const initial = userPkg || popular || sortedPlans[0];
+    const idx = Math.max(
+      0,
+      sortedPlans.findIndex(p => p.id === initial?.id),
+    );
+    setSelectedPlan(initial);
+    setActivePlanIndex(idx);
+    const t = setTimeout(() => {
+      plansListRef.current?.scrollToIndex({
+        index: idx,
+        animated: false,
+      });
+    }, 80);
+    return () => clearTimeout(t);
+  }, [sortedPlans, user?.package_id, selectedPlan]);
 
   const { mutate: handlePaySuccess, isPending: isLoadingPaymentSuccess } =
     useCustomMutation({
@@ -192,6 +484,18 @@ const SubscriptionScreen = ({ navigation, route }) => {
     requestPaymentIntent();
   };
 
+  const onPlanMomentumEnd = useCallback(
+    e => {
+      const x = e.nativeEvent.contentOffset.x;
+      const index = Math.round(x / PLAN_SNAP);
+      const clamped = Math.max(0, Math.min(index, sortedPlans.length - 1));
+      setActivePlanIndex(clamped);
+      const plan = sortedPlans[clamped];
+      if (plan) setSelectedPlan(plan);
+    },
+    [sortedPlans],
+  );
+
   const handleConfirmPayment = async () => {
     if (!clientSecret) return;
     if (!cardDetails?.complete) {
@@ -227,13 +531,43 @@ const SubscriptionScreen = ({ navigation, route }) => {
       : 'Member'
     : 'No active plan';
   const renewLabel = isActive
-    ? user?.package_expires_at
-      ? `Renews on ${formatExpiryDate(user.package_expires_at)}`
-      : 'Active subscription'
+    ? formatRenewLabel(user?.package_expires_at)
     : 'Choose a plan to get started';
 
-  const sortedPlans = [...packagesData].sort(
-    (a, b) => parseFloat(a?.price || 0) - parseFloat(b?.price || 0),
+  const checkoutLoading = isLoadingPaymentIntent || isLoadingPaymentSuccess;
+
+  const renderPlan = useCallback(
+    ({ item: plan, index }) => {
+      const current = isCurrentPlan(plan);
+      return (
+        <View
+          style={[
+            styles.planSlide,
+            index === sortedPlans.length - 1 && styles.planSlideLast,
+          ]}
+        >
+          <PlanCard
+            plan={plan}
+            current={current}
+            isPopular={Boolean(plan?.is_popular)}
+            loading={checkoutLoading && selectedPlan?.id === plan.id}
+            selected={activePlanIndex === index}
+            actionLabel={planActionLabel(plan)}
+            onPress={() => startCheckout(plan)}
+            featuresHeight={maxFeaturesHeight}
+          />
+        </View>
+      );
+    },
+    [
+      activePlanIndex,
+      checkoutLoading,
+      selectedPlan?.id,
+      sortedPlans.length,
+      isActive,
+      user?.package_id,
+      maxFeaturesHeight,
+    ],
   );
 
   return (
@@ -246,7 +580,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
         rightSlot={
           fromAuth ? (
             <TouchableOpacity
-              onPress={() => performLogout(navigation, dispatch)}
+              onPress={() => setLogoutVisible(true)}
               hitSlop={12}
               activeOpacity={0.88}
             >
@@ -265,31 +599,44 @@ const SubscriptionScreen = ({ navigation, route }) => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
+        nestedScrollEnabled
       >
         <View style={styles.currentBanner}>
+          <View style={styles.bannerGlow} />
           <Typography
-            size={TYPE.body.size}
+            size={12}
             color={COLORS.white100}
-            style={styles.bannerMuted}
+            fFamily="barlowBold700"
+            style={styles.bannerEyebrow}
           >
-            Your current plan
+            YOUR CURRENT PLAN
           </Typography>
           <Typography
             fFamily="barlowBold700"
-            size={TYPE.h1.size}
+            size={28}
+            lineHeight={32}
             color={COLORS.white100}
-            mT={4}
+            mT={6}
+            textAlign="center"
           >
             {bannerTitle}
           </Typography>
-          <Typography
-            size={TYPE.caption.size}
-            color={COLORS.white100}
-            mT={4}
-            style={styles.bannerCaption}
-          >
-            {renewLabel}
-          </Typography>
+          <View style={styles.bannerMetaPill}>
+            <Icon
+              name={isActive ? 'time-outline' : 'sparkles-outline'}
+              iconFamily="Ionicons"
+              size={14}
+              color={COLORS.white100}
+            />
+            <Typography
+              size={12}
+              color={COLORS.white100}
+              fFamily="barlowMedium500"
+              mL={6}
+            >
+              {renewLabel}
+            </Typography>
+          </View>
         </View>
 
         {isLoadingPackages ? (
@@ -334,138 +681,84 @@ const SubscriptionScreen = ({ navigation, route }) => {
           </View>
         ) : null}
 
-        <View style={styles.plansList}>
-          {sortedPlans.map(plan => {
-            const current = isCurrentPlan(plan);
-            const features = parseFeatures(
-              plan?.description || plan?.front_description,
-            );
-            const loading =
-              isLoadingPaymentIntent || isLoadingPaymentSuccess;
-            const isPopular = Boolean(plan?.is_popular);
-
-            return (
-              <View
-                key={plan.id}
-                style={[
-                  GLOBALSTYLE.screenCard,
-                  styles.planCard,
-                  current ? styles.planCardCurrent : styles.planCardDefault,
-                ]}
-              >
-                {current ? (
-                  <View style={styles.currentBadge}>
-                    <Icon
-                      name="star"
-                      iconFamily="Ionicons"
-                      size={12}
-                      color={COLORS.white100}
-                    />
-                    <Typography
-                      size={TYPE.caption.size}
-                      color={COLORS.white100}
-                      fFamily="barlowSemiBold600"
-                      mL={4}
-                    >
-                      Current
-                    </Typography>
-                  </View>
-                ) : isPopular ? (
-                  <View style={[styles.currentBadge, styles.popularBadge]}>
-                    <Typography
-                      size={TYPE.caption.size}
-                      color={COLORS.white100}
-                      fFamily="barlowSemiBold600"
-                    >
-                      Popular
-                    </Typography>
-                  </View>
-                ) : null}
-
+        {sortedPlans.length > 0 ? (
+          <View style={styles.plansSection}>
+            {/* Off-screen measure pass — natural height of every plan description */}
+            <View style={styles.measureLayer} pointerEvents="none">
+              {plansWithFeatures.map(({ plan, features }) => (
                 <View
-                  style={[
-                    styles.planHeader,
-                    (current || isPopular) && styles.planHeaderBadge,
-                  ]}
+                  key={`measure-${plan.id}`}
+                  style={styles.measureItem}
+                  onLayout={e =>
+                    onMeasureFeatures(plan.id, e.nativeEvent.layout.height)
+                  }
                 >
-                  <Typography
-                    fFamily={TYPE.h2.fFamily}
-                    size={TYPE.h2.size}
-                    color={COLORS.textPrimary}
-                  >
-                    {plan.title}
-                  </Typography>
-                  <View style={styles.priceRow}>
-                    <Typography
-                      fFamily="barlowBold700"
-                      size={TYPE.h1.size}
-                      color={COLORS.primary}
-                    >
-                      {formatPlanPrice(plan.price)}
-                    </Typography>
-                    <Typography
-                      size={TYPE.caption.size}
-                      color={COLORS.textSecondary}
-                      mL={4}
-                    >
-                      {formatPeriod(plan.duration)}
-                    </Typography>
-                  </View>
+                  <PlanFeaturesList features={features} />
                 </View>
+              ))}
+            </View>
 
-                {features.length > 0 ? (
-                  <View style={styles.features}>
-                    {features.map((feature, index) => (
-                      <View key={`${plan.id}-${index}`} style={styles.featureRow}>
-                        <Icon
-                          name="checkmark"
-                          iconFamily="Ionicons"
-                          size={16}
-                          color={COLORS.primary}
-                        />
-                        <Typography
-                          size={TYPE.body.size}
-                          color={COLORS.textPrimary}
-                          style={styles.featureText}
-                        >
-                          {feature}
-                        </Typography>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
-
-                <TouchableOpacity
-                  style={[
-                    styles.planBtn,
-                    current ? styles.planBtnCurrent : styles.planBtnSwitch,
-                  ]}
-                  activeOpacity={0.88}
-                  disabled={current || loading}
-                  onPress={() => startCheckout(plan)}
+            <View style={styles.plansHeaderRow}>
+              <View>
+                <Typography
+                  fFamily="barlowBold700"
+                  size={18}
+                  color={COLORS.textPrimary}
                 >
-                  {loading && selectedPlan?.id === plan.id ? (
-                    <Typography
-                      fFamily="barlowSemiBold600"
-                      size={TYPE.body.size}
-                      color={current ? COLORS.textSecondary : COLORS.white100}
-                    >
-                      Processing...
-                    </Typography>
-                  ) : (
-                    <Typography
-                      fFamily="barlowSemiBold600"
-                      size={TYPE.body.size}
-                      color={current ? COLORS.textSecondary : COLORS.white100}
-                    >
-                      {planActionLabel(plan)}
-                    </Typography>
-                  )}
-                </TouchableOpacity>
+                  Choose a plan
+                </Typography>
+                <Typography size={12} color={COLORS.textSecondary} mT={2}>
+                  Swipe to compare · {sortedPlans.length} options
+                </Typography>
               </View>
-            );
-          })}
-        </View>
+            </View>
+
+            <FlatList
+              ref={plansListRef}
+              data={sortedPlans}
+              keyExtractor={item => String(item.id)}
+              renderItem={renderPlan}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              decelerationRate="fast"
+              snapToInterval={PLAN_SNAP}
+              snapToAlignment="start"
+              disableIntervalMomentum
+              bounces
+              overScrollMode="never"
+              nestedScrollEnabled
+              contentContainerStyle={styles.plansCarousel}
+              getItemLayout={(_, index) => ({
+                length: PLAN_SNAP,
+                offset: PLAN_SNAP * index,
+                index,
+              })}
+              onMomentumScrollEnd={onPlanMomentumEnd}
+              onScrollToIndexFailed={info => {
+                setTimeout(() => {
+                  plansListRef.current?.scrollToIndex({
+                    index: info.index,
+                    animated: false,
+                  });
+                }, 80);
+              }}
+            />
+
+            {sortedPlans.length > 1 ? (
+              <View style={styles.dotsRow}>
+                {sortedPlans.map((plan, index) => (
+                  <View
+                    key={String(plan.id)}
+                    style={[
+                      styles.dot,
+                      index === activePlanIndex && styles.dotActive,
+                    ]}
+                  />
+                ))}
+              </View>
+            ) : null}
+          </View>
+        ) : null}
 
         {isActive ? (
           <TouchableOpacity
@@ -556,6 +849,15 @@ const SubscriptionScreen = ({ navigation, route }) => {
           </View>
         </View>
       </Modal>
+
+      <ConfirmModal
+        visible={logoutVisible}
+        setVisibility={setLogoutVisible}
+        title="Log out?"
+        confirmText="Log out"
+        cancelText="Cancel"
+        handleComplete={() => performLogout(navigation, dispatch)}
+      />
     </Container>
   );
 };
@@ -564,103 +866,204 @@ export default SubscriptionScreen;
 
 const styles = StyleSheet.create({
   scroll: {
-    paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(100),
     gap: Sizer.vSize(SPACING.section),
   },
   currentBanner: {
+    marginHorizontal: PLAN_SIDE,
     backgroundColor: COLORS.primary,
-    borderRadius: Sizer.hSize(12),
-    padding: Sizer.hSize(SPACING.cardP),
+    borderRadius: Sizer.hSize(16),
+    paddingVertical: Sizer.vSize(22),
+    paddingHorizontal: Sizer.hSize(20),
     alignItems: 'center',
+    overflow: 'hidden',
+    ...SHADOWS.card,
   },
-  bannerMuted: { opacity: 0.8 },
-  bannerCaption: { opacity: 0.7 },
-  plansList: {
-    gap: Sizer.vSize(SPACING.component),
+  bannerGlow: {
+    position: 'absolute',
+    top: -40,
+    right: -30,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
+  bannerEyebrow: {
+    letterSpacing: 1.2,
+    opacity: 0.85,
+  },
+  bannerMetaPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: Sizer.vSize(12),
+    backgroundColor: 'rgba(0,0,0,0.18)',
+    paddingHorizontal: Sizer.hSize(12),
+    paddingVertical: Sizer.vSize(6),
+    borderRadius: Sizer.hSize(999),
+  },
+  plansSection: {
+    marginTop: Sizer.vSize(4),
+  },
+  measureLayer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    opacity: 0,
+    zIndex: -1,
+  },
+  measureItem: {
+    width: PLAN_INNER_W,
+  },
+  plansHeaderRow: {
+    paddingHorizontal: PLAN_SIDE,
+    marginBottom: Sizer.vSize(10),
+  },
+  plansCarousel: {
+    paddingHorizontal: PLAN_SIDE,
+    paddingTop: Sizer.vSize(4),
+    paddingBottom: Sizer.vSize(4),
+  },
+  planSlide: {
+    width: PLAN_CARD_W,
+    marginRight: PLAN_GAP,
+  },
+  planSlideLast: {
+    marginRight: 0,
   },
   planCard: {
-    padding: Sizer.hSize(SPACING.cardP),
-    position: 'relative',
-    overflow: 'visible',
+    backgroundColor: COLORS.surface,
+    borderRadius: Sizer.hSize(16),
+    padding: Sizer.hSize(18),
+    borderWidth: 1.5,
     ...SHADOWS.card,
   },
   planCardDefault: {
-    borderWidth: 2,
     borderColor: COLORS.borderMuted,
   },
   planCardCurrent: {
-    borderWidth: 2,
     borderColor: COLORS.primary,
+    borderWidth: 2,
   },
-  currentBadge: {
-    position: 'absolute',
-    top: -Sizer.vSize(12),
-    left: Sizer.hSize(16),
+  planCardFocused: {
+    borderColor: 'rgba(235, 108, 15, 0.55)',
+  },
+  planTop: {
+    marginBottom: Sizer.vSize(4),
+  },
+  planTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: Sizer.hSize(8),
+  },
+  planTitle: {
+    flex: 1,
+  },
+  inlineBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primary,
-    paddingHorizontal: Sizer.hSize(12),
+    paddingHorizontal: Sizer.hSize(8),
     paddingVertical: Sizer.vSize(4),
     borderRadius: Sizer.hSize(999),
-    zIndex: 1,
   },
-  planHeader: {
+  inlineBadgePopular: {
+    backgroundColor: COLORS.textPrimary,
+  },
+  priceBlock: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    marginBottom: Sizer.vSize(16),
+    alignItems: 'flex-end',
+    marginTop: Sizer.vSize(10),
   },
-  planHeaderBadge: {
-    marginTop: Sizer.vSize(4),
+  periodLabel: {
+    marginBottom: Sizer.vSize(4),
   },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: COLORS.borderMuted,
+    marginVertical: Sizer.vSize(12),
   },
-  features: {
-    gap: Sizer.vSize(10),
+  includesLabel: {
+    letterSpacing: 1,
+  },
+  featuresArea: {
+    minHeight: Sizer.vSize(80),
+  },
+  featuresScroll: {
+    flexGrow: 0,
+  },
+  featuresScrollContent: {
+    flexGrow: 1,
+  },
+  featuresContent: {
+    gap: Sizer.vSize(8),
   },
   featureRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: Sizer.hSize(10),
+  },
+  checkCircle: {
+    width: Sizer.hSize(20),
+    height: Sizer.hSize(20),
+    borderRadius: Sizer.hSize(10),
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
   },
   featureText: {
     flex: 1,
   },
   planBtn: {
-    height: Sizer.vSize(48),
+    height: Sizer.vSize(50),
     borderRadius: Sizer.hSize(12),
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: Sizer.vSize(16),
+    marginTop: Sizer.vSize(10),
+    paddingHorizontal: Sizer.hSize(8),
   },
   planBtnCurrent: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.borderMuted,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.surfaceMuted,
   },
   planBtnSwitch: {
+    backgroundColor: COLORS.primary,
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: Sizer.hSize(6),
+    marginTop: Sizer.vSize(16),
+  },
+  dot: {
+    width: Sizer.hSize(7),
+    height: Sizer.hSize(7),
+    borderRadius: Sizer.hSize(4),
+    backgroundColor: COLORS.borderMuted,
+  },
+  dotActive: {
+    width: Sizer.hSize(20),
     backgroundColor: COLORS.primary,
   },
   cancelLink: {
     alignItems: 'center',
     paddingVertical: Sizer.vSize(8),
+    marginHorizontal: PLAN_SIDE,
   },
   centerState: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Sizer.vSize(24),
+    paddingHorizontal: PLAN_SIDE,
   },
   retryBtn: {
     marginTop: Sizer.vSize(12),
     paddingHorizontal: Sizer.hSize(16),
     paddingVertical: Sizer.vSize(8),
-  },
-  popularBadge: {
-    backgroundColor: COLORS.textPrimary,
   },
   modalOuter: {
     flex: 1,

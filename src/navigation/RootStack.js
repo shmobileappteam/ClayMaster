@@ -82,8 +82,7 @@ const RootStack = () => {
       ref={navigationRef}
       onReady={handleStatusBar}
       onStateChange={handleStatusBar}
-  >
-      <FlashMessage position="top" onHide={handleStatusBar} />
+    >
       <StatusBar
         animated={true}
         backgroundColor={appBarStyle.bgColor}
@@ -94,6 +93,16 @@ const RootStack = () => {
       <StackNavigator />
       {/* <Loader /> */}
       <NetworkStateMonitor />
+      {/* Last child so toasts float above all screens */}
+      <FlashMessage
+        position="top"
+        floating
+        animated
+        hideOnPress
+        duration={3200}
+        animationDuration={280}
+        onHide={handleStatusBar}
+      />
     </NavigationContainer>
   );
 };

@@ -80,11 +80,20 @@ const DrillsScreen = ({ navigation }) => {
         {isLoading ? (
           <ActivityIndicator color={COLORS.primary} />
         ) : isError ? (
-          <TouchableOpacity onPress={refetch}>
-            <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
-              Could not load drills. Tap to retry.
+          <View style={styles.errorBox}>
+            <Typography color={COLORS.textSecondary} textAlign="center" mB={12}>
+              Could not load drills. You may need an active subscription.
             </Typography>
-          </TouchableOpacity>
+            <TouchableOpacity onPress={refetch}>
+              <Typography
+                color={COLORS.primary}
+                fFamily="barlowSemiBold600"
+                textAlign="center"
+              >
+                Tap to retry
+              </Typography>
+            </TouchableOpacity>
+          </View>
         ) : drills.length === 0 ? (
           <Typography color={COLORS.textSecondary}>No practice drills yet.</Typography>
         ) : (
@@ -166,6 +175,11 @@ const styles = StyleSheet.create({
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(40),
     gap: Sizer.vSize(SPACING.component),
+  },
+  errorBox: {
+    paddingVertical: Sizer.vSize(24),
+    paddingHorizontal: Sizer.hSize(12),
+    alignItems: 'center',
   },
   drillCard: {
     padding: Sizer.hSize(SPACING.cardP),

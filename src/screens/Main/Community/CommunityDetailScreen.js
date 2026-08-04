@@ -10,8 +10,10 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import RenderHTML from 'react-native-render-html';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import { Container, Typography } from '../../../atomComponents';
@@ -39,13 +41,66 @@ import {
   getInitials,
   mapForumDetail,
   mapForumReply,
+  resolveMediaUrl,
+  toRenderableHtml,
 } from '../../../constants/community';
 import { showToast } from '../../../utils';
 
+const htmlTagsStyles = {
+  body: {
+    color: COLORS.textPrimary,
+    fontSize: TYPE.body.size,
+    lineHeight: TYPE.body.size * 1.45,
+    fontFamily: 'Barlow-Regular',
+  },
+  p: {
+    color: COLORS.textPrimary,
+    fontSize: TYPE.body.size,
+    lineHeight: TYPE.body.size * 1.45,
+    marginTop: 0,
+    marginBottom: 8,
+    fontFamily: 'Barlow-Regular',
+  },
+  strong: { fontFamily: 'Barlow-Bold' },
+  b: { fontFamily: 'Barlow-Bold' },
+  em: { fontStyle: 'italic' },
+  a: { color: COLORS.primary },
+  ul: { marginTop: 4, marginBottom: 8, paddingLeft: 8 },
+  ol: { marginTop: 4, marginBottom: 8, paddingLeft: 8 },
+  li: {
+    color: COLORS.textPrimary,
+    fontSize: TYPE.body.size,
+    lineHeight: TYPE.body.size * 1.45,
+    marginBottom: 4,
+    fontFamily: 'Barlow-Regular',
+  },
+  h1: {
+    color: COLORS.textPrimary,
+    fontSize: 22,
+    fontFamily: 'Barlow-Bold',
+    marginBottom: 8,
+  },
+  h2: {
+    color: COLORS.textPrimary,
+    fontSize: 18,
+    fontFamily: 'Barlow-Bold',
+    marginBottom: 8,
+  },
+  h3: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontFamily: 'Barlow-Bold',
+    marginBottom: 6,
+  },
+  br: {},
+};
+
 const attachmentUri = attachment => {
   if (!attachment) return null;
-  if (typeof attachment === 'string') return attachment;
-  return attachment.url || attachment.uri || attachment.path || null;
+  if (typeof attachment === 'string') return resolveMediaUrl(attachment);
+  return resolveMediaUrl(
+    attachment.url || attachment.uri || attachment.path || null,
+  );
 };
 
 const isImageUri = uri =>
@@ -71,6 +126,9 @@ const AuthorAvatar = ({ name, avatarUrl }) => {
 /** Forum topic detail — full live API flow. */
 const CommunityDetailScreen = ({ navigation, route }) => {
   const blocked = useRequireLibraryMode();
+  const { width } = useWindowDimensions();
+  const contentWidth =
+    width - Sizer.hSize(SPACING.screenPx) * 2 - Sizer.hSize(SPACING.cardP) * 2;
   const queryClient = useQueryClient();
   const { user } = useSelector(state => state.app);
   const { imageUri, openGallery, clearImage, error: imageError } =
@@ -100,6 +158,8 @@ const CommunityDetailScreen = ({ navigation, route }) => {
 
   const post = useMemo(() => mapForumDetail(forumBody), [forumBody]);
 
+
+  console.log('post', post);
   const replies = useMemo(() => {
     return (forumBody?.replies || []).map(mapForumReply).filter(Boolean);
   }, [forumBody?.replies]);
@@ -324,6 +384,8 @@ const CommunityDetailScreen = ({ navigation, route }) => {
   };
 
   const openEdit = () => {
+    const poll = post.poll;
+    const pollOpts = Array.isArray(poll?.options) ? poll.options : [];
     navigation.navigate('CreatePostScreen', {
       mode: 'edit',
       forumId: post.id,
@@ -332,6 +394,11 @@ const CommunityDetailScreen = ({ navigation, route }) => {
       categoryId: post.categoryId,
       description: post.description,
       tags: post.tags || [],
+      enablePoll: Boolean(poll),
+      pollQuestion: poll?.question || '',
+      pollOptionA: pollOpts[0]?.text || '',
+      pollOptionB: pollOpts[1]?.text || '',
+      pollExtraOptions: pollOpts.slice(2).map(o => o.text).filter(Boolean),
     });
   };
 
@@ -438,7 +505,7 @@ const CommunityDetailScreen = ({ navigation, route }) => {
 
             <Typography
               fFamily="barlowBold700"
-              size={TYPE.h2.size}
+              size={TYPE.h3.size}
               color={COLORS.textPrimary}
               mB={12}
             >
@@ -465,13 +532,21 @@ const CommunityDetailScreen = ({ navigation, route }) => {
               </View>
             </View>
 
-            <Typography
-              size={TYPE.body.size}
-              color={COLORS.textPrimary}
-              style={styles.body}
-            >
-              {post.description}
-            </Typography>
+            {post.description ? (
+              <View style={styles.body}>
+                <RenderHTML
+                  contentWidth={contentWidth}
+                  source={{ html: toRenderableHtml(post.description) }}
+                  tagsStyles={htmlTagsStyles}
+                  systemFonts={[
+                    'Barlow-Regular',
+                    'Barlow-Medium',
+                    'Barlow-SemiBold',
+                    'Barlow-Bold',
+                  ]}
+                />
+              </View>
+            ) : null}
 
             {(() => {
               const topicAtt = attachmentUri(post.attachment);
@@ -707,13 +782,21 @@ const CommunityDetailScreen = ({ navigation, route }) => {
                         </Typography>
                       </View>
                     </View>
-                    <Typography
-                      size={TYPE.body.size}
-                      color={COLORS.textPrimary}
-                      mT={10}
-                    >
-                      {reply.content}
-                    </Typography>
+                    {reply.content ? (
+                      <View style={styles.replyBody}>
+                        <RenderHTML
+                          contentWidth={contentWidth}
+                          source={{ html: toRenderableHtml(reply.content) }}
+                          tagsStyles={htmlTagsStyles}
+                          systemFonts={[
+                            'Barlow-Regular',
+                            'Barlow-Medium',
+                            'Barlow-SemiBold',
+                            'Barlow-Bold',
+                          ]}
+                        />
+                      </View>
+                    ) : null}
                     {att && isImageUri(att) ? (
                       <Image
                         source={{ uri: att }}
@@ -953,9 +1036,11 @@ const styles = StyleSheet.create({
     borderRadius: Sizer.hSize(18),
   },
   body: {
-    lineHeight: TYPE.body.size * 1.45,
     marginTop: Sizer.vSize(12),
     marginBottom: Sizer.vSize(12),
+  },
+  replyBody: {
+    marginTop: Sizer.vSize(10),
   },
   attachPreview: {
     width: '100%',

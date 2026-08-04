@@ -1,5 +1,7 @@
 /** Forum / Community UI helpers — API mappers (no dummy posts). */
 
+import { BASE_URL } from '../api/endpoints';
+
 export const getInitials = name =>
   (name || '')
     .split(/\s+/)
@@ -8,6 +10,57 @@ export const getInitials = name =>
     .join('')
     .slice(0, 2)
     .toUpperCase() || '?';
+
+/**
+ * API often returns relative paths like `storage/images/profile/….JPG`.
+ * Prefix with BASE_URL (same as Profile / Header).
+ */
+export const resolveMediaUrl = path => {
+  if (!path || typeof path !== 'string') return null;
+  const trimmed = path.trim();
+  if (!trimmed) return null;
+  if (
+    /^https?:\/\//i.test(trimmed) ||
+    trimmed.startsWith('file:') ||
+    trimmed.startsWith('content:') ||
+    trimmed.startsWith('data:')
+  ) {
+    return trimmed;
+  }
+  const base = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
+  return `${base}${trimmed.replace(/^\//, '')}`;
+};
+
+/** Detect HTML markup in forum description/content. */
+export const looksLikeHtml = value =>
+  typeof value === 'string' && /<\/?[a-z][\s\S]*>/i.test(value);
+
+/** Plain-text preview for cards/lists — do not use on detail body. */
+export const stripHtml = html =>
+  String(html || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+/** Ensure RenderHTML always receives a fragment (plain text → escaped &lt;p&gt;). */
+export const toRenderableHtml = value => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (looksLikeHtml(raw)) return raw;
+  return `<p>${raw
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')}</p>`;
+};
 
 export const formatUserName = user => {
   if (!user) return 'Member';
@@ -58,6 +111,7 @@ export const mapForumCategory = item => {
 export const mapForumTopic = item => {
   if (!item) return null;
   const userName = formatUserName(item.user);
+  const avatarRaw = item.user?.avatar || item.user?.profile_image || null;
   return {
     id: item.id,
     title: item.title || '',
@@ -74,6 +128,7 @@ export const mapForumTopic = item => {
     attachment: item.attachment || null,
     user: item.user || null,
     userName,
+    avatarUrl: resolveMediaUrl(avatarRaw),
     time: formatRelativeTime(item.created_at || item.updated_at),
     createdAt: item.created_at || null,
   };
@@ -82,6 +137,7 @@ export const mapForumTopic = item => {
 export const mapForumReply = item => {
   if (!item) return null;
   const userName = formatUserName(item.user);
+  const avatarRaw = item.user?.avatar || item.user?.profile_image || null;
   return {
     id: item.id,
     forumId: item.forum_id,
@@ -94,7 +150,7 @@ export const mapForumReply = item => {
     author: {
       id: item.user_id ?? item.user?.id ?? null,
       name: userName,
-      avatar: item.user?.avatar || item.user?.profile_image || null,
+      avatar: resolveMediaUrl(avatarRaw),
     },
     time: formatRelativeTime(item.created_at || item.updated_at),
     createdAt: item.created_at || null,
@@ -139,12 +195,13 @@ export const mapForumDetail = payload => {
   const topic = mapForumTopic(forum);
   if (!topic) return null;
   const authorName = topic.userName;
+  const avatarRaw = forum.user?.avatar || forum.user?.profile_image || null;
   return {
     ...topic,
     author: {
       id: topic.userId,
       name: authorName,
-      avatar: forum.user?.avatar || forum.user?.profile_image || null,
+      avatar: resolveMediaUrl(avatarRaw) || topic.avatarUrl,
     },
     category: {
       id: topic.categoryId,

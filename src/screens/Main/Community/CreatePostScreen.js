@@ -17,6 +17,7 @@ import {
   Typography,
 } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
+import { ScreenOverlayLoader } from '../../../components';
 import ProfileField from '../../../components/profile/ProfileField';
 import CustomDropdown from '../../../components/customFields/CustomDropDown';
 import Icon from '../../../helpers/Icon';
@@ -72,15 +73,16 @@ const CreatePostScreen = ({ navigation, route }) => {
         editParams.categoryId != null
           ? String(editParams.categoryId)
           : categoryOptions[0]?.value || '';
+      const hasPoll = Boolean(editParams.enablePoll);
       return {
         title: editParams.title || '',
         category_id: cat,
         description: editParams.description || '',
         tags: Array.isArray(editParams.tags) ? editParams.tags : [],
-        enable_poll: false,
-        poll_question: '',
-        poll_option_a: '',
-        poll_option_b: '',
+        enable_poll: hasPoll,
+        poll_question: editParams.pollQuestion || '',
+        poll_option_a: editParams.pollOptionA || '',
+        poll_option_b: editParams.pollOptionB || '',
       };
     }
     return {
@@ -175,17 +177,27 @@ const CreatePostScreen = ({ navigation, route }) => {
             const tags = (values.tags || []).map(t =>
               String(t).replace(/^#/, '').trim(),
             );
+            const enablePoll = Boolean(values.enable_poll);
+            const pollOptions = enablePoll
+              ? [
+                  values.poll_option_a.trim(),
+                  values.poll_option_b.trim(),
+                  // Keep any 3rd+ options from the original topic so update doesn't drop them
+                  ...(isEdit && Array.isArray(editParams.pollExtraOptions)
+                    ? editParams.pollExtraOptions
+                    : []),
+                ].filter(Boolean)
+              : undefined;
             mutate({
               title: values.title.trim(),
               category_id: values.category_id,
               description: values.description.trim(),
               tags,
-              enable_poll: !isEdit && Boolean(values.enable_poll),
-              poll_question: values.poll_question?.trim(),
-              poll_options:
-                !isEdit && values.enable_poll
-                  ? [values.poll_option_a.trim(), values.poll_option_b.trim()]
-                  : undefined,
+              enable_poll: enablePoll,
+              poll_question: enablePoll
+                ? values.poll_question?.trim()
+                : undefined,
+              poll_options: pollOptions,
             });
           }}
         >
@@ -317,69 +329,69 @@ const CreatePostScreen = ({ navigation, route }) => {
                   })}
                 </View>
 
-                {!isEdit ? (
-                  <View style={[GLOBALSTYLE.screenCard, styles.pollCard]}>
-                    <View style={styles.pollHeader}>
-                      <View style={{ flex: 1 }}>
-                        <Typography
-                          fFamily="barlowSemiBold600"
-                          size={15}
-                          color={COLORS.textPrimary}
-                        >
-                          Add a poll
-                        </Typography>
-                        <Typography size={12} color={COLORS.textSecondary} mT={2}>
-                          Optional — needs at least two options
-                        </Typography>
-                      </View>
-                      <Switch
-                        value={Boolean(values.enable_poll)}
-                        onValueChange={v => setFieldValue('enable_poll', v)}
-                        trackColor={{
-                          false: COLORS.borderMuted,
-                          true: 'rgba(235,108,15,0.45)',
-                        }}
-                        thumbColor={
-                          values.enable_poll ? COLORS.primary : COLORS.white100
-                        }
+                <View style={[GLOBALSTYLE.screenCard, styles.pollCard]}>
+                  <View style={styles.pollHeader}>
+                    <View style={{ flex: 1 }}>
+                      <Typography
+                        fFamily="barlowSemiBold600"
+                        size={15}
+                        color={COLORS.textPrimary}
+                      >
+                        {isEdit ? 'Poll' : 'Add a poll'}
+                      </Typography>
+                      <Typography size={12} color={COLORS.textSecondary} mT={2}>
+                        {isEdit
+                          ? 'Keep enabled to preserve the poll when saving'
+                          : 'Optional — needs at least two options'}
+                      </Typography>
+                    </View>
+                    <Switch
+                      value={Boolean(values.enable_poll)}
+                      onValueChange={v => setFieldValue('enable_poll', v)}
+                      trackColor={{
+                        false: COLORS.borderMuted,
+                        true: 'rgba(235,108,15,0.45)',
+                      }}
+                      thumbColor={
+                        values.enable_poll ? COLORS.primary : COLORS.white100
+                      }
+                    />
+                  </View>
+
+                  {values.enable_poll ? (
+                    <View
+                      style={{
+                        marginTop: Sizer.vSize(12),
+                        gap: Sizer.vSize(4),
+                      }}
+                    >
+                      <ProfileField
+                        label="Poll question"
+                        value={values.poll_question}
+                        onChangeText={handleChange('poll_question')}
+                        onBlur={handleBlur('poll_question')}
+                        placeholder="What should members vote on?"
+                        error={errors.poll_question}
+                      />
+                      <ProfileField
+                        label="Option 1"
+                        value={values.poll_option_a}
+                        onChangeText={handleChange('poll_option_a')}
+                        onBlur={handleBlur('poll_option_a')}
+                        placeholder="First choice"
+                        error={errors.poll_option_a}
+                      />
+                      <ProfileField
+                        label="Option 2"
+                        value={values.poll_option_b}
+                        onChangeText={handleChange('poll_option_b')}
+                        onBlur={handleBlur('poll_option_b')}
+                        placeholder="Second choice"
+                        error={errors.poll_option_b}
                       />
                     </View>
-
-                    {values.enable_poll ? (
-                      <View
-                        style={{
-                          marginTop: Sizer.vSize(12),
-                          gap: Sizer.vSize(4),
-                        }}
-                      >
-                        <ProfileField
-                          label="Poll question"
-                          value={values.poll_question}
-                          onChangeText={handleChange('poll_question')}
-                          onBlur={handleBlur('poll_question')}
-                          placeholder="What should members vote on?"
-                          error={errors.poll_question}
-                        />
-                        <ProfileField
-                          label="Option 1"
-                          value={values.poll_option_a}
-                          onChangeText={handleChange('poll_option_a')}
-                          onBlur={handleBlur('poll_option_a')}
-                          placeholder="First choice"
-                          error={errors.poll_option_a}
-                        />
-                        <ProfileField
-                          label="Option 2"
-                          value={values.poll_option_b}
-                          onChangeText={handleChange('poll_option_b')}
-                          onBlur={handleBlur('poll_option_b')}
-                          placeholder="Second choice"
-                          error={errors.poll_option_b}
-                        />
-                      </View>
-                    ) : null}
-                  </View>
-                ) : null}
+                  ) : null}
+                </View>
 
                 <TouchableOpacity
                   style={[styles.publishBtn, isPending && styles.publishDisabled]}
@@ -387,32 +399,28 @@ const CreatePostScreen = ({ navigation, route }) => {
                   activeOpacity={0.88}
                   disabled={isPending}
                 >
-                  {isPending ? (
-                    <ActivityIndicator color={COLORS.white100} />
-                  ) : (
-                    <>
-                      <Icon
-                        name={isEdit ? 'checkmark' : 'send'}
-                        iconFamily="Ionicons"
-                        size={16}
-                        color={COLORS.white100}
-                      />
-                      <Typography
-                        fFamily="barlowSemiBold600"
-                        size={TYPE.h3.size}
-                        color={COLORS.white100}
-                        mL={8}
-                      >
-                        {isEdit ? 'Save changes' : 'Publish Post'}
-                      </Typography>
-                    </>
-                  )}
+                  <Icon
+                    name={isEdit ? 'checkmark' : 'send'}
+                    iconFamily="Ionicons"
+                    size={16}
+                    color={COLORS.white100}
+                  />
+                  <Typography
+                    fFamily="barlowSemiBold600"
+                    size={TYPE.h3.size}
+                    color={COLORS.white100}
+                    mL={8}
+                  >
+                    {isEdit ? 'Save changes' : 'Publish Post'}
+                  </Typography>
                 </TouchableOpacity>
               </ScrollView>
             );
           }}
         </FormController>
       </KeyboardAvoidingView>
+
+      <ScreenOverlayLoader visible={isPending} />
     </Container>
   );
 };

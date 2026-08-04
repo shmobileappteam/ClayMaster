@@ -18,6 +18,7 @@ import {
   Typography,
 } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
+import { ScreenOverlayLoader } from '../../../components';
 import ProfileField from '../../../components/profile/ProfileField';
 import CustomDropdown from '../../../components/customFields/CustomDropDown';
 import Icon from '../../../helpers/Icon';
@@ -424,32 +425,28 @@ const TournamentEntryScreen = ({ navigation }) => {
                   disabled={isPending}
                   onPress={handleSubmit}
                 >
-                  {isPending ? (
-                    <ActivityIndicator color={COLORS.white100} />
-                  ) : (
-                    <>
-                      <Icon
-                        name="trophy-outline"
-                        iconFamily="Ionicons"
-                        size={18}
-                        color={COLORS.white100}
-                      />
-                      <Typography
-                        fFamily="barlowSemiBold600"
-                        size={16}
-                        color={COLORS.white100}
-                        mL={8}
-                      >
-                        Post to leaderboard
-                      </Typography>
-                    </>
-                  )}
+                  <Icon
+                    name="trophy-outline"
+                    iconFamily="Ionicons"
+                    size={18}
+                    color={COLORS.white100}
+                  />
+                  <Typography
+                    fFamily="barlowSemiBold600"
+                    size={16}
+                    color={COLORS.white100}
+                    mL={8}
+                  >
+                    Post to leaderboard
+                  </Typography>
                 </TouchableOpacity>
               </ScrollView>
             );
           }}
         </FormController>
       </KeyboardAvoidingView>
+
+      <ScreenOverlayLoader visible={isPending} />
     </Container>
   );
 };

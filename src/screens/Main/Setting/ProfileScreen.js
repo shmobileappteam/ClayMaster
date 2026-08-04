@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
+import { ConfirmModal } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import {
   COLORS,
@@ -24,9 +25,17 @@ import {
 
 const MENU_ITEMS = [
   { icon: 'person-outline', label: 'My Account', screen: 'ProfileDetailsScreen' },
-  { icon: 'card-outline', label: 'Subscription', screen: 'SubscriptionScreen' },
+  {
+    icon: 'card-outline',
+    label: 'Subscription',
+    screen: 'SubscriptionScreen',
+    requiresSubscription: true,
+  },
   { icon: 'cube-outline', label: 'Orders', screen: 'OrdersScreen' },
   { icon: 'settings-outline', label: 'Settings', screen: 'SettingsScreen' },
+  { icon: 'help-circle-outline', label: 'Help & Support', screen: 'HelpAndSupportScreen' },
+  { icon: 'information-circle-outline', label: 'About Us', screen: 'AboutUsScreen' },
+  { icon: 'document-text-outline', label: 'Terms & Conditions', screen: 'TermsAndConditionsScreen' },
 ];
 
 /**
@@ -34,8 +43,12 @@ const MENU_ITEMS = [
  */
 const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { user } = useSelector(state => state.app);
+  const { user, subscriptionEnabled } = useSelector(state => state.app);
   const { switchToFieldMode } = useModeSwitch();
+  const [logoutVisible, setLogoutVisible] = useState(false);
+  const menuItems = MENU_ITEMS.filter(
+    item => subscriptionEnabled || !item.requiresSubscription,
+  );
 
   const displayName =
     user?.first_name || user?.last_name
@@ -73,12 +86,12 @@ const ProfileScreen = ({ navigation }) => {
         </View>
 
         <View style={[GLOBALSTYLE.screenCard, styles.menuCard]}>
-          {MENU_ITEMS.map((item, i) => (
+          {menuItems.map((item, i) => (
             <TouchableOpacity
               key={item.label}
               style={[
                 styles.menuRow,
-                i < MENU_ITEMS.length - 1 && styles.menuBorder,
+                i < menuItems.length - 1 && styles.menuBorder,
               ]}
               onPress={() =>
                 navigateFromTabToStack(navigation, item.screen, {
@@ -141,7 +154,7 @@ const ProfileScreen = ({ navigation }) => {
         <TouchableOpacity
           style={[styles.fullWidthBtn, styles.destructiveOutlineBtn]}
           activeOpacity={0.88}
-          onPress={() => performLogout(navigation, dispatch)}
+          onPress={() => setLogoutVisible(true)}
         >
           <Icon name="log-out-outline" iconFamily="Ionicons" size={18} color={COLORS.destructive} />
           <Typography fFamily="barlowSemiBold600" size={14} lineHeight={21} color={COLORS.destructive} mL={8}>
@@ -149,6 +162,15 @@ const ProfileScreen = ({ navigation }) => {
           </Typography>
         </TouchableOpacity>
       </ScrollView>
+
+      <ConfirmModal
+        visible={logoutVisible}
+        setVisibility={setLogoutVisible}
+        title="Log out?"
+        confirmText="Log out"
+        cancelText="Cancel"
+        handleComplete={() => performLogout(navigation, dispatch)}
+      />
     </Container>
   );
 };

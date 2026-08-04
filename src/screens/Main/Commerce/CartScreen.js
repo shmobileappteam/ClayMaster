@@ -11,6 +11,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
+import { ScreenOverlayLoader } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import {
   COLORS,
@@ -183,6 +184,7 @@ const CartScreen = ({ navigation }) => {
                   <TouchableOpacity
                     onPress={() => !busy && mutateRemove(item.variant_id)}
                     hitSlop={8}
+                    disabled={busy}
                   >
                     <Icon name="trash-outline" iconFamily="Ionicons" size={16} color={COLORS.textSecondary} />
                   </TouchableOpacity>
@@ -199,6 +201,7 @@ const CartScreen = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.qtyBtnOutline}
                     onPress={() => changeQty(item, Number(item.quantity) - 1)}
+                    disabled={busy}
                   >
                     <Icon name="remove" iconFamily="Ionicons" size={14} color={COLORS.textPrimary} />
                   </TouchableOpacity>
@@ -213,12 +216,10 @@ const CartScreen = ({ navigation }) => {
                   <TouchableOpacity
                     style={styles.qtyBtnFill}
                     onPress={() => changeQty(item, Number(item.quantity) + 1)}
+                    disabled={busy}
                   >
                     <Icon name="add" iconFamily="Ionicons" size={14} color={COLORS.white100} />
                   </TouchableOpacity>
-                  {busy ? (
-                    <ActivityIndicator size="small" color={COLORS.primary} />
-                  ) : null}
                 </View>
               </View>
             </View>
@@ -258,6 +259,7 @@ const CartScreen = ({ navigation }) => {
             style={styles.checkoutBtn}
             onPress={() => navigation.navigate('CheckoutScreen')}
             activeOpacity={0.88}
+            disabled={busy}
           >
             <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.white100}>
               Proceed to Checkout
@@ -265,6 +267,8 @@ const CartScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      <ScreenOverlayLoader visible={busy} />
     </Container>
   );
 };

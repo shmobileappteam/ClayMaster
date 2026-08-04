@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
@@ -16,7 +17,12 @@ import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
 const OPTIONS = [
   { icon: 'create-outline', label: 'Edit Profile', screen: 'ProfileDetailsScreen' },
   { icon: 'lock-closed-outline', label: 'Change Password', screen: 'ChangePasswordScreen' },
-  { icon: 'card-outline', label: 'Membership Plan', screen: 'SubscriptionScreen' },
+  {
+    icon: 'card-outline',
+    label: 'Membership Plan',
+    screen: 'SubscriptionScreen',
+    requiresSubscription: true,
+  },
   {
     icon: 'trash-outline',
     label: 'Delete Account',
@@ -25,7 +31,15 @@ const OPTIONS = [
   },
 ];
 
-const SettingsScreen = ({ navigation }) => (
+const SettingsScreen = ({ navigation }) => {
+  const subscriptionEnabled = useSelector(state => state.app.subscriptionEnabled);
+  const options = useMemo(
+    () =>
+      OPTIONS.filter(opt => subscriptionEnabled || !opt.requiresSubscription),
+    [subscriptionEnabled],
+  );
+
+  return (
   <Container isPadding={false} backgroundColor={COLORS.mainBg}>
     <LibraryHeader
       title="Settings"
@@ -38,10 +52,10 @@ const SettingsScreen = ({ navigation }) => (
       showsVerticalScrollIndicator={false}
     >
       <View style={[GLOBALSTYLE.screenCard, styles.menuCard]}>
-        {OPTIONS.map((opt, i) => (
+        {options.map((opt, i) => (
           <TouchableOpacity
             key={opt.label}
-            style={[styles.menuRow, i < OPTIONS.length - 1 && styles.menuBorder]}
+            style={[styles.menuRow, i < options.length - 1 && styles.menuBorder]}
             onPress={() => navigateFromTabToStack(navigation, opt.screen, { fromProfile: true })}
             activeOpacity={0.88}
           >
@@ -77,7 +91,8 @@ const SettingsScreen = ({ navigation }) => (
       </View>
     </ScrollView>
   </Container>
-);
+  );
+};
 
 export default SettingsScreen;
 

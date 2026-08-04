@@ -32,12 +32,13 @@ const EXPLORE_ITEMS = [
     icon: 'book-outline',
     screen: 'WorkbookDetailScreen',
   },
-  {
-    label: 'Managed Service',
-    desc: 'Personalized coaching analytics',
-    icon: 'headset-outline',
-    screen: 'ManagedServiceScreen',
-  },
+  // Managed Service — hidden from Analytics for now
+  // {
+  //   label: 'Managed Service',
+  //   desc: 'Personalized coaching analytics',
+  //   icon: 'headset-outline',
+  //   screen: 'ManagedServiceScreen',
+  // },
   {
     label: 'Tournament Analytics',
     desc: 'Competition stats & rankings',

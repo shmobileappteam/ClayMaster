@@ -9,16 +9,12 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 import RootStack from './src/navigation/RootStack';
 import { COLORS } from './src/globalStyle/Theme';
 import store from './src/redux/store/store';
-import { queryClient, storage } from './src/api/api';
+import { queryClient } from './src/api/api';
 import { AppModeProvider } from './src/context/AppModeContext';
 import { useEffect } from 'react';
 import { STRIPE_PUBLISHABLE_KEY } from './src/constants';
 import { getDiscountForPackages } from './src/api/packageService';
-import { getSubscriptionEnabled } from './src/api/appService';
-import {
-  setSubscriptionEnabled,
-  setStripePublishableKey,
-} from './src/redux/slices/appSlice';
+import { ensureSubscriptionConfig } from './src/api/subscriptionConfig';
 import { useState } from 'react';
 
 export default function App() {
@@ -38,21 +34,11 @@ export default function App() {
       queryFn: getDiscountForPackages,
     });
 
-    getSubscriptionEnabled()
-      .then(data => {
-        if (data) {
-          if (typeof data?.subscription_enabled !== 'undefined') {
-            store.dispatch(setSubscriptionEnabled(data?.subscription_enabled));
-          }
-          if (data?.stripe_public_key) {
-            setStripeKey(data?.stripe_public_key);
-            store.dispatch(setStripePublishableKey(data?.stripe_public_key));
-          }
-        }
-      })
-      .catch(err => {
-        store.dispatch(setSubscriptionEnabled(false));
-      });
+    ensureSubscriptionConfig().then(data => {
+      if (data?.stripe_public_key) {
+        setStripeKey(data.stripe_public_key);
+      }
+    });
   }, []);
 
   return (

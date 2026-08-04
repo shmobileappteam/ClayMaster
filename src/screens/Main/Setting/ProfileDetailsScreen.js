@@ -1,15 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BackHandler,
   Image,
+  Modal,
+  Pressable,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Container, FormController, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
+import { ScreenOverlayLoader } from '../../../components';
 import ProfileField from '../../../components/profile/ProfileField';
 import Icon from '../../../helpers/Icon';
 import { COLORS, SPACING, TYPE } from '../../../globalStyle/Theme';
@@ -25,11 +29,14 @@ import validatoinSchema from '../../../validations';
 /**
  * Edit profile — form fields match POST /api/edit-profile payload.
  * first_name, last_name, contact, address, username, profile_image (+ id, email)
+ * Avatar press → photo sheet → gallery (ZoomGo EditProfile pattern).
  */
 const ProfileDetailsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
+  const insets = useSafeAreaInsets();
   const { user } = useSelector(state => state.app);
   const { openGallery, imageUri, clearImage } = useImagePicker();
+  const [photoOptionsVisible, setPhotoOptionsVisible] = useState(false);
 
   const { mutateAsync: editProf, isPending } = useCustomMutation({
     mutationFn: editProfile,
@@ -52,11 +59,29 @@ const ProfileDetailsScreen = ({ navigation }) => {
     .slice(0, 2)
     .toUpperCase();
 
-  const avatarUri = imageUri?.uri
-    ? imageUri.uri
-    : user?.profile_image
-      ? `${BASE_URL}${user.profile_image}`
-      : null;
+  const remoteAvatar = user?.profile_image
+    ? String(user.profile_image).startsWith('http')
+      ? user.profile_image
+      : `${BASE_URL}${String(user.profile_image).replace(/^\//, '')}`
+    : null;
+  const avatarUri = imageUri?.uri || remoteAvatar;
+
+  const closePhotoOptions = () => setPhotoOptionsVisible(false);
+
+  const openPhotoOptions = () => setPhotoOptionsVisible(true);
+
+  const handleChooseFromGallery = () => {
+    closePhotoOptions();
+    // Wait for modal dismiss so the system picker presents cleanly (ZoomGo)
+    setTimeout(() => {
+      openGallery();
+    }, 250);
+  };
+
+  const handleRemoveLocalPhoto = () => {
+    clearImage();
+    closePhotoOptions();
+  };
 
   const handleSubmit = async (values, { setErrors }) => {
     const payload = {
@@ -72,8 +97,8 @@ const ProfileDetailsScreen = ({ navigation }) => {
     if (imageUri?.uri) {
       payload.profile_image = {
         uri: imageUri.uri,
-        fileName: imageUri.fileName,
-        type: imageUri.type,
+        fileName: imageUri.fileName || `profile-${Date.now()}.jpg`,
+        type: imageUri.type || 'image/jpeg',
       };
     }
 
@@ -89,11 +114,15 @@ const ProfileDetailsScreen = ({ navigation }) => {
 
   useEffect(() => {
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (photoOptionsVisible) {
+        closePhotoOptions();
+        return true;
+      }
       navigation.goBack();
       return true;
     });
     return () => sub.remove();
-  }, [navigation]);
+  }, [navigation, photoOptionsVisible]);
 
   return (
     <Container keyboardAvoiding isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -124,7 +153,12 @@ const ProfileDetailsScreen = ({ navigation }) => {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.avatarSection}>
-              <View style={styles.avatarWrap}>
+              <Pressable
+                style={styles.avatarWrap}
+                onPress={openPhotoOptions}
+                accessibilityRole="button"
+                accessibilityLabel="Change profile photo"
+              >
                 {avatarUri ? (
                   <Image source={{ uri: avatarUri }} style={styles.avatarImg} />
                 ) : (
@@ -138,20 +172,16 @@ const ProfileDetailsScreen = ({ navigation }) => {
                     </Typography>
                   </View>
                 )}
-                <TouchableOpacity
-                  style={styles.cameraBtn}
-                  onPress={openGallery}
-                  activeOpacity={0.88}
-                >
+                <View style={styles.cameraBtn} pointerEvents="none">
                   <Icon
                     name="camera"
                     iconFamily="Ionicons"
                     size={16}
                     color={COLORS.primary}
                   />
-                </TouchableOpacity>
-              </View>
-              <TouchableOpacity onPress={openGallery} activeOpacity={0.88}>
+                </View>
+              </Pressable>
+              <TouchableOpacity onPress={openPhotoOptions} activeOpacity={0.88}>
                 <Typography
                   size={TYPE.caption.size}
                   color={COLORS.primary}
@@ -235,12 +265,111 @@ const ProfileDetailsScreen = ({ navigation }) => {
                 size={TYPE.h3.size}
                 color={COLORS.white100}
               >
-                {isPending ? 'Saving...' : 'Save Changes'}
+                Save Changes
               </Typography>
             </TouchableOpacity>
           </ScrollView>
         )}
       </FormController>
+
+      <Modal
+        visible={photoOptionsVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closePhotoOptions}
+      >
+        <Pressable style={styles.modalOverlay} onPress={closePhotoOptions}>
+          <Pressable
+            style={[
+              styles.modalSheet,
+              { paddingBottom: Math.max(insets.bottom, Sizer.vSize(16)) },
+            ]}
+            onPress={e => e.stopPropagation()}
+          >
+            <View style={styles.modalHandle} />
+            <Typography
+              size={11}
+              color={COLORS.textSecondary}
+              fFamily="barlowBold700"
+              textAlign="center"
+              style={styles.modalEyebrow}
+              mB={12}
+            >
+              UPDATE PHOTO
+            </Typography>
+
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={handleChooseFromGallery}
+              activeOpacity={0.88}
+            >
+              <View style={styles.modalOptionIcon}>
+                <Icon
+                  name="images-outline"
+                  iconFamily="Ionicons"
+                  size={18}
+                  color={COLORS.primary}
+                />
+              </View>
+              <Typography
+                size={TYPE.body.size}
+                color={COLORS.textPrimary}
+                fFamily="barlowSemiBold600"
+                style={styles.modalOptionLabel}
+              >
+                Choose from gallery
+              </Typography>
+              <Icon
+                name="chevron-forward"
+                iconFamily="Ionicons"
+                size={18}
+                color={COLORS.textSecondary}
+              />
+            </TouchableOpacity>
+
+            {imageUri?.uri ? (
+              <TouchableOpacity
+                style={[styles.modalOption, styles.modalOptionDanger]}
+                onPress={handleRemoveLocalPhoto}
+                activeOpacity={0.88}
+              >
+                <View style={[styles.modalOptionIcon, styles.modalOptionIconDanger]}>
+                  <Icon
+                    name="trash-outline"
+                    iconFamily="Ionicons"
+                    size={18}
+                    color={COLORS.destructive}
+                  />
+                </View>
+                <Typography
+                  size={TYPE.body.size}
+                  color={COLORS.destructive}
+                  fFamily="barlowSemiBold600"
+                  style={styles.modalOptionLabel}
+                >
+                  Remove selected photo
+                </Typography>
+              </TouchableOpacity>
+            ) : null}
+
+            <TouchableOpacity
+              style={styles.modalCancel}
+              onPress={closePhotoOptions}
+              activeOpacity={0.88}
+            >
+              <Typography
+                fFamily="barlowSemiBold600"
+                size={TYPE.body.size}
+                color={COLORS.textPrimary}
+              >
+                Cancel
+              </Typography>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      <ScreenOverlayLoader visible={isPending} />
     </Container>
   );
 };
@@ -297,5 +426,66 @@ const styles = StyleSheet.create({
   },
   saveBtnDisabled: {
     opacity: 0.6,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.55)',
+  },
+  modalSheet: {
+    backgroundColor: COLORS.surface,
+    borderTopLeftRadius: Sizer.hSize(20),
+    borderTopRightRadius: Sizer.hSize(20),
+    paddingHorizontal: Sizer.hSize(20),
+    paddingTop: Sizer.vSize(12),
+  },
+  modalHandle: {
+    width: Sizer.hSize(40),
+    height: Sizer.vSize(4),
+    borderRadius: 2,
+    backgroundColor: COLORS.borderMuted,
+    alignSelf: 'center',
+    marginBottom: Sizer.vSize(12),
+  },
+  modalEyebrow: {
+    letterSpacing: 1.4,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Sizer.hSize(12),
+    borderWidth: 1,
+    borderColor: COLORS.borderMuted,
+    backgroundColor: COLORS.mainBg,
+    borderRadius: Sizer.hSize(12),
+    paddingHorizontal: Sizer.hSize(14),
+    paddingVertical: Sizer.vSize(14),
+    marginBottom: Sizer.vSize(10),
+  },
+  modalOptionDanger: {
+    borderColor: 'rgba(220, 38, 38, 0.25)',
+  },
+  modalOptionIcon: {
+    width: Sizer.hSize(36),
+    height: Sizer.hSize(36),
+    borderRadius: Sizer.hSize(18),
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalOptionIconDanger: {
+    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+  },
+  modalOptionLabel: {
+    flex: 1,
+  },
+  modalCancel: {
+    height: Sizer.vSize(48),
+    borderRadius: Sizer.hSize(12),
+    borderWidth: 1,
+    borderColor: COLORS.borderMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: Sizer.vSize(4),
   },
 });

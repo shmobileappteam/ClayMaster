@@ -47,12 +47,23 @@ const LibraryHeader = ({
   return (
     <View style={[styles.wrap, { paddingTop: insets.top }]}>
       <View style={styles.row}>
+        <Typography
+          fFamily="barlowSemiBold600"
+          size={18}
+          color={COLORS.textPrimary}
+          textAlign="center"
+          style={styles.title}
+          numberOfLines={1}
+        >
+          {title}
+        </Typography>
         <View style={styles.side}>
           {showBack ? (
             <TouchableOpacity
               onPress={onBack || (() => navigation.goBack())}
               hitSlop={12}
               activeOpacity={0.88}
+              style={styles.iconBtn}
             >
               <Icon
                 name="arrow-back"
@@ -67,6 +78,7 @@ const LibraryHeader = ({
               onPress={() => openDrawerFromTabNavigation(navigation)}
               hitSlop={12}
               activeOpacity={0.88}
+              style={styles.iconBtn}
             >
               <Icon
                 name="menu"
@@ -77,15 +89,6 @@ const LibraryHeader = ({
             </TouchableOpacity>
           ) : null}
         </View>
-        <Typography
-          fFamily="barlowSemiBold600"
-          size={18}
-          color={COLORS.textPrimary}
-          textAlign="center"
-          style={styles.title}
-        >
-          {title}
-        </Typography>
         <View style={[styles.side, styles.sideRight]}>
           {rightSlot}
           {showNotification ? (
@@ -93,9 +96,9 @@ const LibraryHeader = ({
               onPress={() =>
                 navigateFromTabToStack(navigation, 'NotificationScreen')
               }
-              hitSlop={12}
+              hitSlop={8}
               activeOpacity={0.88}
-              style={styles.bellWrap}
+              style={styles.iconBtn}
             >
               <Icon
                 name="notifications-outline"
@@ -125,30 +128,41 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     height: Sizer.vSize(56),
     paddingHorizontal: Sizer.hSize(16),
+    position: 'relative',
   },
   side: {
+    zIndex: 1,
     minWidth: Sizer.hSize(40),
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   sideRight: {
-    minWidth: Sizer.hSize(40),
-    alignItems: 'flex-end',
-    flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: Sizer.hSize(8),
+    gap: Sizer.hSize(4),
   },
   title: {
-    flex: 1,
+    position: 'absolute',
+    // Clear back + up to two 40px action icons so long titles ellipsize
+    left: Sizer.hSize(88),
+    right: Sizer.hSize(88),
+    textAlign: 'center',
+    zIndex: 0,
+    pointerEvents: 'none',
   },
-  bellWrap: {
+  iconBtn: {
+    width: Sizer.hSize(40),
+    height: Sizer.hSize(40),
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
   },
   bellDot: {
     position: 'absolute',
-    top: 2,
-    right: 2,
+    top: 8,
+    right: 8,
     width: 8,
     height: 8,
     borderRadius: 4,

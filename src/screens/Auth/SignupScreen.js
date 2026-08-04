@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View, Linking } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 import { useSelector } from 'react-redux';
 //------------------
@@ -112,6 +112,7 @@ const SignupScreen = ({ navigation }) => {
                         <TextField
                             placeholder="First name"
                             leftIcon
+                            leftIconName="person"
                             handleChange={handleChange('first_name')}
                             value={values.first_name}
                             error={errors.first_name}
@@ -121,6 +122,7 @@ const SignupScreen = ({ navigation }) => {
                         <TextField
                             placeholder="Last name"
                             leftIcon
+                            leftIconName="person"
                             handleChange={handleChange('last_name')}
                             value={values.last_name}
                             error={errors.last_name}
@@ -130,6 +132,7 @@ const SignupScreen = ({ navigation }) => {
                         <TextField
                             placeholder="Email"
                             leftIcon
+                            leftIconName="mail"
                             handleChange={handleChange('email')}
                             value={values.email}
                             error={errors.email}
@@ -217,15 +220,20 @@ const SignupScreen = ({ navigation }) => {
             </Typography>
         </Flex>
 
-        <Typography
-            textAlign="center"
-            mT={20}
-            color={COLORS.primary}
-            fFamily="barlowMedium500"
-            onPress={() => Linking.openURL('mailto:support@claymaster.net')}
+        <TouchableOpacity
+            onPress={() => navigation.navigate('HelpAndSupportScreen')}
+            activeOpacity={0.7}
+            hitSlop={{ top: 12, bottom: 12, left: 24, right: 24 }}
+            style={styles.helpLink}
         >
-            Help and Support
-        </Typography>
+            <Typography
+                textAlign="center"
+                color={COLORS.primary}
+                fFamily="barlowMedium500"
+            >
+                Help and Support
+            </Typography>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaWrapper>
   );
@@ -237,5 +245,11 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingBottom: Sizer.vSize(40),
         paddingHorizontal: Sizer.hSize(0),
+    },
+    helpLink: {
+        marginTop: Sizer.vSize(20),
+        alignSelf: 'center',
+        paddingVertical: Sizer.vSize(8),
+        paddingHorizontal: Sizer.hSize(12),
     },
 });

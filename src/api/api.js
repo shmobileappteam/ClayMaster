@@ -7,8 +7,27 @@ import { showMessage } from '../utils';
 
 import { AUTH_APIS_DISABLED, KEYS } from '../constants';
 
+/** Do not retry client errors (403 subscription, 401, 404, …) — avoids stuck screen spinners + repeat toasts. */
+const shouldRetryQuery = (failureCount, error) => {
+  const status = error?.response?.status;
+  if (status >= 400 && status < 500) {
+    return false;
+  }
+  return failureCount < 2;
+};
+
 // Query Constructor:
-export const queryClient = new QueryClient();
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: shouldRetryQuery,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 // Storage Constructor:
 export const storage = new MMKV();

@@ -88,8 +88,8 @@ export const SHARED_TRAINING_ORDER = [
       screen: 'CourseMissDiagnosisScreen',
     },
     library: {
-      label: 'Miss Diagnostics',
-      desc: 'Trends & miss patterns',
+      label: 'Analytics Tools',
+      desc: 'Trends & analytics',
       icon: 'sparkles-outline',
       action: 'tab',
       tab: 'Analytics',

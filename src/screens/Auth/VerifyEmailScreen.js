@@ -20,13 +20,17 @@ import { CommonActions } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { setUser } from '../../redux/slices/appSlice';
 import { useResendCooldown } from '../../hooks/useResendCooldown';
+import {
+  ensureSubscriptionConfig,
+  getSubscriptionEnabledFromStore,
+} from '../../api/subscriptionConfig';
 
 const VerifyEmailScreen = ({ navigation, route }) => {
   const comeFromLogin = route.params?.fromLogin;
   const email = route.params?.email;
   const dispatch = useDispatch();
 
-  const { user, subscriptionEnabled } = useSelector(state => state.app);
+  const { user } = useSelector(state => state.app);
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const { secondsLeft, isCoolingDown, startCooldown } = useResendCooldown(60, {
@@ -73,10 +77,12 @@ const VerifyEmailScreen = ({ navigation, route }) => {
     requestVerifyEmail({ email, otp });
   };
 
-  function handleRouting() {
+  async function handleRouting() {
     if (comeFromLogin) {
+      await ensureSubscriptionConfig();
       const needsSubscription =
-        subscriptionEnabled && user?.subscription_status !== 'active';
+        getSubscriptionEnabledFromStore() &&
+        user?.subscription_status !== 'active';
 
       navigation.dispatch(
         CommonActions.reset({

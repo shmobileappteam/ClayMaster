@@ -19,7 +19,6 @@ import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getWorkbook, getWorkbooks } from '../../../api/academyService';
 import {
-  isPdfFile,
   mapWorkbook,
   openRemoteFile,
 } from '../../../constants/academy';
@@ -121,7 +120,7 @@ const WorkbookDetailScreen = ({ navigation, route }) => {
   }
 
   const ensureWorkbookAccess = wb => {
-    if (wb.locked || !wb.fileUrl) {
+    if (wb?.locked) {
       showMessage({
         type: 'danger',
         title: 'Locked workbook',
@@ -130,11 +129,11 @@ const WorkbookDetailScreen = ({ navigation, route }) => {
       });
       return false;
     }
-    if (!isPdfFile(wb.fileType) && !isPdfFile(wb.fileUrl)) {
+    if (!wb?.fileUrl) {
       showMessage({
         type: 'danger',
-        title: 'PDF only',
-        message: 'Only PDF files can be downloaded.',
+        title: 'Unavailable',
+        message: 'No file is available for this workbook.',
       });
       return false;
     }
@@ -143,6 +142,7 @@ const WorkbookDetailScreen = ({ navigation, route }) => {
 
   const downloadWorkbook = wb => {
     if (!ensureWorkbookAccess(wb)) return;
+    // Same as scorecard / drills Download — open file URL in system handler
     openRemoteFile(wb.fileUrl, Linking, showMessage);
   };
 

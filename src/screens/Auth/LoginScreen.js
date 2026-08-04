@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View, Linking } from 'react-native';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 //------------------
 import {
   Flex,
@@ -18,10 +18,13 @@ import Sizer from '../../helpers/Sizer';
 import { KEYS } from '../../constants';
 import { storage } from '../../api/api';
 import { formatBackendErrors } from '../../utils';
+import {
+  ensureSubscriptionConfig,
+  getSubscriptionEnabledFromStore,
+} from '../../api/subscriptionConfig';
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { subscriptionEnabled } = useSelector(state => state.app);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -35,7 +38,7 @@ const LoginScreen = ({ navigation }) => {
         dispatch,
         reqData,
         setIsLoading,
-        subscriptionEnabled,
+        getSubscriptionEnabledFromStore(),
       );
     },
     onError: () => {
@@ -49,6 +52,7 @@ const LoginScreen = ({ navigation }) => {
     const device_token = storage.getString(KEYS.FCM_TOKEN);
     console.log('🚀 ~ handleLogin ~ device_token:', device_token);
 
+    await ensureSubscriptionConfig();
     requestLogin({ ...values, device_token }).catch(err => {
       const response = err?.response;
       const parsedErrors = formatBackendErrors(response.data.errors);
@@ -77,8 +81,8 @@ const LoginScreen = ({ navigation }) => {
 
       <FormController
         initialValues={{
-          email: __DEV__ ? 'max@mailinator.com' : '',
-          password: __DEV__ ? 'Admin@12345' : '',
+          email: __DEV__ ? 'william1@mailinator.com' : '',
+          password: __DEV__ ? 'Admin@1234' : '',
         }}
         validationSchema={validatoinSchema.authValidations.SignInSchema}
         onSubmit={handleLogin}
@@ -142,19 +146,31 @@ const LoginScreen = ({ navigation }) => {
           Sign Up{' '}
         </Typography>
       </Flex>
-      <Typography
-        textAlign="center"
-        mT={20}
-        color={COLORS.primary}
-        fFamily="barlowMedium500"
-        onPress={() => Linking.openURL('mailto:support@claymaster.net')}
+      <TouchableOpacity
+        onPress={() => navigation.navigate('HelpAndSupportScreen')}
+        activeOpacity={0.7}
+        hitSlop={{ top: 12, bottom: 12, left: 24, right: 24 }}
+        style={styles.helpLink}
       >
-        Help and Support
-      </Typography>
+        <Typography
+          textAlign="center"
+          color={COLORS.primary}
+          fFamily="barlowMedium500"
+        >
+          Help and Support
+        </Typography>
+      </TouchableOpacity>
     </SafeAreaWrapper>
   );
 };
 
 export default LoginScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  helpLink: {
+    marginTop: Sizer.vSize(20),
+    alignSelf: 'center',
+    paddingVertical: Sizer.vSize(8),
+    paddingHorizontal: Sizer.hSize(12),
+  },
+});

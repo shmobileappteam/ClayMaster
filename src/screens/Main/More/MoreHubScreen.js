@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useSelector } from 'react-redux';
 import { Container, Typography } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { COLORS, RADIUS, SHADOWS, SPACING } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import Icon from '../../../helpers/Icon';
-import { MENU_SECTIONS } from '../../../navigation/menuSections';
+import { MENU_SECTIONS, filterMenuSections } from '../../../navigation/menuSections';
 import {
   navigateFromMenuItem,
   navigateFromTabToStack,
@@ -21,6 +22,11 @@ import { useModeSwitch } from '../../../hooks/useModeSwitch';
  */
 const MoreHubScreen = ({ navigation }) => {
   const { switchToFieldMode } = useModeSwitch();
+  const subscriptionEnabled = useSelector(state => state.app.subscriptionEnabled);
+  const sections = useMemo(
+    () => filterMenuSections(MENU_SECTIONS, subscriptionEnabled),
+    [subscriptionEnabled],
+  );
 
   const go = item => navigateFromMenuItem(navigation, item);
 
@@ -31,7 +37,7 @@ const MoreHubScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}
       >
-        {MENU_SECTIONS.map(section => (
+        {sections.map(section => (
           <View key={section.title} style={styles.section}>
             <Typography
               fFamily="barlowSemiBold600"

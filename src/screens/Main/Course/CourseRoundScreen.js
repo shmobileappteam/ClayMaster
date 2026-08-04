@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   BackHandler,
   ScrollView,
   StyleSheet,
@@ -34,6 +35,7 @@ import {
 import { showMessage } from '../../../utils';
 import { hapticHit, hapticMiss, hapticUndo } from '../../../utils/haptics';
 
+const SCORING_IDLE_MS = 10000;
 const isStationSetupComplete = station => {
   if (!station?.selectedTargetPairs || !station?.pair_type) return false;
   if (!station.traps || station.traps.length !== 2) return false;
@@ -173,6 +175,9 @@ const CourseRoundScreen = ({ navigation }) => {
   const [editSetupStep, setEditSetupStep] = useState(null);
   /** View a previous station — read-only; never editable */
   const [viewingPastNumber, setViewingPastNumber] = useState(null);
+  /** Pocket protection — blocks HIT/MISS until tap to resume */
+  const [scoringLocked, setScoringLocked] = useState(false);
+  const idleTimerRef = useRef(null);
 
   const { data: trapsRaw } = useCustomQuery({
     queryKey: ['traps'],
@@ -219,6 +224,58 @@ const CourseRoundScreen = ({ navigation }) => {
   const canAddStation =
     !isLastPlannedStation && totalTaken < 100 && stations.length < maxStations;
 
+  const scoringUiActive = viewingPastNumber == null && !!currentStation;
+
+  const clearIdleTimer = useCallback(() => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleIdleLock = useCallback(() => {
+    clearIdleTimer();
+    idleTimerRef.current = setTimeout(() => {
+      setScoringLocked(true);
+    }, SCORING_IDLE_MS);
+  }, [clearIdleTimer]);
+
+  const lockScoring = useCallback(() => {
+    clearIdleTimer();
+    setScoringLocked(true);
+  }, [clearIdleTimer]);
+
+  /** Unlock and restart idle timer (HIT/MISS/resume). */
+  const bumpActivity = useCallback(() => {
+    setScoringLocked(false);
+    if (!scoringUiActive) {
+      clearIdleTimer();
+      return;
+    }
+    scheduleIdleLock();
+  }, [clearIdleTimer, scheduleIdleLock, scoringUiActive]);
+
+  const unlockScoring = useCallback(() => {
+    bumpActivity();
+  }, [bumpActivity]);
+
+  const toggleScoringLock = useCallback(() => {
+    setScoringLocked(prev => {
+      if (prev) {
+        // Unlock + restart idle countdown
+        if (scoringUiActive) {
+          clearIdleTimer();
+          idleTimerRef.current = setTimeout(() => {
+            setScoringLocked(true);
+          }, SCORING_IDLE_MS);
+        }
+        return false;
+      }
+      clearIdleTimer();
+      return true;
+    });
+  }, [clearIdleTimer, scoringUiActive]);
+
   useEffect(() => {
     if (!round?.roundId) {
       resetToFieldMode(navigation, 'CourseHomeScreen');
@@ -233,6 +290,27 @@ const CourseRoundScreen = ({ navigation }) => {
     setViewingPastNumber(null);
   }, [stationNumber]);
 
+  useEffect(() => {
+    if (!scoringUiActive) {
+      clearIdleTimer();
+      setScoringLocked(false);
+      return undefined;
+    }
+    // Entering scoring UI — unlocked, start idle timer (don't clear a manual lock mid-play via identity churn)
+    setScoringLocked(false);
+    scheduleIdleLock();
+    return () => clearIdleTimer();
+  }, [scoringUiActive, stationNumber, clearIdleTimer, scheduleIdleLock]);
+
+  useEffect(() => {
+    const onAppState = next => {
+      if (next !== 'active' && scoringUiActive) {
+        lockScoring();
+      }
+    };
+    const sub = AppState.addEventListener('change', onAppState);
+    return () => sub.remove();
+  }, [scoringUiActive, lockScoring]);
   const patchCurrentStation = useCallback(
     updater => {
       // Only the current (last) station is ever editable
@@ -246,6 +324,8 @@ const CourseRoundScreen = ({ navigation }) => {
   );
 
   const onSelectTargetPairs = n => {
+    if (scoringLocked) return;
+    bumpActivity();
     const newShots = pairOfTargets[n].map(shot => ({ ...shot }));
     const prior =
       stations
@@ -266,10 +346,14 @@ const CourseRoundScreen = ({ navigation }) => {
   };
 
   const onSelectPairType = pairType => {
+    if (scoringLocked) return;
+    bumpActivity();
     patchCurrentStation(st => ({ ...st, pair_type: pairType }));
   };
 
   const onSelectPresentation = (data, trapId, type = 'id') => {
+    if (scoringLocked) return;
+    bumpActivity();
     patchCurrentStation(st => {
       let traps = [...(st.traps || [])];
       const tid = Number(trapId);
@@ -299,6 +383,7 @@ const CourseRoundScreen = ({ navigation }) => {
   };
 
   const applyShot = result => {
+    if (scoringLocked) return;
     const msg = validateLastStation(currentStation, false);
     if (msg) {
       showMessage({ message: msg, bgColor: COLORS.primary });
@@ -306,6 +391,7 @@ const CourseRoundScreen = ({ navigation }) => {
     }
     if (result === 'dead') hapticHit();
     else if (result === 'lost') hapticMiss();
+    bumpActivity();
     patchCurrentStation(st => {
       const nextShots = (st.shots || []).map(s => ({ ...s }));
       const idx = nextShots.findIndex(
@@ -317,11 +403,13 @@ const CourseRoundScreen = ({ navigation }) => {
   };
 
   const handleUndo = () => {
+    if (scoringLocked) return;
     const hasFilled = (currentStation?.shots || []).some(
       s => s?.result && s.result !== '' && s.result !== 'empty',
     );
     if (!hasFilled) return;
     hapticUndo();
+    bumpActivity();
     patchCurrentStation(st => {
       const nextShots = (st.shots || []).map(s => ({ ...s }));
       const lastFilled = [...nextShots]
@@ -336,6 +424,7 @@ const CourseRoundScreen = ({ navigation }) => {
   };
 
   const goNextStation = () => {
+    if (scoringLocked) return;
     const msg = validateLastStation(currentStation, true);
     if (msg) {
       showMessage({ message: msg, bgColor: COLORS.primary });
@@ -345,6 +434,7 @@ const CourseRoundScreen = ({ navigation }) => {
       setConfirmCompleteVisible(true);
       return;
     }
+    bumpActivity();
     const nextIndex = stations.length;
     const nextNum = sequence.length > 0 ? sequence[nextIndex] : nextIndex + 1;
     const seeded = {
@@ -378,6 +468,7 @@ const CourseRoundScreen = ({ navigation }) => {
   });
 
   const handleComplete = () => {
+    if (scoringLocked) return;
     const msg = validateLastStation(currentStation, true);
     if (msg) {
       showMessage({ message: msg, bgColor: COLORS.primary });
@@ -481,27 +572,54 @@ const CourseRoundScreen = ({ navigation }) => {
             {totalHits}/{totalTaken || 0}
           </Typography>
         </View>
-        <TouchableOpacity
-          style={styles.pauseBtn}
-          onPress={() => setLeaveVisible(true)}
-          accessibilityLabel="Pause round"
-        >
-          <Icon name="pause" iconFamily="Ionicons" size={18} color={COLORS.white100} />
-        </TouchableOpacity>
+        <View style={styles.topBarActions}>
+          <TouchableOpacity
+            style={styles.pauseBtn}
+            onPress={toggleScoringLock}
+            accessibilityLabel={
+              scoringLocked ? 'Unlock scoring' : 'Lock scoring'
+            }
+            hitSlop={12}
+          >
+            <Icon
+              name={scoringLocked ? 'lock-closed' : 'lock-open-outline'}
+              iconFamily="Ionicons"
+              size={18}
+              color={scoringLocked ? COLORS.primary : COLORS.white100}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.pauseBtn}
+            onPress={() => setLeaveVisible(true)}
+            accessibilityLabel="Pause round"
+          >
+            <Icon name="pause" iconFamily="Ionicons" size={18} color={COLORS.white100} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <StationProgressStrip
         stations={stations}
         currentStationNumber={stationNumber}
         viewingStationNumber={viewingPastNumber}
-        onSelectStation={setViewingPastNumber}
+        onSelectStation={
+          scoringLocked
+            ? undefined
+            : num => {
+                bumpActivity();
+                setViewingPastNumber(num);
+              }
+        }
       />
 
       {viewingPast && pastStation ? (
         <PastStationReadOnly
           station={pastStation}
           trapsCatalog={trapsCatalog}
-          onBack={() => setViewingPastNumber(null)}
+          onBack={() => {
+            bumpActivity();
+            setViewingPastNumber(null);
+          }}
         />
       ) : null}
 
@@ -518,7 +636,11 @@ const CourseRoundScreen = ({ navigation }) => {
           onSelectPairType={onSelectPairType}
           onSelectPresentation={onSelectPresentation}
           editStep={editSetupStep}
-          onContinueScoring={() => setEditSetupStep(null)}
+          onContinueScoring={() => {
+            if (scoringLocked) return;
+            bumpActivity();
+            setEditSetupStep(null);
+          }}
         />
       ) : null}
 
@@ -540,8 +662,13 @@ const CourseRoundScreen = ({ navigation }) => {
       {showPlay ? (
         <TouchableOpacity
           style={styles.backToSetupBtn}
-          onPress={() => setEditSetupStep(3)}
+          onPress={() => {
+            if (scoringLocked) return;
+            bumpActivity();
+            setEditSetupStep(3);
+          }}
           activeOpacity={0.85}
+          disabled={scoringLocked}
           accessibilityLabel="Back to traps setup"
         >
           <Icon
@@ -632,6 +759,7 @@ const CourseRoundScreen = ({ navigation }) => {
             style={styles.hitZone}
             onPress={() => applyShot('dead')}
             activeOpacity={0.88}
+            disabled={scoringLocked}
           >
             <Icon name="checkmark" iconFamily="Ionicons" size={88} color={COLORS.white100} />
             <Typography
@@ -649,6 +777,7 @@ const CourseRoundScreen = ({ navigation }) => {
             style={styles.missZone}
             onPress={() => applyShot('lost')}
             activeOpacity={0.88}
+            disabled={scoringLocked}
           >
             <Icon name="close" iconFamily="Ionicons" size={88} color="#F87171" />
             <Typography
@@ -662,13 +791,53 @@ const CourseRoundScreen = ({ navigation }) => {
               MISS
             </Typography>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.undoBar} onPress={handleUndo} activeOpacity={0.88}>
+          <TouchableOpacity
+            style={styles.undoBar}
+            onPress={handleUndo}
+            activeOpacity={0.88}
+            disabled={scoringLocked}
+          >
             <Icon name="arrow-undo" iconFamily="Ionicons" size={22} color={COLORS.white100} />
             <Typography fFamily="barlowSemiBold600" size={16} color={COLORS.white100} mL={8}>
               Undo
             </Typography>
           </TouchableOpacity>
         </View>
+      ) : null}
+
+      {scoringLocked && scoringUiActive ? (
+        <TouchableOpacity
+          style={styles.lockOverlay}
+          onPress={unlockScoring}
+          activeOpacity={1}
+          accessibilityLabel="Tap to resume scoring"
+        >
+          <View style={styles.lockCard}>
+            <Icon
+              name="lock-closed"
+              iconFamily="Ionicons"
+              size={28}
+              color={COLORS.primary}
+            />
+            <Typography
+              fFamily="barlowBold700"
+              size={18}
+              color={COLORS.white100}
+              mT={12}
+              textAlign="center"
+            >
+              Scoring locked
+            </Typography>
+            <Typography
+              size={14}
+              color={COLORS.courseTextMuted}
+              mT={6}
+              textAlign="center"
+            >
+              Tap to resume
+            </Typography>
+          </View>
+        </TouchableOpacity>
       ) : null}
 
       <ConfirmModal
@@ -707,6 +876,8 @@ export default CourseRoundScreen;
 
 const styles = StyleSheet.create({
   topBar: {
+    zIndex: 40,
+    elevation: 40,
     backgroundColor: COLORS.courseBg,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.courseBorder,
@@ -718,6 +889,11 @@ const styles = StyleSheet.create({
   },
   topBarLeft: { flex: 1 },
   topBarScore: { alignItems: 'flex-end', marginRight: Sizer.hSize(12) },
+  topBarActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Sizer.hSize(8),
+  },
   uppercase: { letterSpacing: 1.2, textTransform: 'uppercase' },
   pauseBtn: {
     width: Sizer.hSize(40),
@@ -748,6 +924,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingVertical: Sizer.vSize(12),
     gap: Sizer.vSize(12),
+  },
+  lockOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 30,
+    elevation: 30,
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Sizer.hSize(24),
+  },
+  lockCard: {
+    backgroundColor: COLORS.courseSurface,
+    borderRadius: Sizer.hSize(16),
+    borderWidth: 1,
+    borderColor: COLORS.courseBorder,
+    paddingVertical: Sizer.vSize(28),
+    paddingHorizontal: Sizer.hSize(32),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    minWidth: Sizer.hSize(220),
   },
   backToSetupBtn: {
     flexDirection: 'row',

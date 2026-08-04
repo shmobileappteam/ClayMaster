@@ -23,8 +23,8 @@ const ModeIndicatorBar = ({ variant = 'library' }) => {
 
   const palette = isDark
     ? {
-        bg: COLORS.courseSurface,
-        border: COLORS.courseBorder,
+        bg: COLORS.courseBg,
+        border: COLORS.courseBg,
         text: COLORS.white100,
         muted: COLORS.courseTextMuted,
         pillBg: 'rgba(235,108,15,0.2)',

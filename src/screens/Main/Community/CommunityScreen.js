@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -29,6 +30,7 @@ import {
   getInitials,
   mapForumCategory,
   mapForumTopic,
+  stripHtml,
 } from '../../../constants/community';
 import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
 
@@ -242,15 +244,22 @@ const CommunityScreen = ({ navigation }) => {
               }
             >
               <View style={styles.postHeader}>
-                <View style={styles.avatar}>
-                  <Typography
-                    size={TYPE.caption.size}
-                    color={COLORS.primary}
-                    fFamily="barlowBold700"
-                  >
-                    {getInitials(post.userName)}
-                  </Typography>
-                </View>
+                {post.avatarUrl ? (
+                  <Image
+                    source={{ uri: post.avatarUrl }}
+                    style={styles.avatarImg}
+                  />
+                ) : (
+                  <View style={styles.avatar}>
+                    <Typography
+                      size={TYPE.caption.size}
+                      color={COLORS.primary}
+                      fFamily="barlowBold700"
+                    >
+                      {getInitials(post.userName)}
+                    </Typography>
+                  </View>
+                )}
                 <View style={{ flex: 1 }}>
                   <Typography
                     fFamily="barlowSemiBold600"
@@ -281,7 +290,7 @@ const CommunityScreen = ({ navigation }) => {
                   lineHeight={21}
                   numberOfLines={3}
                 >
-                  {post.description}
+                  {stripHtml(post.description)}
                 </Typography>
               ) : null}
 
@@ -396,6 +405,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarImg: {
+    width: Sizer.hSize(36),
+    height: Sizer.hSize(36),
+    borderRadius: Sizer.hSize(18),
   },
   tagsRow: {
     flexDirection: 'row',

@@ -15,6 +15,7 @@ import {
   Header,
   IconButton,
   Label,
+  ScreenOverlayLoader,
   TextField,
 } from '../../../components';
 import {
@@ -718,7 +719,7 @@ const NewRoundScreen = ({ navigation, route }) => {
             mt={24}
             label="Continue"
             onPress={HandleContinue}
-            loader={isPending}
+            disabled={isPending}
           />
         </ScrollView>
 
@@ -734,6 +735,8 @@ const NewRoundScreen = ({ navigation, route }) => {
             goToFieldHome();
           }}
         />
+
+        <ScreenOverlayLoader visible={isPending} variant="field" />
       </CourseLayout>
     );
   }

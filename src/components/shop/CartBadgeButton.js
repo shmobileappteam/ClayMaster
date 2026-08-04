@@ -17,11 +17,11 @@ const CartBadgeButton = ({ onPress }) => {
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.cartBtn} activeOpacity={0.88}>
-      <Icon name="cart-outline" iconFamily="Ionicons" size={22} color={COLORS.textPrimary} />
+      <Icon name="cart-outline" iconFamily="Ionicons" size={24} color={COLORS.textPrimary} />
       {count > 0 ? (
         <View style={styles.badge}>
           <Typography size={10} color={COLORS.white100} fFamily="barlowBold700">
-            {count}
+            {count > 99 ? '99+' : count}
           </Typography>
         </View>
       ) : null}
@@ -33,13 +33,16 @@ export default CartBadgeButton;
 
 const styles = StyleSheet.create({
   cartBtn: {
+    width: Sizer.hSize(40),
+    height: Sizer.hSize(40),
+    alignItems: 'center',
+    justifyContent: 'center',
     position: 'relative',
-    padding: Sizer.hSize(4),
   },
   badge: {
     position: 'absolute',
-    top: -2,
-    right: -2,
+    top: 2,
+    right: 0,
     minWidth: 18,
     height: 18,
     borderRadius: 9,

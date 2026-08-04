@@ -2,16 +2,29 @@ import { Platform, StatusBar } from 'react-native';
 import { showMessage as flashMessage } from 'react-native-flash-message';
 import { COLORS } from '../globalStyle/Theme';
 
+const TOAST_SHADOW = Platform.select({
+  ios: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 14,
+  },
+  android: {
+    elevation: 8,
+  },
+  default: {},
+});
+
 /**
- * Top toast — parity with ClayMaster-App-UI `use-toast` / Sonner-style banners.
+ * Top floating toast — slides in below the status bar (Sonner-style).
  *
  * @param {string} [message] - Primary line (or body when `title` is set)
  * @param {string} [title] - Headline (web `toast({ title, description })`)
  * @param {string} [description] - Secondary line
- * @param {'default'|'success'|'danger'|'card'} [type] - `card` = white library toast
+ * @param {'default'|'success'|'danger'|'warning'|'card'} [type] - `card` = white surface
  * @param {string} [bgColor] - Override background
  * @param {string} [color] - Override text color
- * @param {'top'|'bottom'|'center'} [position] - Defaults to `top` (web slides from top)
+ * @param {'top'|'bottom'|'center'} [position] - Defaults to `top`
  */
 export function showMessage({
   message = '',
@@ -21,12 +34,14 @@ export function showMessage({
   bgColor = '',
   color = '',
   position = 'top',
-  duration = 3000,
+  duration = 3200,
 }) {
   const isCardToast = type === 'card';
 
   const displayMessage = title || message;
-  const displayDescription = title ? description || message : description;
+  const displayDescription = title
+    ? description || (title !== message ? message : '')
+    : description;
 
   const backgroundColor = isCardToast
     ? COLORS.surface
@@ -34,49 +49,61 @@ export function showMessage({
       (type === 'success'
         ? COLORS.primary
         : type === 'danger'
-          ? '#CD1818'
-          : COLORS.textPrimary);
+          ? COLORS.destructive
+          : type === 'warning'
+            ? COLORS.orange100
+            : COLORS.secondary);
 
   const textColor =
     color ||
-    (isCardToast
-      ? COLORS.textPrimary
-      : type === 'success' || type === 'danger'
-        ? COLORS.white100
-        : COLORS.white100);
+    (isCardToast ? COLORS.textPrimary : COLORS.white100);
+
+  const flashType =
+    isCardToast || type === 'default' || type === 'card'
+      ? 'info'
+      : type === 'warning'
+        ? 'warning'
+        : type;
 
   flashMessage({
     message: displayMessage,
     description: displayDescription || undefined,
-    type: isCardToast ? 'info' : type === 'default' ? 'info' : type,
+    type: flashType,
     backgroundColor,
     color: textColor,
-    statusBarHeight: StatusBar.currentHeight,
+    icon: 'auto',
+    floating: true,
+    hideStatusBar: false,
+    statusBarHeight:
+      Platform.OS === 'android' ? StatusBar.currentHeight ?? 0 : undefined,
     position,
     duration,
-    style: isCardToast
-      ? {
-          borderWidth: 1,
-          borderColor: COLORS.borderMuted,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.12,
-          shadowRadius: 12,
-          elevation: 6,
-        }
-      : undefined,
-    titleStyle: isCardToast
-      ? { fontFamily: 'Barlow-SemiBold', fontSize: 15, color: COLORS.textPrimary }
-      : undefined,
-    textStyle: isCardToast
-      ? { fontFamily: 'Barlow-Regular', fontSize: 13, color: COLORS.textSecondary }
-      : undefined,
+    animated: true,
+    animationDuration: 280,
+    style: {
+      borderRadius: 14,
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+      minHeight: 52,
+      borderWidth: isCardToast ? 1 : 0,
+      borderColor: isCardToast ? COLORS.borderMuted : 'transparent',
+      ...TOAST_SHADOW,
+    },
+    titleStyle: {
+      fontFamily: 'Barlow-SemiBold',
+      fontSize: 15,
+      lineHeight: 20,
+      color: textColor,
+      fontWeight: undefined,
+    },
+    textStyle: {
+      fontFamily: 'Barlow-Regular',
+      fontSize: 13,
+      lineHeight: 18,
+      color: isCardToast ? COLORS.textSecondary : textColor,
+      opacity: isCardToast ? 1 : 0.92,
+    },
   });
-
-  if (Platform.OS === 'android' && !isCardToast) {
-    StatusBar.setBackgroundColor(backgroundColor);
-    StatusBar.setBarStyle(type === 'success' ? 'light-content' : 'light-content');
-  }
 }
 
 /** Web-style `{ title, description }` toast shorthand */

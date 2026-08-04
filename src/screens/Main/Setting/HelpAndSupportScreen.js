@@ -1,4 +1,4 @@
-import { Linking, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Alert, Linking, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { Container, Flex, Typography } from '../../../atomComponents';
 import { Header } from '../../../components';
@@ -6,14 +6,21 @@ import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 import Icon from '../../../helpers/Icon';
 
+const SUPPORT_EMAIL = 'support@claymaster.net';
+
 const HelpAndSupportScreen = () => {
     const handleEmailPress = () => {
-        console.log('Email Pressed');
-        try {
-            Linking.openURL('mailto:support@claymaster.net');
-        } catch (e) {
-            console.log('Email not opened');
-        }
+        const mailto = `mailto:${SUPPORT_EMAIL}`;
+        Linking.canOpenURL(mailto)
+            .then(supported => {
+                if (supported) {
+                    return Linking.openURL(mailto);
+                }
+                Alert.alert('Email support', SUPPORT_EMAIL);
+            })
+            .catch(() => {
+                Alert.alert('Email support', SUPPORT_EMAIL);
+            });
     };
 
     return (

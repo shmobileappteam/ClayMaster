@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 // --------
 import { Container } from '../../atomComponents';
 import SlideInView from '../../animations/SlideView';
@@ -14,6 +14,10 @@ import { getProfile, login } from '../../api/userService';
 import { handleLogout } from '../../redux/slices/appSlice';
 import { KEYS } from '../../constants';
 import { storage } from '../../api/api';
+import {
+  ensureSubscriptionConfig,
+  getSubscriptionEnabledFromStore,
+} from '../../api/subscriptionConfig';
 
 /**
  * Reload routing:
@@ -24,7 +28,6 @@ import { storage } from '../../api/api';
  */
 const SplashScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  const { subscriptionEnabled } = useSelector(state => state.app);
   const { mode, activeRound } = useAppMode();
 
   const goLogin = () => {
@@ -49,7 +52,7 @@ const SplashScreen = ({ navigation }) => {
         dispatch,
         reqData,
         () => {},
-        subscriptionEnabled,
+        getSubscriptionEnabledFromStore(),
         { showModeSelect: false, afterAuth: resolveAfterAuth() },
       );
     },
@@ -73,7 +76,7 @@ const SplashScreen = ({ navigation }) => {
         dispatch,
         credentials || {},
         () => {},
-        subscriptionEnabled,
+        getSubscriptionEnabledFromStore(),
         { showModeSelect: false, afterAuth },
       );
     } catch {
@@ -93,8 +96,11 @@ const SplashScreen = ({ navigation }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  const checkUser = () => {
+  const checkUser = async () => {
     try {
+      // Ensure flag is resolved before paywall routing (milestone02)
+      await ensureSubscriptionConfig();
+
       const onboarded = storage.getString(KEYS.IS_ONBOARD);
       if (!onboarded) {
         navigation.replace('OnboardingScreen');

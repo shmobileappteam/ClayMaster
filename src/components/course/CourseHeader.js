@@ -38,6 +38,7 @@ const CourseHeader = ({
         color={COLORS.white100}
         textAlign="center"
         style={styles.title}
+        numberOfLines={1}
       >
         {title?.toUpperCase()}
       </Typography>
@@ -77,7 +78,9 @@ const styles = StyleSheet.create({
   },
   side: {
     width: Sizer.hSize(48),
+    minWidth: Sizer.hSize(48),
     alignItems: 'flex-start',
+    zIndex: 1,
   },
   sideRight: {
     alignItems: 'flex-end',
@@ -88,6 +91,7 @@ const styles = StyleSheet.create({
   title: {
     flex: 1,
     letterSpacing: 0.5,
+    paddingHorizontal: Sizer.hSize(4),
   },
   iconBtn: {
     padding: Sizer.hSize(4),

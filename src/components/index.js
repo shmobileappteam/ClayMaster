@@ -16,6 +16,7 @@ import ImagePicker from './imagePicker/ImagePicker';
 import Accordion from './accordion/Accordion';
 
 import ConfirmModal from './modal/confirmModal';
+import ScreenOverlayLoader from './ScreenOverlayLoader';
 
 export {
   Button,
@@ -31,6 +32,7 @@ export {
   Accordion,
   Label,
   ConfirmModal,
+  ScreenOverlayLoader,
   BooleanRadioSelector,
   DiscountRadioSelector,
 };

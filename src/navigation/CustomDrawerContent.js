@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 import { Typography } from '../atomComponents';
 import { COLORS, RADIUS, SHADOWS, SPACING } from '../globalStyle/Theme';
 import Icon from '../helpers/Icon';
 import Sizer from '../helpers/Sizer';
-import { MENU_SECTIONS } from './menuSections';
+import { MENU_SECTIONS, filterMenuSections } from './menuSections';
 import { navigateFromMenuItem } from './navigationHelpers';
 
 export function navigateFromDrawer(drawerNav, item) {
@@ -55,6 +56,11 @@ const MenuRow = ({ item, isLast, navigation }) => (
 const CustomDrawerContent = props => {
   const { navigation } = props;
   const insets = useSafeAreaInsets();
+  const subscriptionEnabled = useSelector(state => state.app.subscriptionEnabled);
+  const sections = useMemo(
+    () => filterMenuSections(MENU_SECTIONS, subscriptionEnabled),
+    [subscriptionEnabled],
+  );
 
   return (
     <View style={styles.shell}>
@@ -85,7 +91,7 @@ const CustomDrawerContent = props => {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        {MENU_SECTIONS.map(section => (
+        {sections.map(section => (
           <View key={section.title} style={styles.section}>
             <Typography
               fFamily="barlowSemiBold600"
