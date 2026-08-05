@@ -77,7 +77,6 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.courseBorder,
   },
   side: {
-    width: Sizer.hSize(48),
     minWidth: Sizer.hSize(48),
     alignItems: 'flex-start',
     zIndex: 1,
@@ -87,6 +86,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: Sizer.hSize(4),
+    flexShrink: 0,
   },
   title: {
     flex: 1,

@@ -23,7 +23,7 @@ export const ENDPOINTS = {
   DELETE_USER: 'delete/user',
   UPDATE_PASSWORD: 'user/update-password',
 
-  // --- Packages and Payment ---
+  // --- Packages and Payment (subscription) ---
   GET_PACKAGES: 'packages',
   GET_DISCOUNT_FOR_PACKAGES: 'discounts',
   SETUP_INTENT: 'stripe/setup-intent',
@@ -94,6 +94,7 @@ export const ENDPOINTS = {
   GET_COACHES: 'coaches',
   GET_SESSIONS: 'sessions',
   GET_SESSION_PURCHASE_INFO: 'sessions/purchase-info',
+  SESSIONS_SETUP_INTENT: 'sessions/setup-intent',
   PURCHASE_SESSIONS: 'sessions/purchase',
 
   // --- Shop / Cart / Orders ---
@@ -103,6 +104,7 @@ export const ENDPOINTS = {
   GET_CART: 'cart',
   UPDATE_CART: 'cart/update',
   REMOVE_CART_ITEM: variantId => `cart/${variantId}`,
+  CHECKOUT_SETUP_INTENT: 'checkout/setup-intent',
   PLACE_ORDER: 'checkout/place-order',
   GET_ORDERS: 'orders',
   GET_ORDER: id => `orders/${id}`,

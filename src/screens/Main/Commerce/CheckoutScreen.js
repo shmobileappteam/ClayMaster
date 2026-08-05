@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -15,15 +14,11 @@ import { useSelector } from 'react-redux';
 import { CardField, useStripe } from '@stripe/stripe-react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import * as Yup from 'yup';
-import {
-  Container,
-  FormController,
-  Typography,
-} from '../../../atomComponents';
+import { Container, FormController, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import ProfileField from '../../../components/profile/ProfileField';
 import ProfileSelect from '../../../components/profile/ProfileSelect';
-import { Button } from '../../../components';
+import { Button, ScreenOverlayLoader } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import {
   COLORS,
@@ -35,13 +30,12 @@ import {
 import Sizer from '../../../helpers/Sizer';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { useCustomMutation } from '../../../query/useCustomMutation';
-import { getCart, placeOrder } from '../../../api/shopService';
+import { getCart, placeOrder, createCheckoutSetupIntent } from '../../../api/shopService';
 import {
   getCountries,
   getCountryStates,
   getStateCities,
 } from '../../../api/cscService';
-import { fetchPaymentIntent } from '../../../api/packageService';
 import { centsToDollars, formatMoney } from '../../../constants/shop';
 import { maskPhoneNumber, showMessage } from '../../../utils';
 import { useKeyboard } from '../../../hooks/useKeyboard';
@@ -255,7 +249,7 @@ const CheckoutBillingForm = ({
           Order Items ({items.length})
         </Typography>
         {loadingCart ? (
-          <ActivityIndicator color={COLORS.primary} />
+          <AppLoader />
         ) : items.length === 0 ? (
           <Typography color={COLORS.textSecondary}>Your cart is empty.</Typography>
         ) : (
@@ -330,24 +324,21 @@ const CheckoutBillingForm = ({
         disabled={paying || items.length === 0}
         activeOpacity={0.88}
       >
-        {paying ? (
-          <ActivityIndicator color={COLORS.white100} />
-        ) : (
-          <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.white100}>
-            Place Order · {formatMoney(cart?.total)}
-          </Typography>
-        )}
+        <Typography fFamily="barlowSemiBold600" size={TYPE.h3.size} color={COLORS.white100}>
+          Place Order · {formatMoney(cart?.total)}
+        </Typography>
       </TouchableOpacity>
     </ScrollView>
   );
 };
 
-/** ClayMaster-App-UI `Checkout.tsx` → POST /api/checkout/place-order (Stripe payment_method) */
+/** ClayMaster checkout → POST /api/checkout/setup-intent + place-order (pm_...) */
 const CheckoutScreen = ({ navigation }) => {
   const { user } = useSelector(state => state.app);
   const { confirmSetupIntent } = useStripe();
   const { keyboardOpen } = useKeyboard();
   const queryClient = useQueryClient();
+  const billingRef = React.useRef(null);
 
   const { data: cart, isLoading: loadingCart } = useCustomQuery({
     queryKey: ['cart'],
@@ -384,7 +375,11 @@ const CheckoutScreen = ({ navigation }) => {
   const { mutate: submitOrder, isPending: placing } = useCustomMutation({
     mutationFn: placeOrder,
     onSuccess: data => {
-      const ok = data?.status === 'success' || data?.status === true;
+      const paymentStatus = data?.data?.payment_status;
+      const ok =
+        (data?.status === 'success' || data?.status === true) &&
+        (!paymentStatus || paymentStatus === 'succeeded');
+
       if (!ok) {
         showMessage({
           type: 'danger',
@@ -410,10 +405,25 @@ const CheckoutScreen = ({ navigation }) => {
     },
   });
 
-  const { mutate: requestPaymentIntent, isPending: loadingIntent } =
+  const { mutate: requestCheckoutSetupIntent, isPending: loadingIntent } =
     useCustomMutation({
-      mutationFn: fetchPaymentIntent,
+      mutationFn: createCheckoutSetupIntent,
       onSuccess: data => {
+        const billingValues = billingRef.current;
+        if (!billingValues) {
+          showMessage({
+            type: 'danger',
+            message: 'Billing details missing. Please try again.',
+          });
+          return;
+        }
+
+        // Merchandise credit covers total — place order without Stripe
+        if (data?.payment_required === false) {
+          submitOrder({ ...billingValues });
+          return;
+        }
+
         const secret = data?.client_secret;
         if (secret) {
           setClientSecret(secret);
@@ -421,19 +431,23 @@ const CheckoutScreen = ({ navigation }) => {
         } else {
           showMessage({
             type: 'danger',
-            message: 'Unable to start payment. Please try again.',
+            message: data?.message || 'Unable to start payment. Please try again.',
           });
         }
       },
-      onError: () => {
-        showMessage({ type: 'danger', message: 'Error while starting payment.' });
+      onError: err => {
+        showMessage({
+          type: 'danger',
+          message: err?.data?.message || 'Error while starting payment.',
+        });
       },
     });
 
   const startCheckout = values => {
     setFormErrors(null);
     setBilling(values);
-    requestPaymentIntent();
+    billingRef.current = values;
+    requestCheckoutSetupIntent();
   };
 
   const handleConfirmPayment = async () => {
@@ -450,12 +464,14 @@ const CheckoutScreen = ({ navigation }) => {
       });
       if (error) {
         Alert.alert('Payment Failed', error.message);
-      } else if (setupIntent?.paymentMethodId) {
+        return;
+      }
+      if (setupIntent?.paymentMethodId) {
+        // Close card sheet so ScreenOverlayLoader Modal can present over checkout
         setModalVisible(false);
         submitOrder({
           ...billing,
           payment_method: setupIntent.paymentMethodId,
-          stripe_customer_id: user?.stripe_customer_id,
         });
       }
     } catch {
@@ -466,6 +482,8 @@ const CheckoutScreen = ({ navigation }) => {
   };
 
   const paying = loadingIntent || isProcessingPayment || placing;
+  const payOverlay =
+    loadingIntent || placing || (isProcessingPayment && !modalVisible);
 
   if (placedOrder) {
     return (
@@ -586,7 +604,7 @@ const CheckoutScreen = ({ navigation }) => {
             <Button
               label="Pay & Place Order"
               onPress={handleConfirmPayment}
-              loader={paying}
+              disabled={paying}
               btnStyle={{ width: '100%', marginTop: Sizer.vSize(16) }}
             />
             <TouchableOpacity
@@ -602,8 +620,19 @@ const CheckoutScreen = ({ navigation }) => {
               </Typography>
             </TouchableOpacity>
           </View>
+
+          {/* Nested Modal loaders don't show over this sheet — cover it in-place */}
+          {isProcessingPayment ? (
+            <View style={styles.sheetLoader} pointerEvents="auto">
+              <View style={styles.sheetLoaderCard}>
+                <AppLoader compact size="large" color={COLORS.primary} />
+              </View>
+            </View>
+          ) : null}
         </View>
       </Modal>
+
+      <ScreenOverlayLoader visible={payOverlay} />
     </Container>
   );
 };
@@ -723,5 +752,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Sizer.vSize(16),
     padding: Sizer.vSize(8),
+  },
+  sheetLoader: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(26, 26, 26, 0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetLoaderCard: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
   },
 });

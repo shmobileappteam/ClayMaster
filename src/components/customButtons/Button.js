@@ -1,10 +1,10 @@
 import React from 'react';
 import { Text, TouchableOpacity } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
 
 import Sizer from '../../helpers/Sizer';
 import { BASEOPACITY, COLORS, FONTS } from '../../globalStyle/Theme';
 import Flex from '../../atomComponents/Flex';
+import AppLoader from '../../atomComponents/AppLoader';
 
 function Button({
   label = 'Custom Button',
@@ -89,11 +89,7 @@ function Button({
       {...props}
     >
       {loader ? (
-        <ActivityIndicator
-          size={Sizer.fS(20)}
-          style={{ paddingVertical: 5 }}
-          color={loaderColor}
-        />
+        <AppLoader compact size="small" color={loaderColor} />
       ) : (
         <Flex gap={iconGap} algItems="center">
           {!!icon && icon}

@@ -5,5 +5,11 @@ import FormController from './FormController';
 import Typography from './Typography';
 import AppLoader from './AppLoader';
 
-
-export { Container, Flex, SafeAreaWrapper, Typography, FormController };
+export {
+  Container,
+  Flex,
+  SafeAreaWrapper,
+  Typography,
+  FormController,
+  AppLoader,
+};

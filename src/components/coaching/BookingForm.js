@@ -1,13 +1,12 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Typography } from '../../atomComponents';
+import { Typography, AppLoader } from '../../atomComponents';
 import Icon from '../../helpers/Icon';
 import { coachInitials } from '../../constants/coaching';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../globalStyle/Theme';
@@ -54,7 +53,7 @@ const BookingForm = ({
     </View>
 
     {isLoading ? (
-      <ActivityIndicator color={COLORS.primary} style={{ marginTop: 24 }} />
+      <AppLoader />
     ) : isError ? (
       <TouchableOpacity onPress={onRetry}>
         <Typography color={COLORS.primary} fFamily="barlowSemiBold600">

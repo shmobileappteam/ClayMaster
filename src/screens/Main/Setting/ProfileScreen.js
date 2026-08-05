@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Image,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -22,6 +23,7 @@ import {
   navigateFromTabToStack,
   performLogout,
 } from '../../../navigation/navigationHelpers';
+import { resolveMediaUrl } from '../../../constants/community';
 
 const MENU_ITEMS = [
   { icon: 'person-outline', label: 'My Account', screen: 'ProfileDetailsScreen' },
@@ -60,6 +62,7 @@ const ProfileScreen = ({ navigation }) => {
     .join('')
     .slice(0, 2)
     .toUpperCase();
+  const avatarUri = resolveMediaUrl(user?.profile_image);
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -70,11 +73,15 @@ const ProfileScreen = ({ navigation }) => {
       >
         {/* flex items-center gap-4 */}
         <View style={styles.userRow}>
-          <View style={styles.avatar}>
-            <Typography fFamily="barlowBold700" size={24} lineHeight={31} color={COLORS.white100}>
-              {initials || 'CM'}
-            </Typography>
-          </View>
+          {avatarUri ? (
+            <Image source={{ uri: avatarUri }} style={styles.avatarImg} />
+          ) : (
+            <View style={styles.avatar}>
+              <Typography fFamily="barlowBold700" size={24} lineHeight={31} color={COLORS.white100}>
+                {initials || 'CM'}
+              </Typography>
+            </View>
+          )}
           <View>
             <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary}>
               {displayName}
@@ -198,6 +205,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarImg: {
+    width: Sizer.hSize(64),
+    height: Sizer.hSize(64),
+    borderRadius: Sizer.hSize(32),
+    backgroundColor: COLORS.surfaceMuted,
   },
   menuCard: {
     overflow: 'hidden',

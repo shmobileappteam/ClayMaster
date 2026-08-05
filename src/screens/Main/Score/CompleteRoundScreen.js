@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
 import {
-  ActivityIndicator,
   BackHandler,
   Linking,
   ScrollView,
@@ -8,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Typography } from '../../../atomComponents';
+import { Typography, AppLoader } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
 import CourseHeader from '../../../components/course/CourseHeader';
 import Icon from '../../../helpers/Icon';
@@ -105,7 +104,7 @@ const CompleteRoundScreen = ({ navigation, route }) => {
 
       {isLoading || !round ? (
         <View style={styles.loader}>
-          <ActivityIndicator color={SUCCESS_GREEN} />
+          <AppLoader color={SUCCESS_GREEN} />
         </View>
       ) : (
         <ScrollView

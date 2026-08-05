@@ -1,6 +1,12 @@
-import React from 'react';
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { Container, Typography } from '../../../atomComponents';
+import React, { useMemo } from 'react';
+import {
+  Linking,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import {
@@ -16,6 +22,10 @@ import {
   navigateFromTabToTab,
 } from '../../../navigation/navigationHelpers';
 import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
+import { useCustomQuery } from '../../../query/useCustomQuery';
+import { getWorkbooks } from '../../../api/academyService';
+import { mapWorkbook, openRemoteFile } from '../../../constants/academy';
+import { showMessage } from '../../../utils';
 
 /** ClayMaster-App-UI `Analytics.tsx` — Explore, workbooks, schedule row */
 const EXPLORE_ITEMS = [
@@ -47,8 +57,163 @@ const EXPLORE_ITEMS = [
   },
 ];
 
+const workbookCardTitle = workbook => {
+  const title = String(workbook?.title || '').toLowerCase();
+  if (title.includes('pro')) return 'Pro Workbook';
+  if (title.includes('classic')) return 'Classic Workbook';
+  // Fallback for the usual Classic (unlocked) / Pro (locked) pair
+  return workbook?.locked ? 'Pro Workbook' : 'Classic Workbook';
+};
+
+const WorkbookCard = ({ workbook, onOpen, onDownload, onUpgrade }) => {
+  const locked = Boolean(workbook.locked);
+  const cardTitle = workbookCardTitle(workbook);
+
+  if (locked) {
+    return (
+      <View style={[GLOBALSTYLE.screenCard, styles.workbookCard, styles.proWrap]}>
+        <TouchableOpacity
+          style={styles.lockedOverlay}
+          onPress={onUpgrade}
+          activeOpacity={0.9}
+        >
+          <Icon
+            name="lock-closed-outline"
+            iconFamily="Ionicons"
+            size={28}
+            color={COLORS.textSecondary}
+          />
+          <Typography
+            fFamily="barlowMedium500"
+            size={TYPE.body.size}
+            color={COLORS.textSecondary}
+            mT={8}
+          >
+            Upgrade to Pro
+          </Typography>
+        </TouchableOpacity>
+        <View style={styles.workbookHeader}>
+          <View style={styles.listIconLg}>
+            <Icon
+              name="book-outline"
+              iconFamily="Ionicons"
+              size={22}
+              color={COLORS.primary}
+            />
+          </View>
+          <View style={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              fFamily={TYPE.h3.fFamily}
+              size={TYPE.h3.size}
+              color={COLORS.textPrimary}
+              numberOfLines={2}
+            >
+              {cardTitle}
+            </Typography>
+            <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+              Locked
+            </Typography>
+          </View>
+        </View>
+        <View style={styles.workbookActions}>
+          <View style={[styles.openBtn, styles.openBtnMuted]}>
+            <Typography
+              fFamily="barlowSemiBold600"
+              size={TYPE.body.size}
+              color={COLORS.textSecondary}
+            >
+              Open
+            </Typography>
+          </View>
+          <View style={styles.downloadBtn}>
+            <Icon
+              name="download-outline"
+              iconFamily="Ionicons"
+              size={20}
+              color={COLORS.textSecondary}
+            />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[GLOBALSTYLE.screenCard, styles.workbookCard]}>
+      <View style={styles.workbookHeader}>
+        <View style={styles.listIconLg}>
+          <Icon
+            name="book-outline"
+            iconFamily="Ionicons"
+            size={22}
+            color={COLORS.primary}
+          />
+        </View>
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Typography
+            fFamily={TYPE.h3.fFamily}
+            size={TYPE.h3.size}
+            color={COLORS.textPrimary}
+            numberOfLines={2}
+          >
+            {cardTitle}
+          </Typography>
+          <Typography
+            size={TYPE.caption.size}
+            color={COLORS.primary}
+            fFamily="barlowMedium500"
+            mT={2}
+          >
+            Unlocked
+          </Typography>
+        </View>
+      </View>
+      <View style={styles.workbookActions}>
+        <TouchableOpacity style={styles.openBtn} onPress={onOpen} activeOpacity={0.88}>
+          <Typography
+            fFamily="barlowSemiBold600"
+            size={TYPE.body.size}
+            color={COLORS.white100}
+          >
+            Open
+          </Typography>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.downloadBtn}
+          onPress={onDownload}
+          activeOpacity={0.88}
+        >
+          <Icon
+            name="download-outline"
+            iconFamily="Ionicons"
+            size={20}
+            color={COLORS.textSecondary}
+          />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
 const AnalyticsDashboard = ({ navigation }) => {
-  if (useRequireLibraryMode()) {
+  const blocked = useRequireLibraryMode();
+
+  const {
+    data: workbooksData,
+    isLoading: loadingWorkbooks,
+    isError: workbooksError,
+    refetch: refetchWorkbooks,
+  } = useCustomQuery({
+    queryKey: ['workbooks'],
+    queryFn: getWorkbooks,
+  });
+
+  const workbooks = useMemo(
+    () => (workbooksData?.items || []).map(mapWorkbook).filter(Boolean),
+    [workbooksData?.items],
+  );
+
+  if (blocked) {
     return null;
   }
 
@@ -62,6 +227,24 @@ const AnalyticsDashboard = ({ navigation }) => {
     }
     go(item.screen, item.params);
   };
+
+  const openWorkbook = wb => {
+    go('WorkbookDetailScreen', { workbookId: wb.id });
+  };
+
+  const downloadWorkbook = wb => {
+    if (!wb?.fileUrl) {
+      showMessage({
+        type: 'danger',
+        title: 'Unavailable',
+        message: 'No file is available for this workbook.',
+      });
+      return;
+    }
+    openRemoteFile(wb.fileUrl, Linking, showMessage);
+  };
+
+  const upgradePlan = () => go('SubscriptionScreen');
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -125,120 +308,38 @@ const AnalyticsDashboard = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Classic Workbook — entire card tappable (web: single button) */}
-        <TouchableOpacity
-          style={[GLOBALSTYLE.screenCard, styles.workbookCard]}
-          onPress={() => go('WorkbookDetailScreen')}
-          activeOpacity={0.88}
-        >
-          <View style={styles.workbookHeader}>
-            <View style={styles.listIconLg}>
-              <Icon
-                name="book-outline"
-                iconFamily="Ionicons"
-                size={22}
-                color={COLORS.primary}
-              />
-            </View>
-            <View>
-              <Typography
-                fFamily={TYPE.h3.fFamily}
-                size={TYPE.h3.size}
-                color={COLORS.textPrimary}
-              >
-                Classic Workbook
-              </Typography>
-              <Typography
-                size={TYPE.caption.size}
-                color={COLORS.primary}
-                fFamily="barlowMedium500"
-                mT={2}
-              >
-                Unlocked
-              </Typography>
-            </View>
+        {/* Workbooks — GET /api/workbooks */}
+        {loadingWorkbooks && workbooks.length === 0 ? (
+          <View style={styles.workbookLoading}>
+            <AppLoader />
           </View>
-          <View style={styles.workbookActions}>
-            <View style={styles.openBtn}>
-              <Typography
-                fFamily="barlowSemiBold600"
-                size={TYPE.body.size}
-                color={COLORS.white100}
-              >
-                Open
-              </Typography>
-            </View>
-            <View style={styles.downloadBtn}>
-              <Icon
-                name="download-outline"
-                iconFamily="Ionicons"
-                size={20}
-                color={COLORS.textSecondary}
-              />
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Pro Workbook — locked overlay (web: non-interactive card) */}
-        <View style={[GLOBALSTYLE.screenCard, styles.workbookCard, styles.proWrap]}>
-          <View style={styles.lockedOverlay} pointerEvents="box-none">
-            <Icon
-              name="lock-closed-outline"
-              iconFamily="Ionicons"
-              size={28}
-              color={COLORS.textSecondary}
-            />
-            <Typography
-              fFamily="barlowMedium500"
-              size={TYPE.body.size}
-              color={COLORS.textSecondary}
-              mT={8}
-            >
-              Upgrade to Pro
+        ) : workbooksError && workbooks.length === 0 ? (
+          <TouchableOpacity
+            style={[GLOBALSTYLE.screenCard, styles.workbookCard]}
+            onPress={() => refetchWorkbooks()}
+            activeOpacity={0.88}
+          >
+            <Typography color={COLORS.textSecondary} textAlign="center">
+              Could not load workbooks. Tap to retry.
+            </Typography>
+          </TouchableOpacity>
+        ) : workbooks.length === 0 ? (
+          <View style={[GLOBALSTYLE.screenCard, styles.workbookCard]}>
+            <Typography color={COLORS.textSecondary} textAlign="center">
+              No workbooks yet.
             </Typography>
           </View>
-          <View style={styles.workbookHeader}>
-            <View style={styles.listIconLg}>
-              <Icon
-                name="book-outline"
-                iconFamily="Ionicons"
-                size={22}
-                color={COLORS.primary}
-              />
-            </View>
-            <View>
-              <Typography
-                fFamily={TYPE.h3.fFamily}
-                size={TYPE.h3.size}
-                color={COLORS.textPrimary}
-              >
-                Pro Workbook
-              </Typography>
-              <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
-                Locked
-              </Typography>
-            </View>
-          </View>
-          <View style={styles.workbookActions}>
-            <View style={[styles.openBtn, styles.openBtnMuted]}>
-              <Typography
-                fFamily="barlowSemiBold600"
-                size={TYPE.body.size}
-                color={COLORS.textSecondary}
-              >
-                Open
-              </Typography>
-            </View>
-            <View style={styles.downloadBtn}>
-              <Icon
-                name="download-outline"
-                iconFamily="Ionicons"
-                size={20}
-                color={COLORS.textSecondary}
-              />
-            </View>
-          </View>
-        </View>
+        ) : (
+          workbooks.map(wb => (
+            <WorkbookCard
+              key={wb.id}
+              workbook={wb}
+              onOpen={() => openWorkbook(wb)}
+              onDownload={() => downloadWorkbook(wb)}
+              onUpgrade={upgradePlan}
+            />
+          ))
+        )}
 
         {/* Schedule Analytics Session → web /book-session */}
         <TouchableOpacity
@@ -316,6 +417,10 @@ const styles = StyleSheet.create({
   workbookCard: {
     padding: Sizer.hSize(SPACING.cardP),
     ...SHADOWS.card,
+  },
+  workbookLoading: {
+    paddingVertical: Sizer.vSize(24),
+    alignItems: 'center',
   },
   proWrap: {
     overflow: 'hidden',

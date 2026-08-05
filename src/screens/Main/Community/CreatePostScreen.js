@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,11 +10,7 @@ import {
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import {
-  Container,
-  FormController,
-  Typography,
-} from '../../../atomComponents';
+import { Container, FormController, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { ScreenOverlayLoader } from '../../../components';
 import ProfileField from '../../../components/profile/ProfileField';
@@ -269,7 +264,7 @@ const CreatePostScreen = ({ navigation, route }) => {
                     Category
                   </Typography>
                   {catsLoading ? (
-                    <ActivityIndicator color={COLORS.primary} />
+                    <AppLoader />
                   ) : (
                     <CustomDropdown
                       key={`cat-${categoryOptions.length}-${values.category_id}`}

@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Image,
   RefreshControl,
   ScrollView,
@@ -8,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import {
@@ -135,7 +134,7 @@ const CommunityScreen = ({ navigation }) => {
             </Typography>
           </TouchableOpacity>
           {catsLoading ? (
-            <ActivityIndicator color={COLORS.primary} />
+            <AppLoader />
           ) : (
             categories.map(cat => (
               <TouchableOpacity
@@ -185,7 +184,7 @@ const CommunityScreen = ({ navigation }) => {
         </ScrollView>
 
         {isLoading ? (
-          <ActivityIndicator color={COLORS.primary} style={{ marginTop: 24 }} />
+          <AppLoader />
         ) : isError ? (
           <TouchableOpacity onPress={refetch}>
             <Typography color={COLORS.primary} fFamily="barlowSemiBold600">

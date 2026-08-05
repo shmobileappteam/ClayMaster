@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   FlatList,
@@ -13,8 +12,9 @@ import {
   View,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useQueryClient } from '@tanstack/react-query';
 import { CardField, useStripe } from '@stripe/stripe-react-native';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { Button, ConfirmModal } from '../../../components';
 import Icon from '../../../helpers/Icon';
@@ -281,7 +281,9 @@ const PlanCard = ({
         onPress={onPress}
       >
         {loading ? (
-          <ActivityIndicator
+          <AppLoader
+            compact
+            size="small"
             color={current ? COLORS.textSecondary : COLORS.white100}
           />
         ) : (
@@ -307,6 +309,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
   const canGoBack = !fromAuth && (navigation.canGoBack?.() ?? false);
   const { user } = useSelector(state => state.app);
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
   const { confirmSetupIntent } = useStripe();
   const { keyboardOpen } = useKeyboard();
   const plansListRef = useRef(null);
@@ -427,6 +430,15 @@ const SubscriptionScreen = ({ navigation, route }) => {
           }
 
           dispatch(setUser(nextUser));
+          await Promise.all([
+            queryClient.invalidateQueries({ queryKey: ['packages'] }),
+            queryClient.invalidateQueries({ queryKey: ['cart'] }),
+            queryClient.invalidateQueries({ queryKey: ['sessions'] }),
+            queryClient.invalidateQueries({ queryKey: ['sessionPurchaseInfo'] }),
+            queryClient.invalidateQueries({ queryKey: ['discounts'] }),
+            queryClient.invalidateQueries({ queryKey: ['workbooks'] }),
+            queryClient.invalidateQueries({ queryKey: ['workbook'] }),
+          ]);
           showMessage({
             message: 'Payment Successful!',
             type: 'success',
@@ -641,7 +653,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
 
         {isLoadingPackages ? (
           <View style={styles.centerState}>
-            <ActivityIndicator color={COLORS.primary} size="large" />
+            <AppLoader compact size="large" />
             <Typography
               size={TYPE.body.size}
               color={COLORS.textSecondary}

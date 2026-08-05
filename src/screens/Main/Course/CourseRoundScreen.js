@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   AppState,
   BackHandler,
   ScrollView,
@@ -8,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Typography } from '../../../atomComponents';
+import { Typography, AppLoader } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
 import StationSetupPanel from '../../../components/course/StationSetupPanel';
 import StationProgressStrip from '../../../components/course/StationProgressStrip';
@@ -736,7 +735,7 @@ const CourseRoundScreen = ({ navigation }) => {
               disabled={isPending}
             >
               {isPending ? (
-                <ActivityIndicator color={COLORS.white100} />
+                <AppLoader compact size="small" color={COLORS.white100} />
               ) : (
                 <Typography fFamily="barlowBold700" size={20} color={COLORS.white100}>
                   Complete Round

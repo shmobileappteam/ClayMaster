@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -16,7 +15,7 @@ import {
 import RenderHTML from 'react-native-render-html';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING, TYPE } from '../../../globalStyle/Theme';
@@ -157,7 +156,6 @@ const CommunityDetailScreen = ({ navigation, route }) => {
   });
 
   const post = useMemo(() => mapForumDetail(forumBody), [forumBody]);
-
 
   console.log('post', post);
   const replies = useMemo(() => {
@@ -413,7 +411,7 @@ const CommunityDetailScreen = ({ navigation, route }) => {
 
       {forumLoading && !post ? (
         <View style={styles.centered}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <AppLoader />
         </View>
       ) : forumError || !post ? (
         <View style={styles.centered}>
@@ -685,7 +683,7 @@ const CommunityDetailScreen = ({ navigation, route }) => {
                     disabled={reportPending}
                   >
                     {reportPending ? (
-                      <ActivityIndicator color={COLORS.white100} size="small" />
+                      <AppLoader compact size="small" color={COLORS.white100} />
                     ) : (
                       <Typography
                         color={COLORS.white100}
@@ -967,7 +965,7 @@ const CommunityDetailScreen = ({ navigation, route }) => {
                 activeOpacity={0.88}
               >
                 {replyPending ? (
-                  <ActivityIndicator color={COLORS.white100} size="small" />
+                  <AppLoader compact size="small" color={COLORS.white100} />
                 ) : (
                   <Icon
                     name="send"

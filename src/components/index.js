@@ -17,6 +17,7 @@ import Accordion from './accordion/Accordion';
 
 import ConfirmModal from './modal/confirmModal';
 import ScreenOverlayLoader from './ScreenOverlayLoader';
+import AppLoader from '../atomComponents/AppLoader';
 
 export {
   Button,
@@ -33,6 +34,7 @@ export {
   Label,
   ConfirmModal,
   ScreenOverlayLoader,
+  AppLoader,
   BooleanRadioSelector,
   DiscountRadioSelector,
 };

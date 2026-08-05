@@ -1,10 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Modal,
   Platform,
-  RefreshControl,
   ScrollView,
   StyleSheet,
   ToastAndroid,
@@ -14,9 +12,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { CardField, useStripe } from '@stripe/stripe-react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
-import { Button } from '../../../components';
+import { Button, ScreenOverlayLoader } from '../../../components';
 import Icon from '../../../helpers/Icon';
 import {
   COLORS,
@@ -32,28 +30,26 @@ import {
   getSessionPurchaseInfo,
   getSessions,
   purchaseSessions,
+  createSessionSetupIntent,
 } from '../../../api/coachingService';
-import { fetchPaymentIntent } from '../../../api/packageService';
-import { getProfile } from '../../../api/userService';
 import { formatMoney } from '../../../constants/coaching';
 import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
 import { setUser } from '../../../redux/slices/appSlice';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import { showMessage } from '../../../utils';
 
-/** ClayMaster-App-UI `Coaching.tsx` → sessions + purchase APIs */
+/** ClayMaster-App-UI `Coaching.tsx` → sessions/setup-intent + sessions/purchase */
 const CoachingScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const { user } = useSelector(state => state.app);
-  const { confirmSetupIntent } = useStripe();
+  const { confirmSetupIntent, handleNextAction } = useStripe();
   const { keyboardOpen } = useKeyboard();
 
   const {
     data: sessions,
     isLoading: loadingSessions,
     isError: sessionsError,
-    isFetching: fetchingSessions,
     refetch: refetchSessions,
   } = useCustomQuery({
     queryKey: ['sessions'],
@@ -64,7 +60,6 @@ const CoachingScreen = ({ navigation }) => {
     data: purchaseInfo,
     isLoading: loadingPurchase,
     isError: purchaseError,
-    isFetching: fetchingPurchase,
     refetch: refetchPurchase,
   } = useCustomQuery({
     queryKey: ['sessionPurchaseInfo'],
@@ -121,15 +116,116 @@ const CoachingScreen = ({ navigation }) => {
     ];
   }, [purchaseInfo]);
 
-  const refreshAll = () => {
-    refetchSessions();
-    refetchPurchase();
+  const applyPurchaseSuccess = data => {
+    const payload = data?.data || {};
+    const sessionsAdded = Number(payload.sessions_added) || 0;
+    const remaining =
+      payload.remaining_sessions != null
+        ? Number(payload.remaining_sessions)
+        : null;
+
+    // Purchase API already returns updated counts — patch cache, no GET /sessions
+    queryClient.setQueryData(['sessions'], prev => {
+      if (!prev) return prev;
+      const prevSummary = prev.summary || {};
+      const used = Number(prevSummary.usedSessions) || 0;
+      const nextRemaining =
+        remaining != null
+          ? remaining
+          : (Number(prevSummary.remainingSessions) || 0) + sessionsAdded;
+      const nextTotal =
+        remaining != null
+          ? used + remaining
+          : (Number(prevSummary.totalSessions) || 0) + sessionsAdded;
+      const percentageUsed =
+        nextTotal > 0 ? Math.round((used / nextTotal) * 100) : 0;
+
+      return {
+        ...prev,
+        summary: {
+          ...prevSummary,
+          totalSessions: nextTotal,
+          remainingSessions: nextRemaining,
+          outstandingSessions: nextRemaining,
+          percentageUsed,
+        },
+      };
+    });
+
+    if (remaining != null) {
+      dispatch(
+        setUser({
+          ...user,
+          remaining_sessions: remaining,
+        }),
+      );
+    }
+
+    setClientSecret(null);
+    setBundleType(null);
+    showMessage({
+      type: 'success',
+      message:
+        data?.message ||
+        `${sessionsAdded || 1} session(s) purchased.`,
+    });
+  };
+
+  const resolveRequiresAction = async data => {
+    const piSecret = data?.data?.payment_intent_client_secret;
+    if (!piSecret) {
+      showMessage({
+        type: 'danger',
+        message: data?.message || 'Additional authentication required.',
+      });
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    try {
+      const { error, paymentIntent } = await handleNextAction(piSecret);
+      if (error) {
+        Alert.alert('Payment Failed', error.message);
+        return;
+      }
+      const status = String(paymentIntent?.status || '').toLowerCase();
+      if (status === 'succeeded') {
+        applyPurchaseSuccess({
+          ...data,
+          message: data?.message || 'Session(s) purchased successfully.',
+          data: {
+            ...data?.data,
+            payment_status: 'succeeded',
+          },
+        });
+        return;
+      }
+      showMessage({
+        type: 'danger',
+        message: 'Payment was not completed. Please try again.',
+      });
+    } catch {
+      Alert.alert('Error', 'Something went wrong during authentication');
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   const { mutate: completePurchase, isPending: purchasing } = useCustomMutation({
     mutationFn: purchaseSessions,
-    onSuccess: async data => {
-      const ok = data?.success !== false && data?.status !== false;
+    onSuccess: data => {
+      if (data?.requires_action || data?.data?.payment_status === 'requires_action') {
+        resolveRequiresAction(data);
+        return;
+      }
+
+      const paymentStatus = data?.data?.payment_status;
+      const ok =
+        paymentStatus === 'succeeded' ||
+        ((data?.status === true || data?.success === true) &&
+          paymentStatus !== 'requires_action' &&
+          !data?.requires_action);
+
       if (!ok) {
         showMessage({
           type: 'danger',
@@ -138,48 +234,25 @@ const CoachingScreen = ({ navigation }) => {
         return;
       }
 
-      const remaining =
-        data?.data?.remaining_sessions ?? summary?.remainingSessions;
-      try {
-        const profile = await getProfile();
-        if (profile?.status && profile?.user) {
-          dispatch(setUser({ ...user, ...profile.user }));
-        } else if (remaining != null) {
-          dispatch(
-            setUser({
-              ...user,
-              remaining_sessions: remaining,
-            }),
-          );
-        }
-      } catch {
-        if (remaining != null) {
-          dispatch(setUser({ ...user, remaining_sessions: remaining }));
-        }
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      setClientSecret(null);
-      setBundleType(null);
-      showMessage({
-        type: 'success',
-        message:
-          data?.message ||
-          `${data?.data?.sessions_added ?? 1} session(s) purchased.`,
-      });
+      applyPurchaseSuccess(data);
     },
     onError: err => {
+      const body = err?.data;
+      if (body?.requires_action || body?.data?.payment_status === 'requires_action') {
+        resolveRequiresAction(body);
+        return;
+      }
       const msg =
-        err?.data?.message ||
-        err?.data?.error ||
+        body?.message ||
+        body?.error ||
         'Purchase failed. Please try again.';
       showMessage({ type: 'danger', message: msg });
     },
   });
 
-  const { mutate: requestPaymentIntent, isPending: loadingIntent } =
+  const { mutate: requestSessionSetupIntent, isPending: loadingIntent } =
     useCustomMutation({
-      mutationFn: fetchPaymentIntent,
+      mutationFn: createSessionSetupIntent,
       onSuccess: data => {
         const secret = data?.client_secret;
         if (secret) {
@@ -188,12 +261,13 @@ const CoachingScreen = ({ navigation }) => {
         } else {
           showMessage({
             type: 'danger',
-            message: 'Unable to start payment. Please try again.',
+            message: data?.message || 'Unable to start payment. Please try again.',
           });
         }
       },
-      onError: () => {
-        const msg = 'Error while starting payment.';
+      onError: err => {
+        const msg =
+          err?.data?.message || 'Error while starting payment.';
         if (Platform.OS === 'android') {
           ToastAndroid.show(msg, ToastAndroid.LONG);
         } else {
@@ -204,7 +278,7 @@ const CoachingScreen = ({ navigation }) => {
 
   const startPurchase = type => {
     setBundleType(type);
-    requestPaymentIntent();
+    requestSessionSetupIntent();
   };
 
   const handleConfirmPayment = async () => {
@@ -226,7 +300,7 @@ const CoachingScreen = ({ navigation }) => {
         setModalVisible(false);
         completePurchase({
           bundle_type: bundleType,
-          payment_method_id: setupIntent.paymentMethodId,
+          payment_method: setupIntent.paymentMethodId,
         });
       }
     } catch {
@@ -239,6 +313,8 @@ const CoachingScreen = ({ navigation }) => {
   const canBook = sessions?.canBookSession !== false;
   const loading = loadingSessions || loadingPurchase;
   const paying = loadingIntent || isProcessingPayment || purchasing;
+  const payOverlay =
+    loadingIntent || purchasing || (isProcessingPayment && !modalVisible);
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -251,18 +327,9 @@ const CoachingScreen = ({ navigation }) => {
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={
-              (fetchingSessions || fetchingPurchase) && !loading
-            }
-            onRefresh={refreshAll}
-            tintColor={COLORS.primary}
-          />
-        }
       >
         {loading ? (
-          <ActivityIndicator color={COLORS.primary} style={{ marginTop: 24 }} />
+          <AppLoader />
         ) : (
           <>
             {sessionsError ? (
@@ -358,8 +425,8 @@ const CoachingScreen = ({ navigation }) => {
                       disabled={paying}
                       onPress={() => startPurchase(pkg.bundleType)}
                     >
-                      {paying && bundleType === pkg.bundleType ? (
-                        <ActivityIndicator color={COLORS.white100} />
+                      {loadingIntent && bundleType === pkg.bundleType ? (
+                        <AppLoader compact size="small" color={COLORS.white100} />
                       ) : (
                         <Typography
                           fFamily="barlowSemiBold600"
@@ -400,7 +467,7 @@ const CoachingScreen = ({ navigation }) => {
             <Button
               label="Confirm payment"
               onPress={handleConfirmPayment}
-              loader={paying}
+              disabled={paying}
               btnStyle={{ width: '100%', marginTop: Sizer.vSize(16) }}
             />
             <TouchableOpacity
@@ -417,8 +484,18 @@ const CoachingScreen = ({ navigation }) => {
               </Typography>
             </TouchableOpacity>
           </View>
+
+          {isProcessingPayment ? (
+            <View style={styles.sheetLoader} pointerEvents="auto">
+              <View style={styles.sheetLoaderCard}>
+                <AppLoader compact size="large" color={COLORS.primary} />
+              </View>
+            </View>
+          ) : null}
         </View>
       </Modal>
+
+      <ScreenOverlayLoader visible={payOverlay} />
     </Container>
   );
 };
@@ -502,5 +579,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: Sizer.vSize(16),
     padding: Sizer.vSize(8),
+  },
+  sheetLoader: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(26, 26, 26, 0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetLoaderCard: {
+    width: 72,
+    height: 72,
+    borderRadius: 16,
+    backgroundColor: COLORS.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
   },
 });

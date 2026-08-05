@@ -1,13 +1,12 @@
 import React, { useMemo } from 'react';
 import {
-  ActivityIndicator,
   Linking,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Typography } from '../../../atomComponents';
+import { Typography, AppLoader } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
 import CourseHeader from '../../../components/course/CourseHeader';
 import Icon from '../../../helpers/Icon';
@@ -94,7 +93,7 @@ const CourseTrainScreen = ({ navigation }) => {
             Select a drill
           </Typography>
           {isLoading ? (
-            <ActivityIndicator color={COLORS.primary} />
+            <AppLoader />
           ) : isError ? (
             <TouchableOpacity onPress={refetch}>
               <Typography color={COLORS.primary}>

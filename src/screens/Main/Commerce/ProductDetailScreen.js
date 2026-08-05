@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Dimensions,
   Image,
   ScrollView,
@@ -9,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import CartBadgeButton from '../../../components/shop/CartBadgeButton';
 import Icon from '../../../helpers/Icon';
@@ -231,7 +230,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
 
   const renderBody = () => {
     if (isLoading) {
-      return <ActivityIndicator color={COLORS.primary} style={{ marginTop: 48 }} />;
+      return <AppLoader />;
     }
     if (isError || !product) {
       return (
@@ -443,7 +442,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
                 activeOpacity={0.88}
               >
                 {adding ? (
-                  <ActivityIndicator color={COLORS.white100} />
+                  <AppLoader compact size="small" color={COLORS.white100} />
                 ) : (
                   <Typography fFamily="barlowSemiBold600" size={15} color={COLORS.white100}>
                     Add to cart

@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import {
@@ -28,7 +27,6 @@ import {
   scoreFromStations,
   sortRoundsForFieldList,
 } from '../../../constants/rounds';
-import AppLoader from '../../../atomComponents/AppLoader';
 import EuropeanBadge from '../../../components/course/EuropeanBadge';
 
 /** Digital scorecard — completed rounds only (live API). */
@@ -76,7 +74,7 @@ const LibraryScorecardScreen = ({ navigation, route }) => {
           showsVerticalScrollIndicator={false}
         >
           {listLoading ? (
-            <ActivityIndicator color={COLORS.primary} style={{ marginTop: 40 }} />
+            <AppLoader />
           ) : null}
           {!listLoading && !completedRounds.length ? (
             <Typography

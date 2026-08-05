@@ -1,13 +1,12 @@
 import { Linking, ScrollView, StyleSheet, View } from 'react-native';
 import React from 'react';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import { Button, Header, Label, TextField } from '../../../components';
 import Sizer from '../../../helpers/Sizer';
 import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import StationsList from '../../../components/Round/StationsList';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getRound } from '../../../api/roundService';
-import AppLoader from '../../../atomComponents/AppLoader';
 import TableRow from '../../_partials/Round/TableRow';
 
 const ScorescoreCardDetailsScreen = ({ route, navigation }) => {

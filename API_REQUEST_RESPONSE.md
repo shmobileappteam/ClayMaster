@@ -2,7 +2,7 @@
 
 Companion to [`API_IMPLEMENTATION_STATUS.md`](./API_IMPLEMENTATION_STATUS.md) (status, error codes, validation, dev notes).
 
-Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`
+Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`, `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`
 
 **Base URL:** `{{base_url}}/api/` (app: `https://claymaster.net/api/` · forum doc sample may use `/beta`)
 

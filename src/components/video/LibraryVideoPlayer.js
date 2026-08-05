@@ -1,13 +1,12 @@
 import React, { useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
 import Video from 'react-native-video';
 import Icon from '../../helpers/Icon';
-import { Typography } from '../../atomComponents';
+import { Typography, AppLoader } from '../../atomComponents';
 import { COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
 
@@ -79,7 +78,7 @@ const LibraryVideoPlayer = ({
           onPress={() => setPaused(false)}
         >
           {loading ? (
-            <ActivityIndicator color={COLORS.white100} size="large" />
+            <AppLoader compact size="large" color={COLORS.white100} />
           ) : (
             <View style={styles.playBtn}>
               <Icon

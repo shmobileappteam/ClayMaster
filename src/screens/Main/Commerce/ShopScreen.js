@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  ActivityIndicator,
   Image,
   RefreshControl,
   ScrollView,
@@ -8,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import CartBadgeButton from '../../../components/shop/CartBadgeButton';
 import Icon from '../../../helpers/Icon';
@@ -54,7 +53,7 @@ const ShopScreen = ({ navigation }) => {
         }
       >
         {isLoading ? (
-          <ActivityIndicator color={COLORS.primary} style={{ marginTop: 32 }} />
+          <AppLoader />
         ) : isError ? (
           <TouchableOpacity onPress={refetch}>
             <Typography color={COLORS.primary} fFamily="barlowSemiBold600">

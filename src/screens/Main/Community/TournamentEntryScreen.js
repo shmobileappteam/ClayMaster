@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -12,11 +11,7 @@ import {
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import {
-  Container,
-  FormController,
-  Typography,
-} from '../../../atomComponents';
+import { Container, FormController, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { ScreenOverlayLoader } from '../../../components';
 import ProfileField from '../../../components/profile/ProfileField';
@@ -210,7 +205,7 @@ const TournamentEntryScreen = ({ navigation }) => {
                       NSCA Class
                     </Typography>
                     {classesLoading ? (
-                      <ActivityIndicator color={COLORS.primary} />
+                      <AppLoader />
                     ) : (
                       <CustomDropdown
                         data={classOptions}

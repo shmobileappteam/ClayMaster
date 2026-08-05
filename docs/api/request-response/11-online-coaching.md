@@ -2,6 +2,8 @@
 
 # 11. Online Coaching / Sessions
 
+Source: `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`
+
 ## 11.1 Coaches
 
 `GET /api/coaches` · Bearer
@@ -71,7 +73,7 @@
 
 `GET /api/sessions/purchase-info` · Bearer
 
-**Response**
+**Response `200`**
 
 ```json
 {
@@ -88,7 +90,31 @@
 
 ---
 
-## 11.4 Purchase session
+## 11.4 Session SetupIntent
+
+`POST /api/sessions/setup-intent` · Bearer
+
+**Request body:** none (pricing / bundle are not sent here)
+
+**Response `201`**
+
+```json
+{
+  "status": true,
+  "message": "Session payment setup intent created successfully.",
+  "data": {
+    "setup_intent_id": "seti_xxxxx",
+    "client_secret": "seti_xxxxx_secret_xxxxx",
+    "customer_id": "cus_xxxxx"
+  }
+}
+```
+
+Pass `data.client_secret` to Stripe `confirmSetupIntent`. Never send the seti secret as `payment_method`. Read `setupIntent.paymentMethodId` (`pm_...`).
+
+---
+
+## 11.5 Purchase session
 
 `POST /api/sessions/purchase` · Bearer
 
@@ -96,8 +122,8 @@
 
 ```json
 {
-  "bundle_type": "single",
-  "payment_method_id": "pm_1Tvaw8EE9zClGUlAmdaifeCv"
+  "payment_method": "pm_xxxxx",
+  "bundle_type": "single"
 }
 ```
 
@@ -105,27 +131,49 @@
 
 ```json
 {
-  "bundle_type": "bundle",
-  "payment_method_id": "pm_1TvbIAEE9zClGUlApftK3OU5"
+  "payment_method": "pm_xxxxx",
+  "bundle_type": "bundle"
 }
 ```
 
-**Response**
+**Successful response `201`**
 
 ```json
 {
-  "success": true,
-  "message": "1 session(s) have been purchased!",
+  "status": true,
+  "message": "1 session(s) purchased successfully.",
   "data": {
+    "payment_intent_id": "pi_xxxxx",
+    "payment_status": "succeeded",
+    "bundle_type": "single",
     "sessions_added": 1,
-    "remaining_sessions": 11,
-    "amount_charged": 75
+    "remaining_sessions": 23,
+    "amount_charged": 75,
+    "amount_cents": 7500,
+    "currency": "USD"
   }
 }
 ```
 
-Doc lists `201 / 403 / 422` for several of these; confirm actual GET status codes against live API when wiring.
+Treat **`data.payment_status: "succeeded"`** as final success.
+
+**Additional authentication (3D Secure)**
+
+```json
+{
+  "status": false,
+  "requires_action": true,
+  "message": "Additional authentication is required.",
+  "data": {
+    "payment_intent_id": "pi_xxxxx",
+    "payment_intent_client_secret": "pi_xxxxx_secret_xxxxx",
+    "payment_status": "requires_action"
+  }
+}
+```
+
+Pass `payment_intent_client_secret` to Stripe `handleNextAction`.
 
 ---
 
-*Pair with `API_IMPLEMENTATION_STATUS.md` for wiring status. Update samples if backend responses change.*
+*Pair with `API_IMPLEMENTATION_STATUS.md` for wiring status.*

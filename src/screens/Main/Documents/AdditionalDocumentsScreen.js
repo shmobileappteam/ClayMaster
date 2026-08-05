@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  ActivityIndicator,
   Linking,
   RefreshControl,
   ScrollView,
@@ -8,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import {
@@ -107,7 +106,7 @@ const AdditionalDocumentsScreen = ({ navigation }) => {
         </Typography>
 
         {isLoading ? (
-          <ActivityIndicator color={COLORS.primary} />
+          <AppLoader />
         ) : isError ? (
           <TouchableOpacity onPress={refetch}>
             <Typography color={COLORS.primary} fFamily="barlowSemiBold600">

@@ -64,10 +64,34 @@ export const removeCartItem = async variantId => {
 };
 
 /**
+ * POST /api/checkout/setup-intent
+ * Backend reads the authenticated user's cart.
+ * Payment required: data.client_secret + payment_required: true
+ * Zero-total credit: payment_required: false, client_secret: null
+ */
+export const createCheckoutSetupIntent = async () => {
+  const response = await api.post(ENDPOINTS.CHECKOUT_SETUP_INTENT);
+  const body = response.data;
+  const data = body?.data && !Array.isArray(body.data) ? body.data : body;
+  return {
+    status: body?.status,
+    message: body?.message,
+    payment_required: data?.payment_required !== false,
+    client_secret: data?.client_secret ?? null,
+    setup_intent_id: data?.setup_intent_id ?? null,
+    customer_id: data?.customer_id ?? null,
+    subtotal: Number(data?.subtotal) || 0,
+    discount: Number(data?.discount) || 0,
+    total: Number(data?.total) || 0,
+    currency: data?.currency || 'USD',
+  };
+};
+
+/**
  * POST /api/checkout/place-order
- * Body: { first_name, last_name, email, phone, country, state, address1,
- *         zip, city, companyname, payment_method, stripe_customer_id }
- * Success: { status: "success" (string), data: { order_id, order_number } }
+ * Body: billing fields + payment_method (pm_...) when payment is required.
+ * Omit payment_method when checkout setup-intent returned payment_required: false.
+ * Success: status true/"success" and data.payment_status === 'succeeded' (when charged).
  */
 export const placeOrder = async payload => {
   const response = await api.post(ENDPOINTS.PLACE_ORDER, payload);

@@ -1,6 +1,6 @@
 # ClayMaster API — Module Implementation Status
 
-Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`  
+Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`, `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`  
 App base: `https://claymaster.net/api/` (`src/api/endpoints.js`)  
 Request/response samples (module-wise): [`API_REQUEST_RESPONSE.md`](./API_REQUEST_RESPONSE.md) → `docs/api/request-response/`
 
@@ -386,7 +386,8 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 | `GET` | `/api/cart` | Bearer | ✅ Live (`CartScreen` + cart badge) |
 | `POST` | `/api/cart/update` | Bearer | ✅ Live (qty stepper) |
 | `DELETE` | `/api/cart/{variant_id}` | Bearer | ✅ Live (trash / qty→0) |
-| `POST` | `/api/checkout/place-order` | Bearer | ✅ Live (`CheckoutScreen` billing form + Stripe) |
+| `POST` | `/api/checkout/setup-intent` | Bearer | ✅ Live (`CheckoutScreen` — cart-based SetupIntent) |
+| `POST` | `/api/checkout/place-order` | Bearer | ✅ Live (`CheckoutScreen` billing form + Stripe `pm_...`) |
 | `GET` | `/api/orders` | Bearer | ✅ Live (`OrdersScreen`) |
 | `GET` | `/api/orders/{id}` | Bearer | ✅ Live (`OrderDetailScreen`) |
 
@@ -394,16 +395,19 @@ Create round `422`: ⏳ not confirmed (controller source not shared).
 
 | Code | Notes |
 |------|--------|
+| `400` | Cart empty — return user to cart |
 | `401` | Unauthenticated |
-| `500` | Possible on product list DB fail |
-| `422` | Checkout billing validation → mapped to form fields via `formatBackendErrors` |
+| `403` | Subscription/plan not eligible |
+| `422` | Checkout billing / payment validation → mapped to form fields via `formatBackendErrors` |
+| `500` | Unexpected — show retry; do not assume payment failed |
 
 ### Dev notes
 
 - Service: `src/api/shopService.js` · mappers: `src/constants/shop.js`.
 - Cart item / variant prices in **cents** (`2500` = $25) — `centsToDollars` in UI; cart summary (`subtotal`/`discount`/`total`) and order totals are dollars.
-- Checkout success uses `status: "success"` (**string**) — both string and boolean accepted.
-- Payment: `stripe/setup-intent` → `confirmSetupIntent` (CardField) → `payment_method` in place-order body.
+- Payment: **`checkout/setup-intent`** (not `stripe/setup-intent`) → `confirmSetupIntent` → `payment_method` (`pm_...`) in place-order.
+- Zero-total credit: setup-intent returns `payment_required: false` → place-order **without** `payment_method`.
+- Success when `status` true/`"success"` and `data.payment_status === "succeeded"` (when charged).
 - Server cart is source of truth: Redux `cartSlice`, `shopProducts.js`, `shopHelpers.js` removed; badge uses query `['cart']`.
 - Printify: variant resolved from selected color/size option-value ids; hero image switches per variant (`imageForVariant`).
 
@@ -462,25 +466,26 @@ Replies / reactions / reports / polls: auth only (subscription check not applied
 | `GET` | `/api/coaches` | Bearer | ✅ Live (`AnalyticsScheduleScreen` Book tab) |
 | `GET` | `/api/sessions` | Bearer | ✅ Live (`CoachingScreen` stats + schedule upcoming/history) |
 | `GET` | `/api/sessions/purchase-info` | Bearer | ✅ Live (`CoachingScreen` Buy Sessions) |
-| `POST` | `/api/sessions/purchase` | Bearer | ✅ Live (`CoachingScreen` Stripe → `payment_method_id`) |
+| `POST` | `/api/sessions/setup-intent` | Bearer | ✅ Live (`CoachingScreen` — module SetupIntent) |
+| `POST` | `/api/sessions/purchase` | Bearer | ✅ Live (`CoachingScreen` Stripe → `payment_method`) |
 
 ### Errors
-
-Doc lists expected HTTP as `201 / 403 / 422` for several of these (including GETs) — treat as noisy; confirm live:
 
 | Likely | Notes |
 |--------|--------|
 | `401` | Unauthenticated |
-| `403` | Package / booking limit |
-| `422` | Purchase validation (`bundle_type`, `payment_method_id`) |
-| Success purchase | `{ success: true, message, data: { sessions_added, remaining_sessions, amount_charged } }` |
+| `403` | Package / booking limit — show API message; do not open Stripe |
+| `422` | Purchase validation (`bundle_type`, `payment_method`) |
+| Success | `data.payment_status === "succeeded"` with `sessions_added`, `remaining_sessions` |
+| 3DS | `requires_action: true` + `data.payment_intent_client_secret` → Stripe `handleNextAction` |
 
 ### Dev notes
 
 - Service: `src/api/coachingService.js` · helpers: `src/constants/coaching.js`.
 - Coaches return Calendly `booking_url`s — open in-app via `CalendlyBookingScreen` (WebView).
 - Sessions include Zoom `join_url` (nullable) + usage `summary`; split upcoming/past by `datetime`.
-- Purchase: setup-intent → Stripe Card → `bundle_type` = `single` | `bundle` + `payment_method_id`.
+- Purchase: **`sessions/setup-intent`** (not `stripe/setup-intent`) → `confirmSetupIntent` → `sessions/purchase` with `bundle_type` + `payment_method` (`pm_...`).
+- Never send a SetupIntent client secret as `payment_method`.
 - Nav: drawer **On-line Coaching** → `CoachingScreen`; Book Session / Analytics “Schedule Analytics Session” → `AnalyticsScheduleScreen`.
 - No in-app create/reschedule API — scheduling is Calendly (WebView) only.
 

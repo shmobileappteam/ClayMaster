@@ -192,7 +192,56 @@
 
 ---
 
-## 9.7 Place order
+## 9.7 Checkout SetupIntent
+
+`POST /api/checkout/setup-intent` · Bearer
+
+**Request body:** none (backend reads the authenticated user's cart)
+
+**Payment required — `201`**
+
+```json
+{
+  "status": true,
+  "message": "Checkout setup intent created successfully.",
+  "data": {
+    "subtotal_cents": 10000,
+    "discount_cents": 7500,
+    "total_cents": 2500,
+    "subtotal": 100,
+    "discount": 75,
+    "total": 25,
+    "currency": "USD",
+    "payment_required": true,
+    "setup_intent_id": "seti_xxxxx",
+    "client_secret": "seti_xxxxx_secret_xxxxx",
+    "customer_id": "cus_xxxxx"
+  }
+}
+```
+
+Pass `data.client_secret` to Stripe `confirmSetupIntent`, then send `pm_...` to place-order.
+
+**Zero-total credit order**
+
+When merchandise credit covers the subtotal:
+
+```json
+{
+  "payment_required": false,
+  "subtotal": 50,
+  "discount": 50,
+  "total": 0,
+  "setup_intent_id": null,
+  "client_secret": null
+}
+```
+
+Call place-order **without** `payment_method`.
+
+---
+
+## 9.8 Place order
 
 `POST /api/checkout/place-order` · Bearer
 
@@ -200,36 +249,48 @@
 
 ```json
 {
-  "first_name": "test",
-  "last_name": "test",
-  "email": "jacksmithjs4557078@gmail.com",
-  "phone": "34534535",
-  "country": "AR",
-  "state": "L",
-  "address1": "test",
-  "zip": "test",
-  "city": "test",
-  "companyname": "test",
-  "payment_method": "pm_1TtSMwEE9zClGUlAe66ZkFXY"
+  "first_name": "John",
+  "last_name": "Smith",
+  "email": "john@example.com",
+  "phone": "32324234",
+  "country": "US",
+  "state": "SC",
+  "address1": "123 Main St",
+  "address2": null,
+  "zip": "29601",
+  "city": "Greenville",
+  "companyname": "",
+  "payment_method": "pm_xxxxx"
 }
 ```
 
-**Response `200`**
+Omit `payment_method` when setup-intent returned `payment_required: false`.
+
+**Successful response `201`**
 
 ```json
 {
-  "status": "success",
+  "status": true,
   "message": "Order placed successfully!",
   "data": {
-    "order_id": 10,
-    "order_number": "ORD-TI7WS8P9TWZHUQSC"
+    "order_id": 16,
+    "order_number": "ORD-XXXXXXXXXXXX",
+    "payment_intent_id": "pi_xxxxx",
+    "payment_status": "succeeded",
+    "subtotal": 100,
+    "discount": 75,
+    "total": 25,
+    "currency": "USD",
+    "already_processed": false
   }
 }
 ```
 
+Treat **`data.payment_status: "succeeded"`** as final success when a charge was made. Never send a `seti_..._secret_...` as `payment_method`.
+
 ---
 
-## 9.8 Orders list
+## 9.9 Orders list
 
 `GET /api/orders` · Bearer
 
@@ -262,7 +323,7 @@
 
 ---
 
-## 9.9 Order detail
+## 9.10 Order detail
 
 `GET /api/orders/{id}` · Bearer
 

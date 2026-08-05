@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import {
-  ActivityIndicator,
   Linking,
   RefreshControl,
   ScrollView,
@@ -10,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import RenderHTML from 'react-native-render-html';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import { COLORS, GLOBALSTYLE, SHADOWS, SPACING } from '../../../globalStyle/Theme';
@@ -166,7 +165,7 @@ const WorkbookDetailScreen = ({ navigation, route }) => {
         }
       >
         {isLoading ? (
-          <ActivityIndicator color={COLORS.primary} />
+          <AppLoader />
         ) : isError ? (
           <TouchableOpacity onPress={refetch}>
             <Typography color={COLORS.primary} fFamily="barlowSemiBold600">

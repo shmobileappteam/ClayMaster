@@ -1,10 +1,12 @@
 import React from 'react';
-import { ActivityIndicator, Modal, StyleSheet, View } from 'react-native';
+import { Modal, StyleSheet, View } from 'react-native';
 import { COLORS } from '../globalStyle/Theme';
+import AppLoader from '../atomComponents/AppLoader';
 
 /**
- * Full-screen dim overlay with a centered spinner.
+ * Full-screen dim overlay with a centered spinner card.
  * Content behind stays visible; touches are blocked while `visible`.
+ * Uses the shared AppLoader (react-native ActivityIndicator).
  *
  * @param {'default'|'field'} [variant] — `field` for On-the-Course dark theme
  */
@@ -29,7 +31,7 @@ const ScreenOverlayLoader = ({
         pointerEvents="auto"
       >
         <View style={[styles.spinnerCard, isField && styles.spinnerCardField]}>
-          <ActivityIndicator size="large" color={spinnerColor} />
+          <AppLoader compact size="large" color={spinnerColor} />
         </View>
       </View>
     </Modal>

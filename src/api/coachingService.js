@@ -73,13 +73,32 @@ export const getSessionPurchaseInfo = async () => {
 };
 
 /**
- * POST /api/sessions/purchase
- * Body: { bundle_type: 'single' | 'bundle', payment_method_id }
+ * POST /api/sessions/setup-intent
+ * Response data: { setup_intent_id, client_secret, customer_id }
  */
-export const purchaseSessions = async ({ bundle_type, payment_method_id }) => {
+export const createSessionSetupIntent = async () => {
+  const response = await api.post(ENDPOINTS.SESSIONS_SETUP_INTENT);
+  const body = response.data;
+  const data = body?.data && !Array.isArray(body.data) ? body.data : body;
+  return {
+    status: body?.status,
+    message: body?.message,
+    client_secret: data?.client_secret ?? null,
+    setup_intent_id: data?.setup_intent_id ?? null,
+    customer_id: data?.customer_id ?? null,
+  };
+};
+
+/**
+ * POST /api/sessions/purchase
+ * Body: { payment_method: 'pm_...', bundle_type: 'single' | 'bundle' }
+ * Success: data.payment_status === 'succeeded'
+ * 3DS: { status: false, requires_action: true, data.payment_intent_client_secret }
+ */
+export const purchaseSessions = async ({ bundle_type, payment_method }) => {
   const response = await api.post(ENDPOINTS.PURCHASE_SESSIONS, {
     bundle_type,
-    payment_method_id,
+    payment_method,
   });
   return response.data;
 };

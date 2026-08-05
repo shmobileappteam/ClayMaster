@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   Linking,
   RefreshControl,
@@ -10,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import {
@@ -270,7 +269,7 @@ const NotificationScreen = ({ navigation }) => {
 
         {isLoading ? (
           <View style={styles.centerState}>
-            <ActivityIndicator color={COLORS.primary} size="large" />
+            <AppLoader />
           </View>
         ) : null}
 

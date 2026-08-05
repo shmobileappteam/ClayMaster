@@ -1,8 +1,11 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import {
+  StyleSheet,
+  View,
+} from 'react-native';
 import { WebView } from 'react-native-webview';
 import { useQueryClient } from '@tanstack/react-query';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { COLORS } from '../../../globalStyle/Theme';
 import { showMessage } from '../../../utils';
@@ -100,7 +103,7 @@ const CalendlyBookingScreen = ({ navigation, route }) => {
         <View style={styles.webWrap}>
           {loading && !closedRef.current ? (
             <View style={styles.loader}>
-              <ActivityIndicator color={COLORS.primary} size="large" />
+              <AppLoader />
             </View>
           ) : null}
           <WebView

@@ -1,7 +1,13 @@
 import React from 'react';
-import { Modal, Text, View, StyleSheet, TouchableOpacity } from 'react-native';
-import { ActivityIndicator } from 'react-native-paper';
+import {
+  Modal,
+  Text,
+  View,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import { COLORS, FONTS } from '../../globalStyle/Theme';
+import AppLoader from '../../atomComponents/AppLoader';
 
 const ConfirmModal = ({
   visible,
@@ -107,7 +113,7 @@ const Button = ({
       disabled={loading || disabled}
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#fff" />
+        <AppLoader compact size="small" color="#fff" />
       ) : (
         <Text style={[styles.buttonText, { color }]}>{text}</Text>
       )}

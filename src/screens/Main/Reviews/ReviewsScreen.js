@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Modal,
@@ -13,11 +12,7 @@ import {
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
-import {
-  Container,
-  FormController,
-  Typography,
-} from '../../../atomComponents';
+import { Container, FormController, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import ProfileField from '../../../components/profile/ProfileField';
 import Icon from '../../../helpers/Icon';
@@ -275,7 +270,7 @@ const ReviewsScreen = ({ navigation }) => {
 
         {isLoading ? (
           <View style={styles.centered}>
-            <ActivityIndicator color={COLORS.primary} />
+            <AppLoader />
           </View>
         ) : isError ? (
           <View style={styles.centered}>
@@ -501,7 +496,7 @@ const ReviewsScreen = ({ navigation }) => {
                   onPress={handleSubmit}
                 >
                   {isSubmitting ? (
-                    <ActivityIndicator color={COLORS.white100} />
+                    <AppLoader compact size="small" color={COLORS.white100} />
                   ) : (
                     <Typography
                       fFamily="barlowSemiBold600"

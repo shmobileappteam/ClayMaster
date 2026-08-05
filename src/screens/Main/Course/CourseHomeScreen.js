@@ -1,12 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Typography } from '../../../atomComponents';
+import { Typography, AppLoader } from '../../../atomComponents';
 import CourseLayout from '../../../components/course/CourseLayout';
 import EuropeanBadge from '../../../components/course/EuropeanBadge';
 import Icon from '../../../helpers/Icon';
@@ -192,7 +191,7 @@ const CourseHomeScreen = ({ navigation }) => {
         </Typography>
 
         {isLoading && !rounds.length ? (
-          <ActivityIndicator color={COLORS.primary} style={{ marginTop: 24 }} />
+          <AppLoader />
         ) : null}
 
         {!isLoading && !rounds.length ? (
@@ -342,7 +341,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexShrink: 0,
   },
-
 
   badgeResume: {
     backgroundColor: 'rgba(235, 108, 15, 0.15)',

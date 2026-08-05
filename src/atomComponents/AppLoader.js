@@ -1,12 +1,26 @@
-import { StyleSheet, Text, View } from 'react-native';
 import React from 'react';
-//----
-import { ActivityIndicator } from 'react-native-paper';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { COLORS } from '../globalStyle/Theme';
 
-const AppLoader = () => {
+const AppLoader = ({
+  size = 'large',
+  color,
+  fill = false,
+  compact = false,
+  style,
+}) => {
+  const spinnerColor = color || COLORS.primary;
+  const spinner = (
+    <ActivityIndicator size={size} color={spinnerColor} />
+  );
+
+  if (compact) {
+    return spinner;
+  }
+
   return (
-    <View style={styles.root}>
-      <ActivityIndicator />
+    <View style={[fill ? styles.fill : styles.block, style]}>
+      {spinner}
     </View>
   );
 };
@@ -14,9 +28,16 @@ const AppLoader = () => {
 export default AppLoader;
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    justifyContent: 'center',
+  block: {
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  fill: {
+    flex: 1,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -1,13 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import Icon from '../../../helpers/Icon';
 import {
@@ -222,7 +221,7 @@ const VirtualTournamentScreen = ({ navigation }) => {
         </View>
 
         {isLoading ? (
-          <ActivityIndicator color={COLORS.primary} style={{ marginTop: 24 }} />
+          <AppLoader />
         ) : isError ? (
           <TouchableOpacity
             style={[GLOBALSTYLE.screenCard, styles.emptyCard]}

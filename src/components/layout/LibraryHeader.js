@@ -19,7 +19,7 @@ import { KEYS } from '../../constants';
 
 /**
  * Web AppHeader parity — sticky library-mode header with menu + notifications.
- * Mode switcher only on Library bottom tabs — pass showModeIndicator there.
+ * Flex row: left actions | title (flex) | right actions — no absolute title clipping.
  */
 const LibraryHeader = ({
   title,
@@ -47,17 +47,7 @@ const LibraryHeader = ({
   return (
     <View style={[styles.wrap, { paddingTop: insets.top }]}>
       <View style={styles.row}>
-        <Typography
-          fFamily="barlowSemiBold600"
-          size={18}
-          color={COLORS.textPrimary}
-          textAlign="center"
-          style={styles.title}
-          numberOfLines={1}
-        >
-          {title}
-        </Typography>
-        <View style={styles.side}>
+        <View style={styles.sideLeft}>
           {showBack ? (
             <TouchableOpacity
               onPress={onBack || (() => navigation.goBack())}
@@ -89,7 +79,18 @@ const LibraryHeader = ({
             </TouchableOpacity>
           ) : null}
         </View>
-        <View style={[styles.side, styles.sideRight]}>
+
+        <Typography
+          fFamily="barlowSemiBold600"
+          size={17}
+          color={COLORS.textPrimary}
+          style={styles.title}
+          numberOfLines={1}
+        >
+          {title}
+        </Typography>
+
+        <View style={styles.sideRight}>
           {rightSlot}
           {showNotification ? (
             <TouchableOpacity
@@ -128,29 +129,27 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    height: Sizer.vSize(56),
-    paddingHorizontal: Sizer.hSize(16),
-    position: 'relative',
+    minHeight: Sizer.vSize(56),
+    paddingHorizontal: Sizer.hSize(8),
+    gap: Sizer.hSize(4),
   },
-  side: {
-    zIndex: 1,
-    minWidth: Sizer.hSize(40),
+  sideLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
   },
   sideRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'flex-end',
+    flexShrink: 0,
     gap: Sizer.hSize(4),
   },
   title: {
-    position: 'absolute',
-    // Clear back + up to two 40px action icons so long titles ellipsize
-    left: Sizer.hSize(88),
-    right: Sizer.hSize(88),
-    textAlign: 'center',
-    zIndex: 0,
-    pointerEvents: 'none',
+    flex: 1,
+    minWidth: 0,
+    textAlign: 'left',
+    paddingHorizontal: Sizer.hSize(4),
   },
   iconBtn: {
     width: Sizer.hSize(40),

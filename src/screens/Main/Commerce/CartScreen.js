@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   Image,
   RefreshControl,
   ScrollView,
@@ -9,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useQueryClient } from '@tanstack/react-query';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import { ScreenOverlayLoader } from '../../../components';
 import Icon from '../../../helpers/Icon';
@@ -100,7 +99,7 @@ const CartScreen = ({ navigation }) => {
     return (
       <Container isPadding={false} backgroundColor={COLORS.mainBg}>
         {header}
-        <ActivityIndicator color={COLORS.primary} style={{ marginTop: 48 }} />
+        <AppLoader />
       </Container>
     );
   }

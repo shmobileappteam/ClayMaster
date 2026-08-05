@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import {
-  ActivityIndicator,
   Linking,
   StyleSheet,
   TouchableOpacity,
   View,
 } from 'react-native';
 import Pdf from 'react-native-pdf';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import CourseLayout from '../../../components/course/CourseLayout';
 import CourseHeader from '../../../components/course/CourseHeader';
@@ -17,7 +16,7 @@ import Sizer from '../../../helpers/Sizer';
 import { openRemoteFile } from '../../../constants/academy';
 import { showMessage } from '../../../utils';
 
-/** In-app PDF viewer with system Download (same as Download File). */
+/** In-app PDF viewer with Download in the header (not a separate bar). */
 const DrillDetailScreen = ({ navigation, route }) => {
   const fieldMode = route?.params?.fieldMode === true;
   const drill = route?.params?.drill;
@@ -28,39 +27,44 @@ const DrillDetailScreen = ({ navigation, route }) => {
 
   const onDownload = () => openRemoteFile(uri, Linking, showMessage);
 
-  const downloadBar = uri ? (
-    <View style={[styles.downloadBar, fieldMode && styles.downloadBarField]}>
-      <TouchableOpacity
-        style={[styles.downloadBtn, fieldMode && styles.downloadBtnField]}
-        activeOpacity={0.88}
-        onPress={onDownload}
+  const downloadBtn = uri ? (
+    <TouchableOpacity
+      style={[styles.downloadBtn, fieldMode && styles.downloadBtnField]}
+      activeOpacity={0.88}
+      onPress={onDownload}
+      hitSlop={8}
+    >
+      <Icon
+        name="download-outline"
+        iconFamily="Ionicons"
+        size={18}
+        color={fieldMode ? COLORS.white100 : COLORS.primary}
+      />
+      <Typography
+        fFamily="barlowSemiBold600"
+        size={13}
+        color={fieldMode ? COLORS.white100 : COLORS.primary}
+        mL={4}
       >
-        <Icon
-          name="download-outline"
-          iconFamily="Ionicons"
-          size={16}
-          color={fieldMode ? COLORS.white100 : COLORS.textPrimary}
-        />
-        <Typography
-          fFamily="barlowSemiBold600"
-          size={13}
-          color={fieldMode ? COLORS.white100 : COLORS.textPrimary}
-          mL={6}
-        >
-          Download
-        </Typography>
-      </TouchableOpacity>
-    </View>
+        Download
+      </Typography>
+    </TouchableOpacity>
   ) : null;
 
   const header = fieldMode ? (
-    <CourseHeader title={title} showBack onBack={() => navigation.goBack()} />
+    <CourseHeader
+      title={title}
+      showBack
+      onBack={() => navigation.goBack()}
+      rightAction={downloadBtn}
+    />
   ) : (
     <LibraryHeader
       title={title}
       showBack
       showNotification={false}
       onBack={() => navigation.goBack()}
+      rightSlot={downloadBtn}
     />
   );
 
@@ -72,10 +76,9 @@ const DrillDetailScreen = ({ navigation, route }) => {
     </View>
   ) : (
     <View style={styles.viewer}>
-      {downloadBar}
       {loading ? (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator color={COLORS.primary} size="large" />
+          <AppLoader compact size="large" />
         </View>
       ) : null}
       {error ? (
@@ -128,31 +131,19 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: COLORS.mainBg,
   },
-  downloadBar: {
-    paddingHorizontal: Sizer.hSize(16),
-    paddingVertical: Sizer.vSize(10),
-    backgroundColor: COLORS.mainBg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.borderMuted || '#E5E5E5',
-  },
-  downloadBarField: {
-    backgroundColor: COLORS.courseBg,
-    borderBottomColor: COLORS.courseBorder,
-  },
   downloadBtn: {
-    alignSelf: 'flex-end',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Sizer.hSize(14),
-    height: Sizer.vSize(36),
+    paddingHorizontal: Sizer.hSize(8),
+    height: Sizer.vSize(34),
     borderRadius: Sizer.hSize(10),
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.borderMuted || '#DDD',
-    backgroundColor: COLORS.surface || '#FFF',
+    backgroundColor: COLORS.primaryLight,
+    flexShrink: 0,
   },
   downloadBtnField: {
-    borderColor: COLORS.courseBorder,
     backgroundColor: COLORS.courseSurface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.courseBorder,
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,

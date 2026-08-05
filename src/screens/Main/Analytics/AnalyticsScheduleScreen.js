@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Linking,
   RefreshControl,
   ScrollView,
@@ -8,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { Container, Typography } from '../../../atomComponents';
+import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import BookingForm from '../../../components/coaching/BookingForm';
 import BookingHistoryCard from '../../../components/coaching/BookingHistoryCard';
@@ -69,12 +68,14 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
     queryFn: getSessions,
   });
 
+  console.log('sessions', sessions);
   const coaches = coachesData?.items || [];
   const { upcoming, past } = useMemo(
     () => splitAppointments(sessions?.appointments),
     [sessions?.appointments],
   );
 
+  console.log('upcoming', upcoming);
   if (blocked) {
     return null;
   }
@@ -186,7 +187,7 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
               }
             >
               {loadingSessions ? (
-                <ActivityIndicator color={COLORS.primary} />
+                <AppLoader />
               ) : sessionsError ? (
                 <TouchableOpacity onPress={refetchSessions}>
                   <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
@@ -232,7 +233,7 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
               }
             >
               {loadingSessions ? (
-                <ActivityIndicator color={COLORS.primary} />
+                <AppLoader />
               ) : sessionsError ? (
                 <TouchableOpacity onPress={refetchSessions}>
                   <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
