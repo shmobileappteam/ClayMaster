@@ -110,10 +110,10 @@ const VerifyEmailScreen = ({ navigation, route }) => {
       }
     >
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
-          { paddingBottom: 64 },
+          { flexGrow: 1, paddingBottom: 64 },
           isEmailVerified && {
-            flexGrow: 1,
             justifyContent: 'center',
           },
         ]}

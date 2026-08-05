@@ -1,10 +1,14 @@
-import { View, KeyboardAvoidingView, Platform } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 //----
 import { COLORS, GLOBALSTYLE } from '../globalStyle/Theme';
 
+/**
+ * Auth / form screens: pass `keyboardAvoid` + wrap fields in a ScrollView
+ * with `keyboardShouldPersistTaps="handled"`.
+ */
 const SafeAreaWrapper = ({
   children,
   edges = null,
@@ -12,13 +16,13 @@ const SafeAreaWrapper = ({
   bgColor = COLORS.mainBg,
   keyboardAvoid = false,
   isPadding = true,
+  keyboardVerticalOffset = 0,
 }) => {
-  const Wrapper = keyboardAvoid ? KeyboardAvoidingView : React.Fragment;
-
   return (
     <SafeAreaView
-      {...(Platform.OS === "ios" ? { edges: { bottom: 'off', top: 'maximum' } } : {})}
-
+      {...(Platform.OS === 'ios'
+        ? { edges: { bottom: 'off', top: 'maximum' } }
+        : {})}
       style={[
         {
           flex: 1,
@@ -27,17 +31,19 @@ const SafeAreaWrapper = ({
         },
         isPadding && GLOBALSTYLE.paddingHor,
       ]}
-      {...edges}>
-      <Wrapper
-        {...(keyboardAvoid
-          ? {
-            behavior: Platform.OS === 'ios' ? 'padding' : 'height',
-            style: { flex: 1 },
-            keyboardVerticalOffset: -100,
-          }
-          : {})}>
-        {children}
-      </Wrapper>
+      {...edges}
+    >
+      {keyboardAvoid ? (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={keyboardVerticalOffset}
+        >
+          {children}
+        </KeyboardAvoidingView>
+      ) : (
+        children
+      )}
     </SafeAreaView>
   );
 };

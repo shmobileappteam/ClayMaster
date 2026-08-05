@@ -4,6 +4,8 @@
 
 Source: `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`
 
+> **Not Managed Service.** Extra managed-service sessions use PaymentIntent + PaymentSheet + verify — see [12-managed-services.md](./12-managed-services.md). This module uses SetupIntent → `payment_method` → `sessions/purchase`.
+
 ## 11.1 Coaches
 
 `GET /api/coaches` · Bearer

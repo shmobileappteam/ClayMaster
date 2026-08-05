@@ -60,7 +60,7 @@ const SignupScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaWrapper keyboardAvoid>
+    <SafeAreaWrapper keyboardAvoid={true}>
       <Header
         iconColor={COLORS.white100}
         left={Sizer.hSize(0)}
@@ -69,6 +69,7 @@ const SignupScreen = ({ navigation }) => {
       
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.scrollContent}
       >
         <Typography
@@ -243,6 +244,7 @@ export default SignupScreen;
 
 const styles = StyleSheet.create({
     scrollContent: {
+        flexGrow: 1,
         paddingBottom: Sizer.vSize(40),
         paddingHorizontal: Sizer.hSize(0),
     },

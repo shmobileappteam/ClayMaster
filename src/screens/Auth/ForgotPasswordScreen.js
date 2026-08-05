@@ -1,8 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import React from 'react';
 //---
 import {
-  Container,
   FormController,
   SafeAreaWrapper,
   Typography,
@@ -38,59 +37,72 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaWrapper>
+    <SafeAreaWrapper keyboardAvoid>
       <Header
         iconColor={COLORS.white100}
         left={Sizer.hSize(0)}
         isBackVisible={true}
       />
 
-      <Typography
-        size={40}
-        textAlign="center"
-        mT={52}
-        fFamily="barlowBoldItalic700"
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.scrollContent}
       >
-        Reset password
-      </Typography>
+        <Typography
+          size={40}
+          textAlign="center"
+          mT={52}
+          fFamily="barlowBoldItalic700"
+        >
+          Reset password
+        </Typography>
 
-      <Typography size={16} textAlign="center" color={COLORS.black200} mT={8}>
-        Sign in to continue
-      </Typography>
+        <Typography size={16} textAlign="center" color={COLORS.black200} mT={8}>
+          Enter your email to receive a verification code
+        </Typography>
 
-      <FormController
-        initialValues={{ email: __DEV__ ? 'david@mailinator.com' : '' }}
-        validationSchema={validatoinSchema.authValidations.ForgotPasswordSchema}
-        onSubmit={handleForgotPassword}
-      >
-        {props => {
-          const { handleSubmit, handleBlur, handleChange, values, errors } = props;
-          return (
-            <>
-              <TextField
-                placeholder="Email"
-                handleChange={handleChange('email')}
-                handleBlur={handleBlur('email')}
-                value={values?.email}
-                error={errors?.email}
-                leftIcon
-                mT={23}
-              />
+        <FormController
+          initialValues={{ email: __DEV__ ? 'david@mailinator.com' : '' }}
+          validationSchema={validatoinSchema.authValidations.ForgotPasswordSchema}
+          onSubmit={handleForgotPassword}
+        >
+          {props => {
+            const { handleSubmit, handleBlur, handleChange, values, errors } =
+              props;
+            return (
+              <>
+                <TextField
+                  placeholder="Email"
+                  handleChange={handleChange('email')}
+                  handleBlur={handleBlur('email')}
+                  value={values?.email}
+                  error={errors?.email}
+                  leftIcon
+                  mT={23}
+                  keyboardType="email-address"
+                />
 
-              <Button
-                label="Send code"
-                mt={30}
-                onPress={handleSubmit}
-                loader={isPending}
-              />
-            </>
-          );
-        }}
-      </FormController>
+                <Button
+                  label="Send code"
+                  mt={30}
+                  onPress={handleSubmit}
+                  loader={isPending}
+                />
+              </>
+            );
+          }}
+        </FormController>
+      </ScrollView>
     </SafeAreaWrapper>
   );
 };
 
 export default ForgotPasswordScreen;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: Sizer.vSize(32),
+  },
+});

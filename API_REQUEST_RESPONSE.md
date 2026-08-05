@@ -2,7 +2,7 @@
 
 Companion to [`API_IMPLEMENTATION_STATUS.md`](./API_IMPLEMENTATION_STATUS.md) (status, error codes, validation, dev notes).
 
-Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`, `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`
+Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`, `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`, `Managed Service Session Purchase.docx`
 
 **Base URL:** `{{base_url}}/api/` (app: `https://claymaster.net/api/` · forum doc sample may use `/beta`)
 
@@ -45,5 +45,6 @@ Content-Type: application/json
 | 9 | Shop / Cart / Orders | [09-shop-cart-orders.md](./docs/api/request-response/09-shop-cart-orders.md) |
 | 10 | Forum / Community | [10-forum-community.md](./docs/api/request-response/10-forum-community.md) |
 | 11 | Online Coaching / Sessions | [11-online-coaching.md](./docs/api/request-response/11-online-coaching.md) |
+| 12 | Managed Service Session Purchase | [12-managed-services.md](./docs/api/request-response/12-managed-services.md) |
 
 Open a module file for that domain’s endpoints with **Request** and **Response** samples.

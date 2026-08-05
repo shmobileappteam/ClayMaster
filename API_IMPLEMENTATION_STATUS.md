@@ -1,6 +1,6 @@
 # ClayMaster API — Module Implementation Status
 
-Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`, `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`  
+Sources: `20260716130831_0-ClayMaster_API_Documentation_v2.docx`, `api-forum-online-coaching Apis.docx`, `ClayMaster_Mobile_Payments_API_Guide-for-online coaching-checkout.docx`, `Managed Service Session Purchase.docx`  
 App base: `https://claymaster.net/api/` (`src/api/endpoints.js`)  
 Request/response samples (module-wise): [`API_REQUEST_RESPONSE.md`](./API_REQUEST_RESPONSE.md) → `docs/api/request-response/`
 
@@ -491,6 +491,40 @@ Replies / reactions / reports / polls: auth only (subscription check not applied
 
 ---
 
+## 12. Managed Service Session Purchase
+
+Source: `Managed Service Session Purchase.docx` · samples: [`12-managed-services.md`](./docs/api/request-response/12-managed-services.md)
+
+| Method | Endpoint | Auth | Status |
+|--------|----------|------|--------|
+| `GET` | `/api/managed-services/purchase-info` | Bearer | ❌ Not implemented |
+| `POST` | `/api/managed-services/payment-intent` | Bearer | ❌ Not implemented |
+| Stripe SDK | PaymentSheet (`client_secret`) | — | ❌ Not implemented |
+| `POST` | `/api/managed-services/payment/verify` | Bearer | ❌ Not implemented |
+| ~~`POST`~~ | ~~`/api/managed-services/purchase`~~ | — | ⛔ Deprecated — do not wire |
+
+### Errors
+
+| Code / body | Notes |
+|-------------|--------|
+| `403` `no_subscription` | Redirect to subscription |
+| `403` `invalid_package` | Classic / Pro only |
+| `422` quantity | Between 1 and 10 |
+| `422` `payment_not_completed` | Do not show success; payment not finished |
+| `200` `already_processed: true` | Treat as success (idempotent verify) |
+| `500` | Generic retry message |
+
+### Dev notes (for upcoming implementation)
+
+- **Different from Online Coaching:** PaymentIntent + PaymentSheet + verify — **not** SetupIntent / `payment_method` / `sessions/purchase`.
+- Flow: purchase-info → quantity → payment-intent → PaymentSheet → verify with `payment_intent_id` only.
+- Never send card details or Stripe secret key; never call Stripe REST confirm from the app.
+- UI today: `ManagedServiceScreen` is a **placeholder** (hardcoded services). Entry points in Analytics / drawer are commented out.
+- On success: update remaining balance, refresh managed-service UI, show success copy from the API doc.
+- Suggested service file when implementing: `src/api/managedService.js` + paths on `endpoints.js`.
+
+---
+
 ## App wiring conventions
 
 | Layer | Location |
@@ -518,7 +552,9 @@ Always check **body `status` / `success`** where HTTP is always 200 (notificatio
 | Profile 401 message | Wrong copy (“delete your account”) |
 | Change password wrong current | `400` not `422` |
 | Academy hub | Removed from app UI; library APIs unchanged |
+| Managed Service purchase | Doc added (`Managed Service Session Purchase.docx`); app UI still placeholder — no `/api/managed-services/*` wiring yet |
+| Managed vs Online Coaching pay | Managed = PaymentIntent + PaymentSheet + verify; Coaching = SetupIntent + `payment_method` — do not mix |
 
 ---
 
-*Last UI/API standing sync: 2 Aug 2026 (`milestone02`). Update status columns as endpoints are wired. Full request/response JSON lives in `docs/api/request-response/` (index: `API_REQUEST_RESPONSE.md`).*
+*Last UI/API standing sync: 6 Aug 2026 (Managed Service Session Purchase docs). Update status columns as endpoints are wired. Full request/response JSON lives in `docs/api/request-response/` (index: `API_REQUEST_RESPONSE.md`).*
