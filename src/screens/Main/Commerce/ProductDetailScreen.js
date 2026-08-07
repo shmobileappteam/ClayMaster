@@ -23,11 +23,13 @@ import {
 import {
   buildCartPayload,
   centsToDollars,
+  findVariant,
   findVariantBySizeColor,
   formatMoney,
   galleryImagesForVariant,
   getAvailableColorsForSize,
   getAvailableSizes,
+  getColorOption,
   parseProductDescription,
 } from '../../../constants/shop';
 import { showMessage, showToast } from '../../../utils';
@@ -62,14 +64,16 @@ const ProductDetailScreen = ({ navigation, route }) => {
   const [quantity, setQuantity] = useState(1);
   const [imageIndex, setImageIndex] = useState(0);
 
+  const hasColor = useMemo(() => Boolean(getColorOption(product)), [product]);
+
   const availableSizes = useMemo(
     () => getAvailableSizes(product),
     [product],
   );
 
   const availableColors = useMemo(
-    () => getAvailableColorsForSize(product, sizeId),
-    [product, sizeId],
+    () => (hasColor ? getAvailableColorsForSize(product, sizeId) : []),
+    [product, sizeId, hasColor],
   );
 
   // Init / reset size when product loads
@@ -79,18 +83,22 @@ const ProductDetailScreen = ({ navigation, route }) => {
     const nextSize = sizes[0]?.id ?? null;
     setSizeId(nextSize);
     const colors = getAvailableColorsForSize(product, nextSize);
-    setColorId(colors[0]?.id ?? null);
+    setColorId(hasColor ? colors[0]?.id ?? null : null);
     setQuantity(1);
     setImageIndex(0);
-  }, [product?.id]);
+  }, [product?.id, hasColor]);
 
   // When size changes, pick first available color for that size
   const selectSize = nextSizeId => {
     setSizeId(nextSizeId);
-    const colors = getAvailableColorsForSize(product, nextSizeId);
-    setColorId(prev =>
-      colors.some(c => c.id === prev) ? prev : colors[0]?.id ?? null,
-    );
+    if (hasColor) {
+      const colors = getAvailableColorsForSize(product, nextSizeId);
+      setColorId(prev =>
+        colors.some(c => c.id === prev) ? prev : colors[0]?.id ?? null,
+      );
+    } else {
+      setColorId(null);
+    }
     setQuantity(1);
     setImageIndex(0);
   };
@@ -101,10 +109,13 @@ const ProductDetailScreen = ({ navigation, route }) => {
     setImageIndex(0);
   };
 
-  const variant = useMemo(
-    () => findVariantBySizeColor(product, sizeId, colorId),
-    [product, sizeId, colorId],
-  );
+  const variant = useMemo(() => {
+    if (!product || !sizeId) return null;
+    if (hasColor) {
+      return findVariantBySizeColor(product, sizeId, colorId);
+    }
+    return findVariant(product, [sizeId], { inStockOnly: true });
+  }, [product, sizeId, colorId, hasColor]);
 
   const gallery = useMemo(
     () => galleryImagesForVariant(product, variant?.id),
@@ -263,13 +274,13 @@ const ProductDetailScreen = ({ navigation, route }) => {
             <Typography fFamily="barlowBold700" size={26} color={COLORS.textPrimary} mT={10}>
               {formatMoney(centsToDollars(variant.price))}
             </Typography>
-          ) : sizeId && colorId ? (
+          ) : sizeId ? (
             <Typography size={14} color={COLORS.destructive} mT={10}>
-              This combination is unavailable.
+              This option is unavailable.
             </Typography>
           ) : (
             <Typography size={14} color={COLORS.textSecondary} mT={10}>
-              Select a size and color to see price
+              Select a size{hasColor ? ' and color' : ''} to see price
             </Typography>
           )}
 
@@ -285,7 +296,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
               {canPurchase
                 ? 'In stock'
                 : availableSizes.length
-                  ? 'Select options'
+                  ? `Select ${hasColor ? 'size and color' : 'size'}`
                   : 'Out of stock'}
             </Typography>
           </View>
@@ -335,7 +346,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
           </View>
 
           {/* 2) Color — in-stock for selected size */}
-          {sizeId ? (
+          {hasColor && sizeId ? (
             <View style={styles.optionBlock}>
               <Typography fFamily="barlowSemiBold600" size={15} color={COLORS.textPrimary} mB={10}>
                 Color

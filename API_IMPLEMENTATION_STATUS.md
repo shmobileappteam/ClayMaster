@@ -497,10 +497,10 @@ Source: `Managed Service Session Purchase.docx` · samples: [`12-managed-service
 
 | Method | Endpoint | Auth | Status |
 |--------|----------|------|--------|
-| `GET` | `/api/managed-services/purchase-info` | Bearer | ❌ Not implemented |
-| `POST` | `/api/managed-services/payment-intent` | Bearer | ❌ Not implemented |
-| Stripe SDK | PaymentSheet (`client_secret`) | — | ❌ Not implemented |
-| `POST` | `/api/managed-services/payment/verify` | Bearer | ❌ Not implemented |
+| `GET` | `/api/managed-services/purchase-info` | Bearer | ✅ Implemented (`ManagedServiceScreen`) |
+| `POST` | `/api/managed-services/payment-intent` | Bearer | ✅ Implemented (`ManagedServiceScreen`) |
+| Stripe SDK | PaymentSheet (`client_secret`) | — | ✅ Implemented (`ManagedServiceScreen`) |
+| `POST` | `/api/managed-services/payment/verify` | Bearer | ✅ Implemented (`ManagedServiceScreen`) |
 | ~~`POST`~~ | ~~`/api/managed-services/purchase`~~ | — | ⛔ Deprecated — do not wire |
 
 ### Errors

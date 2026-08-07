@@ -236,17 +236,22 @@ export const optionSelectionForVariant = (product, variant) => {
   return result;
 };
 
-/** POST /api/cart/add body from a product + resolved variant. */
+/**
+ * POST /api/cart/add body from a product + resolved variant.
+ * Includes has_color. If the product supports colors, both color and color_id are provided.
+ */
 export const buildCartPayload = (product, variant, quantity = 1) => {
   const selection = optionSelectionForVariant(product, variant);
+  const hasColor = Boolean(getColorOption(product));
   return {
     product_id: String(product.id),
     variant_id: String(variant.id),
     quantity,
     size: selection.size,
-    color: selection.color,
+    color: hasColor ? selection.color : null,
     size_id: selection.size_id,
-    color_id: selection.color_id,
+    color_id: hasColor ? selection.color_id : null,
+    has_color: hasColor ? 1 : 0,
     product_title: (product.title || '').trim(),
     variant_price: Number(variant.price) || 0,
     variant_image: imageForVariant(product, variant.id) || '',

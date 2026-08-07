@@ -97,6 +97,11 @@ export const ENDPOINTS = {
   SESSIONS_SETUP_INTENT: 'sessions/setup-intent',
   PURCHASE_SESSIONS: 'sessions/purchase',
 
+  // --- Managed Services ---
+  GET_MANAGED_SERVICE_PURCHASE_INFO: 'managed-services/purchase-info',
+  MANAGED_SERVICE_PAYMENT_INTENT: 'managed-services/payment-intent',
+  MANAGED_SERVICE_PAYMENT_VERIFY: 'managed-services/payment/verify',
+
   // --- Shop / Cart / Orders ---
   GET_SHOP_PRODUCTS: 'shop/products',
   GET_SHOP_PRODUCT: id => `shop/products/${id}`,

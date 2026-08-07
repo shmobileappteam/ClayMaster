@@ -44,7 +44,7 @@ const CoachingScreen = ({ navigation }) => {
   const queryClient = useQueryClient();
   const { user } = useSelector(state => state.app);
   const { confirmSetupIntent, handleNextAction } = useStripe();
-  const { keyboardOpen } = useKeyboard();
+  const { keyboardOpen, keyboardHeight } = useKeyboard();
 
   const {
     data: sessions,
@@ -452,7 +452,11 @@ const CoachingScreen = ({ navigation }) => {
         onRequestClose={() => !paying && setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalCard, keyboardOpen && styles.modalCardKeyboard]}>
+          <View style={[
+            styles.modalCard,
+            keyboardOpen && styles.modalCardKeyboard,
+            keyboardOpen && { marginBottom: keyboardHeight || Sizer.vSize(20) },
+          ]}>
             <Typography fFamily="barlowBold700" size={20} color={COLORS.textPrimary} mB={8}>
               Pay for sessions
             </Typography>
@@ -461,6 +465,13 @@ const CoachingScreen = ({ navigation }) => {
             </Typography>
             <CardField
               postalCodeEnabled={false}
+              cardStyle={{
+                backgroundColor: COLORS.surfaceMuted,
+                textColor: COLORS.textPrimary,
+                placeholderColor: COLORS.textMuted,
+                cursorColor: COLORS.primary,
+                textErrorColor: COLORS.destructive,
+              }}
               style={styles.cardField}
               onCardChange={setCardDetails}
             />

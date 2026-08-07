@@ -76,9 +76,9 @@ const billingSchema = Yup.object().shape({
   companyname: Yup.string().trim(),
 });
 
-const CheckoutSteps = ({ step }) => (
+const CheckoutSteps = ({ step, steps }) => (
   <View style={styles.stepsRow}>
-    {STEPS.map((s, i) => {
+    {steps.map((s, i) => {
       const active = step === s.key;
       const done = step > s.key;
       return (
@@ -360,100 +360,103 @@ const BillingStep = ({
 };
 
 /** Step 2 — products scroll in middle; subtotal + CTA stay pinned below */
-const ReviewStep = ({ items, cart, loadingCart, paying, onContinue }) => (
-  <View style={styles.reviewRoot}>
-    <Typography
-      fFamily={TYPE.h2.fFamily}
-      size={TYPE.h2.size}
-      color={COLORS.textPrimary}
-      mB={SPACING.component}
-    >
-      Order Items ({items.length})
-    </Typography>
+const ReviewStep = ({ items, cart, loadingCart, paying, onContinue }) => {
+  const zeroTotal = Number(cart?.total) === 0;
+  return (
+    <View style={styles.reviewRoot}>
+      <Typography
+        fFamily={TYPE.h2.fFamily}
+        size={TYPE.h2.size}
+        color={COLORS.textPrimary}
+        mB={SPACING.component}
+      >
+        Order Items ({items.length})
+      </Typography>
 
-    <View style={styles.itemsListBox}>
-      {loadingCart ? (
-        <AppLoader />
-      ) : items.length === 0 ? (
-        <Typography color={COLORS.textSecondary}>Your cart is empty.</Typography>
-      ) : (
-        <ScrollView
-          style={styles.itemsScroll}
-          contentContainerStyle={styles.itemsGroup}
-          showsVerticalScrollIndicator
-          nestedScrollEnabled
-          bounces
-        >
-          {items.map(item => (
-            <View
-              key={item.id}
-              style={[GLOBALSTYLE.screenCard, styles.orderLine]}
-            >
-              {item.image ? (
-                <Image
-                  source={{ uri: item.image }}
-                  style={styles.orderThumb}
-                  resizeMode="cover"
-                />
-              ) : (
-                <View style={[styles.orderThumb, styles.thumbPlaceholder]} />
-              )}
-              <View style={{ flex: 1 }}>
+      <View style={styles.itemsListBox}>
+        {loadingCart ? (
+          <AppLoader />
+        ) : items.length === 0 ? (
+          <Typography color={COLORS.textSecondary}>Your cart is empty.</Typography>
+        ) : (
+          <ScrollView
+            style={styles.itemsScroll}
+            contentContainerStyle={styles.itemsGroup}
+            showsVerticalScrollIndicator
+            nestedScrollEnabled
+            bounces
+          >
+            {items.map(item => (
+              <View
+                key={item.id}
+                style={[GLOBALSTYLE.screenCard, styles.orderLine]}
+              >
+                {item.image ? (
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.orderThumb}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.orderThumb, styles.thumbPlaceholder]} />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Typography
+                    fFamily="barlowMedium500"
+                    size={TYPE.body.size}
+                    color={COLORS.textPrimary}
+                    numberOfLines={2}
+                  >
+                    {item.title}
+                  </Typography>
+                  <Typography
+                    size={TYPE.caption.size}
+                    color={COLORS.textSecondary}
+                    mT={2}
+                  >
+                    {[item.color, item.size].filter(Boolean).join(' · ')}
+                    {item.color || item.size ? ' · ' : ''}
+                    Qty: {item.quantity}
+                  </Typography>
+                </View>
                 <Typography
-                  fFamily="barlowMedium500"
+                  fFamily="barlowBold700"
                   size={TYPE.body.size}
-                  color={COLORS.textPrimary}
-                  numberOfLines={2}
+                  color={COLORS.primary}
                 >
-                  {item.title}
-                </Typography>
-                <Typography
-                  size={TYPE.caption.size}
-                  color={COLORS.textSecondary}
-                  mT={2}
-                >
-                  {[item.color, item.size].filter(Boolean).join(' · ')}
-                  {item.color || item.size ? ' · ' : ''}
-                  Qty: {item.quantity}
+                  {formatMoney(
+                    centsToDollars(item.price) * (Number(item.quantity) || 1),
+                  )}
                 </Typography>
               </View>
-              <Typography
-                fFamily="barlowBold700"
-                size={TYPE.body.size}
-                color={COLORS.primary}
-              >
-                {formatMoney(
-                  centsToDollars(item.price) * (Number(item.quantity) || 1),
-                )}
-              </Typography>
-            </View>
-          ))}
-        </ScrollView>
-      )}
-    </View>
+            ))}
+          </ScrollView>
+        )}
+      </View>
 
-    <View style={styles.reviewFooter}>
-      <OrderSummaryCard cart={cart} />
-      <TouchableOpacity
-        style={[
-          styles.placeBtn,
-          (paying || items.length === 0) && styles.placeBtnDisabled,
-        ]}
-        onPress={onContinue}
-        disabled={paying || items.length === 0}
-        activeOpacity={0.88}
-      >
-        <Typography
-          fFamily="barlowSemiBold600"
-          size={TYPE.h3.size}
-          color={COLORS.white100}
+      <View style={styles.reviewFooter}>
+        <OrderSummaryCard cart={cart} />
+        <TouchableOpacity
+          style={[
+            styles.placeBtn,
+            (paying || items.length === 0) && styles.placeBtnDisabled,
+          ]}
+          onPress={onContinue}
+          disabled={paying || items.length === 0}
+          activeOpacity={0.88}
         >
-          Continue to Payment · {formatMoney(cart?.total)}
-        </Typography>
-      </TouchableOpacity>
+          <Typography
+            fFamily="barlowSemiBold600"
+            size={TYPE.h3.size}
+            color={COLORS.white100}
+          >
+            {zeroTotal ? 'Place Order' : 'Continue to Payment'} · {formatMoney(cart?.total)}
+          </Typography>
+        </TouchableOpacity>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 /** Step 3 — Stripe card (same CardField UI as previous modal) */
 const PaymentStep = ({ cart, paying, onPay, onCardChange }) => (
@@ -476,6 +479,13 @@ const PaymentStep = ({ cart, paying, onPay, onCardChange }) => (
       </Typography>
       <CardField
         postalCodeEnabled={false}
+        cardStyle={{
+          backgroundColor: COLORS.surfaceMuted,
+          textColor: COLORS.textPrimary,
+          placeholderColor: COLORS.textMuted,
+          cursorColor: COLORS.primary,
+          textErrorColor: COLORS.destructive,
+        }}
         style={styles.cardField}
         onCardChange={onCardChange}
       />
@@ -535,10 +545,14 @@ const CheckoutScreen = ({ navigation }) => {
   const { mutate: submitOrder, isPending: placing } = useCustomMutation({
     mutationFn: placeOrder,
     onSuccess: data => {
+      console.log('Place order response:', data);
       const paymentStatus = data?.data?.payment_status;
+
       const ok =
         (data?.status === 'success' || data?.status === true) &&
-        (!paymentStatus || paymentStatus === 'succeeded');
+        (!paymentStatus ||
+          paymentStatus === 'succeeded' ||
+          paymentStatus === 'credit_applied');
 
       if (!ok) {
         showMessage({
@@ -573,6 +587,7 @@ const CheckoutScreen = ({ navigation }) => {
     useCustomMutation({
       mutationFn: createCheckoutSetupIntent,
       onSuccess: data => {
+        console.log('Checkout setup intent response:', data);
         const billingValues = billingRef.current;
         if (!billingValues) {
           showMessage({
@@ -750,6 +765,10 @@ const CheckoutScreen = ({ navigation }) => {
     );
   }
 
+  const isZeroTotal = Number(cart?.total) === 0;
+  const checkoutSteps = isZeroTotal ? STEPS.slice(0, 2) : STEPS;
+  const renderStep = isZeroTotal ? Math.min(step, 2) : step;
+
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
@@ -759,7 +778,7 @@ const CheckoutScreen = ({ navigation }) => {
         onBack={onHeaderBack}
         showModeIndicator={false}
       />
-      <CheckoutSteps step={step} />
+      <CheckoutSteps step={renderStep} steps={checkoutSteps} />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -780,7 +799,7 @@ const CheckoutScreen = ({ navigation }) => {
             validateForm,
             setTouched,
           }) => {
-            if (step === 1) {
+            if (renderStep === 1) {
               return (
                 <BillingStep
                   values={values}
@@ -797,7 +816,7 @@ const CheckoutScreen = ({ navigation }) => {
                 />
               );
             }
-            if (step === 2) {
+            if (renderStep === 2) {
               return (
                 <ReviewStep
                   items={items}

@@ -24,7 +24,10 @@ export const getShopProduct = async id => {
 /**
  * POST /api/cart/add
  * Body: { product_id, variant_id, quantity, size, color, size_id, color_id,
- *         product_title, variant_price (cents), variant_image }
+ *         has_color, product_title, variant_price (cents), variant_image }
+ *
+ * - If the product has color options, send has_color: 1 and include both color and color_id.
+ * - If the product has no colors, send has_color: 0 and color/color_id may be null or omitted.
  */
 export const addToCart = async payload => {
   const response = await api.post(ENDPOINTS.ADD_TO_CART, payload);

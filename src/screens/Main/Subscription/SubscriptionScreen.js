@@ -311,7 +311,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const queryClient = useQueryClient();
   const { confirmSetupIntent } = useStripe();
-  const { keyboardOpen } = useKeyboard();
+  const { keyboardOpen, keyboardHeight } = useKeyboard();
   const plansListRef = useRef(null);
   const [activePlanIndex, setActivePlanIndex] = useState(0);
   /** Measured natural height of each plan's feature list — keyed by plan id */
@@ -809,7 +809,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
           <View
             style={[
               styles.modalSheet,
-              keyboardOpen && { marginBottom: Sizer.vSize(20) },
+              keyboardOpen && { marginBottom: keyboardHeight || Sizer.vSize(20) },
             ]}
           >
             <View style={styles.modalHandle} />
@@ -847,6 +847,7 @@ const SubscriptionScreen = ({ navigation, route }) => {
                   textColor: COLORS.textPrimary,
                   placeholderColor: COLORS.textMuted,
                   cursorColor: COLORS.primary,
+                  textErrorColor: COLORS.destructive,
                 }}
                 style={{ width: '100%', height: 50 }}
                 onCardChange={setCardDetails}
