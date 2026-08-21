@@ -27,9 +27,14 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 
 ---
 
+
+
 ## App — Priority A
 
+
+
 ### A2. Field Mode — Digital Scorecard
+
 - [x] Squad size order: **1 → 6** (not 6 → 1) — confirmed `createRoundDropData`; fixed default size label/value
 - [x] Differentiate Hit vs Miss colors more (green hit / red miss)
 - [x] Station subtotal denominator = full station target count (e.g. `1/8` not `1/2`)
@@ -40,7 +45,10 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 - [x] Reword submit copy to shooter language  
   *“Save this round (it will be available for Analytics and other uses)?”*
 
+
+
 ### A3. Managed Services — app UI (after Backend APIs)
+
 - [x] Surface Managed Services on Full Library home (Portal grid)
 - [x] Add short 1–3 sentence description of what Managed Services is
 - [ ] Wire confirm / request Analytics UI when backend endpoints exist
@@ -48,9 +56,14 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 
 ---
 
+
+
 ## App — Priority B
 
+
+
 ### B1. Auth / Profile / Modes
+
 - [x] Add brief onboarding / orientation (1-page overview on Mode Select)
 - [x] Fix mode highlight inconsistency (orange = current mode only)
 - [x] Make keyboard lock delay user-configurable (Settings: Off / 20s / 60s / 2m)
@@ -60,35 +73,49 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 - [x] Remove reply-time promise from Help & Support (no SLA yet)
 - [x] About Us screen — synced with claymaster.net/about-us (Kevin + Bill bios)
 
+
+
 ### B2. Training Library structure (app)
-- [ ] Field Mode: remove **Monthly Webcasts** (Full Library only)
-- [ ] Field Mode: move **Video Tutorials** to Full Library only
-- [ ] Rename **Training Videos → Instructional Videos**
-- [ ] Instructional Videos 2nd screen: thumbnails UI (needs backend thumbnails)
-- [ ] Structure Instructional Videos groups in UI (needs backend type/group data)
-- [ ] Additional Videos sub-category UI (needs backend categories)
-- [ ] Verify drills gating in UI once Classic/Pro backend is correct
-- [ ] Optional: thumbnails for Practice Drills
-- [ ] Show Documents on Core Training / Portal screens (not only menu)
-- [ ] Decide & implement Miss content home (Miss Categories / Additional Documents)
+
+- [x] Field Mode: remove **Monthly Webcasts** (Full Library only)
+- [x] Field Mode: move **Video Tutorials** to Full Library only (Portal + Analytics)
+- [x] Rename **Training Videos → Instructional Videos**
+- [x] Instructional Videos 2nd screen: thumbnails UI (uses API thumbnail when present)
+- [x] Structure Instructional Videos groups in UI (API group or title heuristics)
+- [x] Additional Videos sub-category UI (category → subcategory sections)
+- [x] Verify Practice Drills gating in UI (`can_access` / locked Pro messaging)
+- [~] Optional: thumbnails for Practice Drills (API field ready; icon fallback)
+- [x] Show Documents on Portal home (and menu via portal sections)
+- [-] Decide & implement Miss content home — deferred (product decision still open)
+
+
 
 ### B3. On-line Coaching (app)
+
 - [ ] Use naming **“On-line Coaching”** (match portal)
 - [ ] Simplify Core Training vs Portal split / navigation
-- [ ] Book Session: focus on booking; show “buy more” only when sessions low (&lt;3)
+- [ ] Book Session: focus on booking; show “buy more” only when sessions low (<3)
 - [ ] Refresh Upcoming / counter after book (needs backend sync)
 - [ ] Reduce Book Session init delay where app-controlled
 
+
+
 ### B4. Private Community (app)
+
 - [ ] Portal section order (prefer alphabetical / intentional)
 - [ ] Show clear error if create-post fails (needs backend fix / errors)
 
+
+
 ### B5. Virtual Tournament (app)
+
 - [ ] Portal item order (alphabetic / intentional)
 - [ ] Clarify or remove Field Mode option on Leaderboard
 - [ ] Reconsider footer VT tab; explore customizable footer
 
 ---
+
+
 
 ## App — Priority C
 
@@ -98,19 +125,27 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 
 ---
 
+
+
 ## Suggested app batches (when approved)
 
-| Batch | Scope | Notes |
-|-------|--------|--------|
-| **1** | A2 Scorecard UX | App-only |
-| **2** | B2 Field Mode library filtering + renames | App-only filters/labels |
-| **3** | B1 Profile / modes / help | App-only |
-| **4** | B3 + A3 Coaching & Managed Services UI | After backend where marked |
-| **5** | B4 + B5 Community & VT | App + backend create-post |
-| **—** | Video performance / offline | **Backend** (+ Shane on offline) |
+
+| Batch | Scope                                     | Notes                            |
+| ----- | ----------------------------------------- | -------------------------------- |
+| **1** | A2 Scorecard UX                           | App-only                         |
+| **2** | B2 Field Mode library filtering + renames | App-only filters/labels          |
+| **3** | B1 Profile / modes / help                 | App-only                         |
+| **4** | B3 + A3 Coaching & Managed Services UI    | After backend where marked       |
+| **5** | B4 + B5 Community & VT                    | App + backend create-post        |
+| **—** | Video performance / offline               | **Backend** (+ Shane on offline) |
+
 
 ---
 
+
+
 ## Notes
+
 - Do **not** start until explicit **yes**.
 - **Backend** items live in detail in `MS2-Backend-Server-Change-Request.md`.
+

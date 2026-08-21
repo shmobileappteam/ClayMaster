@@ -222,7 +222,7 @@ const DashboardScreen = ({ navigation }) => {
                   if (s.action === 'tab' && s.tab) {
                     navigateFromTabToTab(navigation, s.tab);
                   } else {
-                    navigateFromTabToStack(navigation, s.screen);
+                    navigateFromTabToStack(navigation, s.screen, s.params);
                   }
                 }}
                 activeOpacity={0.88}

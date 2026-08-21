@@ -28,9 +28,8 @@ const portalMenuItems = [
     screen: s.screen,
     action: s.action,
     tab: s.tab,
+    params: s.params,
   })),
-  { label: 'Additional Videos', screen: 'AdditionalVideosScreen', icon: 'film-outline' },
-  { label: 'Documents', screen: 'AdditionalDocumentsScreen', icon: 'document-text-outline' },
   { label: 'Reviews', screen: 'ReviewsScreen', icon: 'star-outline' },
   { label: 'My Orders', screen: 'OrdersScreen', icon: 'receipt-outline' },
 ];

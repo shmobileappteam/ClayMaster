@@ -165,6 +165,25 @@ export const LIBRARY_PORTAL_SECTIONS = [
     screen: 'CommunityScreen',
   },
   {
+    label: 'Video Tutorials',
+    desc: 'Analytics & how-to walkthroughs',
+    icon: 'school-outline',
+    screen: 'InstructionalVideosScreen',
+    params: { catalog: 'tutorial' },
+  },
+  {
+    label: 'Additional Videos',
+    desc: 'Bonus training clips',
+    icon: 'film-outline',
+    screen: 'AdditionalVideosScreen',
+  },
+  {
+    label: 'Documents',
+    desc: 'Guides & resources',
+    icon: 'document-text-outline',
+    screen: 'AdditionalDocumentsScreen',
+  },
+  {
     label: 'Monthly Webcasts',
     desc: 'Live sessions',
     icon: 'radio-outline',

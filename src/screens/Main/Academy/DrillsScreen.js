@@ -37,11 +37,13 @@ const DrillsScreen = ({ navigation }) => {
   }
 
   const openPdf = drill => {
-    if (!drill.fileUrl) {
+    if (drill.locked || !drill.fileUrl) {
       showMessage({
         type: 'danger',
-        title: 'Unavailable',
-        message: 'No PDF is available for this drill.',
+        title: drill.locked ? 'Upgrade required' : 'Unavailable',
+        message: drill.locked
+          ? 'This drill is available on a higher plan (Pro includes all 13).'
+          : 'No PDF is available for this drill.',
         duration: 3000,
       });
       return;
@@ -50,6 +52,17 @@ const DrillsScreen = ({ navigation }) => {
   };
 
   const downloadPdf = drill => {
+    if (drill.locked || !drill.fileUrl) {
+      showMessage({
+        type: 'danger',
+        title: drill.locked ? 'Upgrade required' : 'Unavailable',
+        message: drill.locked
+          ? 'This drill is available on a higher plan (Pro includes all 13).'
+          : 'No PDF is available for this drill.',
+        duration: 3000,
+      });
+      return;
+    }
     openRemoteFile(drill.fileUrl, Linking, showMessage);
   };
 
@@ -73,7 +86,7 @@ const DrillsScreen = ({ navigation }) => {
         }
       >
         <Typography size={14} color={COLORS.textSecondary} mB={12}>
-          View or download each drill PDF.
+          Classic plans include 9 drills; Pro includes all 13. View or download each PDF.
         </Typography>
 
         {isLoading ? (
@@ -101,7 +114,7 @@ const DrillsScreen = ({ navigation }) => {
               <View style={styles.drillHeader}>
                 <View style={styles.iconCircle}>
                   <Icon
-                    name="document-text-outline"
+                    name={drill.locked ? 'lock-closed-outline' : 'document-text-outline'}
                     iconFamily="Ionicons"
                     size={22}
                     color={COLORS.primary}
@@ -112,13 +125,15 @@ const DrillsScreen = ({ navigation }) => {
                     {drill.title}
                   </Typography>
                   <Typography size={12} color={COLORS.textSecondary} mT={4}>
-                    {drill.fileType?.toUpperCase() || 'PDF'}
+                    {drill.locked
+                      ? 'Locked · Pro plan'
+                      : drill.fileType?.toUpperCase() || 'PDF'}
                   </Typography>
                 </View>
               </View>
               <View style={styles.actions}>
                 <TouchableOpacity
-                  style={styles.viewBtn}
+                  style={[styles.viewBtn, drill.locked && styles.btnDisabled]}
                   activeOpacity={0.88}
                   onPress={() => openPdf(drill)}
                 >
@@ -138,7 +153,7 @@ const DrillsScreen = ({ navigation }) => {
                   </Typography>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.downloadBtn}
+                  style={[styles.downloadBtn, drill.locked && styles.btnDisabled]}
                   activeOpacity={0.88}
                   onPress={() => downloadPdf(drill)}
                 >
@@ -211,6 +226,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  btnDisabled: {
+    opacity: 0.55,
   },
   downloadBtn: {
     flex: 1,

@@ -23,7 +23,10 @@ import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
 import { useRequireLibraryMode } from '../../../hooks/useRequireLibraryMode';
 import { useCustomQuery } from '../../../query/useCustomQuery';
 import { getAdditionalVideos } from '../../../api/academyService';
-import { flattenAdditionalVideos } from '../../../constants/academy';
+import {
+  flattenAdditionalVideos,
+  nestAdditionalVideosForUi,
+} from '../../../constants/academy';
 
 /** PAGE 12 — Supplementary videos (Full Library / Field browse). */
 const AdditionalVideosScreen = ({ navigation, route }) => {
@@ -42,6 +45,8 @@ const AdditionalVideosScreen = ({ navigation, route }) => {
     [data?.items],
   );
 
+  const nested = useMemo(() => nestAdditionalVideosForUi(videos), [videos]);
+
   if (blocked) {
     return null;
   }
@@ -52,6 +57,63 @@ const AdditionalVideosScreen = ({ navigation, route }) => {
       fieldOnlineAccess,
     });
   };
+
+  const renderVideoRow = video => (
+    <TouchableOpacity
+      key={video.id}
+      style={[GLOBALSTYLE.screenCard, styles.videoRow]}
+      activeOpacity={0.88}
+      onPress={() => openDetail(video)}
+    >
+      <View style={styles.thumbWrap}>
+        <Image
+          source={
+            video.thumbnail
+              ? { uri: video.thumbnail }
+              : video.illustration
+                ? { uri: video.illustration }
+                : videoThumb1
+          }
+          style={styles.thumb}
+          resizeMode="cover"
+        />
+        <View style={styles.thumbOverlay}>
+          <View style={styles.playCircle}>
+            <Icon
+              name={video.locked ? 'lock-closed' : 'play'}
+              iconFamily="Ionicons"
+              size={14}
+              color={COLORS.white100}
+            />
+          </View>
+        </View>
+      </View>
+      <View style={styles.videoBody}>
+        <Typography
+          fFamily="barlowSemiBold600"
+          size={TYPE.body.size}
+          color={COLORS.textPrimary}
+          numberOfLines={2}
+          style={styles.titleText}
+        >
+          {video.title}
+        </Typography>
+        {video.locked ? (
+          <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+            Locked · upgrade to unlock
+          </Typography>
+        ) : null}
+      </View>
+      <View style={styles.chevronWrap}>
+        <Icon
+          name="chevron-forward"
+          iconFamily="Ionicons"
+          size={18}
+          color={COLORS.textSecondary}
+        />
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
@@ -77,7 +139,7 @@ const AdditionalVideosScreen = ({ navigation, route }) => {
           color={COLORS.textSecondary}
           mB={SPACING.component}
         >
-          Bonus training content & supplementary material
+          Browse by category — same structure as the portal
         </Typography>
 
         {isLoading ? (
@@ -91,66 +153,33 @@ const AdditionalVideosScreen = ({ navigation, route }) => {
         ) : videos.length === 0 ? (
           <Typography color={COLORS.textSecondary}>No additional videos yet.</Typography>
         ) : (
-          videos.map(video => (
-            <TouchableOpacity
-              key={video.id}
-              style={[GLOBALSTYLE.screenCard, styles.videoRow]}
-              activeOpacity={0.88}
-              onPress={() => openDetail(video)}
-            >
-              <View style={styles.thumbWrap}>
-                <Image
-                  source={
-                    video.thumbnail
-                      ? { uri: video.thumbnail }
-                      : video.illustration
-                        ? { uri: video.illustration }
-                        : videoThumb1
-                  }
-                  style={styles.thumb}
-                  resizeMode="cover"
-                />
-                <View style={styles.thumbOverlay}>
-                  <View style={styles.playCircle}>
-                    <Icon
-                      name={video.locked ? 'lock-closed' : 'play'}
-                      iconFamily="Ionicons"
-                      size={14}
-                      color={COLORS.white100}
-                    />
-                  </View>
+          nested.map(cat => (
+            <View key={cat.category} style={styles.categoryBlock}>
+              <Typography
+                fFamily="barlowBold700"
+                size={16}
+                color={COLORS.textPrimary}
+                mB={8}
+              >
+                {cat.category}
+              </Typography>
+              {cat.sections.map(sec => (
+                <View key={`${cat.category}-${sec.subcategory}`} style={styles.subBlock}>
+                  {sec.subcategory && sec.subcategory !== 'General' ? (
+                    <Typography
+                      fFamily="barlowSemiBold600"
+                      size={12}
+                      color={COLORS.textSecondary}
+                      style={styles.subLabel}
+                      mB={8}
+                    >
+                      {sec.subcategory}
+                    </Typography>
+                  ) : null}
+                  <View style={styles.list}>{sec.videos.map(renderVideoRow)}</View>
                 </View>
-              </View>
-              <View style={styles.videoBody}>
-                <Typography
-                  fFamily="barlowSemiBold600"
-                  size={TYPE.body.size}
-                  color={COLORS.textPrimary}
-                  numberOfLines={2}
-                  style={styles.titleText}
-                >
-                  {video.title}
-                </Typography>
-                {(video.category || video.subcategory) ? (
-                  <Typography
-                    size={TYPE.caption.size}
-                    color={COLORS.textSecondary}
-                    mT={2}
-                    numberOfLines={1}
-                  >
-                    {video.category || video.subcategory}
-                  </Typography>
-                ) : null}
-              </View>
-              <View style={styles.chevronWrap}>
-                <Icon
-                  name="chevron-forward"
-                  iconFamily="Ionicons"
-                  size={18}
-                  color={COLORS.textSecondary}
-                />
-              </View>
-            </TouchableOpacity>
+              ))}
+            </View>
           ))
         )}
       </ScrollView>
@@ -165,6 +194,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(SPACING.screenPx),
     paddingTop: Sizer.vSize(16),
     paddingBottom: Sizer.vSize(100),
+  },
+  categoryBlock: {
+    marginBottom: Sizer.vSize(20),
+  },
+  subBlock: {
+    marginBottom: Sizer.vSize(12),
+  },
+  subLabel: {
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  list: {
     gap: Sizer.vSize(SPACING.component),
   },
   videoRow: {

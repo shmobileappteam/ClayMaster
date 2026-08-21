@@ -13,19 +13,11 @@ import { getDownloadedVideos } from '../../../utils/downloadedVideos';
 const VIDEO_CATEGORIES = [
   {
     id: 'instructional',
-    label: 'Training Videos',
-    desc: 'Instructional library',
+    label: 'Instructional Videos',
+    desc: 'On-course target presentations & vision clips',
     icon: 'play-circle-outline',
     screen: 'InstructionalVideosScreen',
     params: { catalog: 'instructional', fieldOnlineAccess: true },
-  },
-  {
-    id: 'tutorial',
-    label: 'Video Tutorials',
-    desc: 'Step-by-step tutorials',
-    icon: 'school-outline',
-    screen: 'InstructionalVideosScreen',
-    params: { catalog: 'tutorial', fieldOnlineAccess: true },
   },
   {
     id: 'additional',
@@ -33,14 +25,6 @@ const VIDEO_CATEGORIES = [
     desc: 'Bonus training clips',
     icon: 'film-outline',
     screen: 'AdditionalVideosScreen',
-    params: { fieldOnlineAccess: true },
-  },
-  {
-    id: 'webcast',
-    label: 'Monthly Webcasts',
-    desc: 'Session recordings',
-    icon: 'radio-outline',
-    screen: 'WebcastScreen',
     params: { fieldOnlineAccess: true },
   },
 ];

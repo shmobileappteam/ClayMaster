@@ -47,6 +47,14 @@ export const mapLibraryVideo = (item, source = 'instructional') => {
     orderBy: item.order_by ?? item.sort_order ?? 0,
     sizeKb: Number(item.size_kb) || 0,
     sizeMb: sizeMbFromKb(item.size_kb),
+    /** Optional CMS grouping for Instructional Videos */
+    group:
+      item.group ||
+      item.category ||
+      item.video_type ||
+      item.type ||
+      item.kind ||
+      null,
   };
 };
 
@@ -56,6 +64,45 @@ export const mapInstructionalVideo = item =>
   mapLibraryVideo(item, 'instructional');
 
 export const mapWebcast = item => mapLibraryVideo(item, 'webcast');
+
+const INSTRUCTIONAL_GROUP_ORDER = [
+  'Target Presentations',
+  'ClayMaster Vision',
+  'Tournament Preparation',
+];
+
+/** Resolve section label for instructional catalog (API group or title heuristics). */
+export const instructionalGroupLabel = video => {
+  const fromApi = video?.group;
+  if (fromApi && String(fromApi).trim()) return String(fromApi).trim();
+  const t = String(video?.title || '').toLowerCase();
+  if (t.includes('tournament')) return 'Tournament Preparation';
+  if (t.includes('vision')) return 'ClayMaster Vision';
+  return 'Target Presentations';
+};
+
+/** Group instructional videos into client-requested sections. */
+export const groupInstructionalVideos = (videos = []) => {
+  const buckets = {};
+  (videos || []).forEach(v => {
+    const label = instructionalGroupLabel(v);
+    if (!buckets[label]) buckets[label] = [];
+    buckets[label].push(v);
+  });
+  const ordered = [];
+  INSTRUCTIONAL_GROUP_ORDER.forEach(label => {
+    if (buckets[label]?.length) {
+      ordered.push({ label, videos: buckets[label] });
+      delete buckets[label];
+    }
+  });
+  Object.keys(buckets)
+    .sort()
+    .forEach(label => {
+      ordered.push({ label, videos: buckets[label] });
+    });
+  return ordered;
+};
 
 /**
  * Flatten nested additional-videos payload:
@@ -99,9 +146,33 @@ export const flattenAdditionalVideos = payload => {
   return videos.sort((a, b) => (a.orderBy || 0) - (b.orderBy || 0));
 };
 
+/**
+ * Portal-style nested sections for Additional Videos UI.
+ * [{ category, sections: [{ subcategory, videos }] }]
+ */
+export const nestAdditionalVideosForUi = (videos = []) => {
+  const catMap = new Map();
+  (videos || []).forEach(v => {
+    const cat = v.category || 'Additional Videos';
+    const sub = v.subcategory || 'General';
+    if (!catMap.has(cat)) catMap.set(cat, new Map());
+    const subMap = catMap.get(cat);
+    if (!subMap.has(sub)) subMap.set(sub, []);
+    subMap.get(sub).push(v);
+  });
+  return Array.from(catMap.entries()).map(([category, subMap]) => ({
+    category,
+    sections: Array.from(subMap.entries()).map(([subcategory, list]) => ({
+      subcategory,
+      videos: list,
+    })),
+  }));
+};
+
 export const mapPracticeDrill = item => {
   if (!item) return null;
   const desc = stripHtml(item.description);
+  const locked = item.can_access === false || !item.file_url;
   return {
     id: item.id,
     title: item.title || '',
@@ -111,7 +182,10 @@ export const mapPracticeDrill = item => {
     fileUrl: item.file_url || null,
     sizeMb: sizeMbFromKb(item.size_kb),
     sizeKb: Number(item.size_kb) || 0,
-    canAccess: Boolean(item.file_url),
+    canAccess: !locked,
+    locked,
+    packageId: item.package_id ?? null,
+    thumbnail: item.thumbnail || null,
   };
 };
 
