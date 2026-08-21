@@ -153,9 +153,6 @@ const LibraryScorecardScreen = ({ navigation, route }) => {
   const totalShots = apiStatsUsable
     ? roundDetail.stats.total
     : computed.taken;
-  const accuracy = totalShots
-    ? Math.round((totalHit / totalShots) * 100)
-    : 0;
   const statsDead = totalHit;
   const statsLost = apiStatsUsable
     ? roundDetail.stats.lost
@@ -181,14 +178,6 @@ const LibraryScorecardScreen = ({ navigation, route }) => {
             </Typography>
             <Typography fFamily="barlowBold700" size={40} color={COLORS.white100} mT={4}>
               {statsDead}/{statsTotal || 0}
-            </Typography>
-          </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Typography size={TYPE.body.size} color={COLORS.white100} style={{ opacity: 0.8 }}>
-              Accuracy
-            </Typography>
-            <Typography fFamily="barlowBold700" size={TYPE.h1.size} color={COLORS.white100} mT={4}>
-              {accuracy}%
             </Typography>
           </View>
         </View>

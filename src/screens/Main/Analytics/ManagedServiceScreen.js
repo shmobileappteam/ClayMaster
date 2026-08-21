@@ -206,7 +206,7 @@ const ManagedServiceScreen = ({ navigation }) => {
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
-        title="Managed Service"
+        title="Managed Services"
         showBack
         showNotification={false}
         onBack={() => navigation.goBack()}
@@ -220,17 +220,19 @@ const ManagedServiceScreen = ({ navigation }) => {
             <View style={styles.heroIcon}>
               <Icon name="headset-outline" iconFamily="Ionicons" size={22} color={COLORS.white100} />
             </View>
-            <View>
+            <View style={{ flex: 1 }}>
               <Typography fFamily="barlowSemiBold600" size={20} color={COLORS.white100}>
-                Managed Service Sessions
+                Managed Services
               </Typography>
               <Typography size={14} color="rgba(255,255,255,0.85)" mT={2}>
-                Purchase additional managed-service sessions with Stripe.
+                Analytics & session credits
               </Typography>
             </View>
           </View>
-          <Typography size={14} color="rgba(255,255,255,0.85)" lineHeight={22} mT={12}>
-            Subscribe users can buy extra sessions in quantities of {purchaseInfo?.minQuantity || 1} to {purchaseInfo?.maxQuantity || 10}.
+          <Typography size={14} color="rgba(255,255,255,0.9)" lineHeight={22} mT={12}>
+            ClayMaster reviews your digital scorecard and prepares a full analytics
+            report for you. Purchase sessions below; requesting a new analytics
+            review from a scorecard will be available once that flow is enabled.
           </Typography>
         </View>
 

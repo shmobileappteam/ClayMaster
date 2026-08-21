@@ -31,7 +31,6 @@ const portalMenuItems = [
   })),
   { label: 'Additional Videos', screen: 'AdditionalVideosScreen', icon: 'film-outline' },
   { label: 'Documents', screen: 'AdditionalDocumentsScreen', icon: 'document-text-outline' },
-  { label: 'Managed Service', screen: 'ManagedServiceScreen', icon: 'headset-outline' },
   { label: 'Reviews', screen: 'ReviewsScreen', icon: 'star-outline' },
   { label: 'My Orders', screen: 'OrdersScreen', icon: 'receipt-outline' },
 ];

@@ -153,6 +153,12 @@ export const LIBRARY_PORTAL_SECTIONS = [
     screen: 'CoachingScreen',
   },
   {
+    label: 'Managed Services',
+    desc: 'Scorecard analytics by ClayMaster',
+    icon: 'headset-outline',
+    screen: 'ManagedServiceScreen',
+  },
+  {
     label: 'Private Community',
     desc: 'Connect & share',
     icon: 'chatbubbles-outline',

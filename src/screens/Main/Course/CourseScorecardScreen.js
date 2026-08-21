@@ -27,7 +27,6 @@ const STATIONS = [
 
 const totalHit = STATIONS.reduce((acc, s) => acc + s.shots.filter(Boolean).length, 0);
 const totalShots = STATIONS.reduce((acc, s) => acc + s.shots.length, 0);
-const accuracy = Math.round((totalHit / totalShots) * 100);
 
 const ShotTile = ({ hit }) => (
   <View style={[styles.shotTile, hit ? styles.shotTileHit : styles.shotTileMiss]}>
@@ -35,7 +34,7 @@ const ShotTile = ({ hit }) => (
       name={hit ? 'checkmark' : 'close'}
       iconFamily="Ionicons"
       size={20}
-      color={hit ? COLORS.primary : '#F87171'}
+      color={COLORS.white100}
     />
   </View>
 );
@@ -57,14 +56,6 @@ const CourseScorecardScreen = ({ navigation }) => (
             </Typography>
             <Typography fFamily="barlowBold700" size={44} lineHeight={44} color={COLORS.white100} mT={4}>
               {totalHit}/{totalShots}
-            </Typography>
-          </View>
-          <View style={{ alignItems: 'flex-end' }}>
-            <Typography size={14} lineHeight={21} color="rgba(255,255,255,0.8)">
-              Accuracy
-            </Typography>
-            <Typography fFamily="barlowBold700" size={36} lineHeight={40} color={COLORS.white100} mT={4}>
-              {accuracy}%
             </Typography>
           </View>
         </View>
@@ -179,10 +170,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   shotTileHit: {
-    backgroundColor: 'rgba(235, 108, 15, 0.2)',
+    backgroundColor: COLORS.green,
   },
   shotTileMiss: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+    backgroundColor: COLORS.destructive,
   },
   actionsRow: {
     flexDirection: 'row',

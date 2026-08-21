@@ -80,9 +80,6 @@ const CompleteRoundScreen = ({ navigation, route }) => {
   const totalShots = apiStatsUsable
     ? statsTotal
     : computed.taken || (statsTotal ?? 0);
-  const accuracy = totalShots
-    ? Math.round((totalHit / totalShots) * 100)
-    : 0;
 
   const isLoading = roundLoading || stationsLoading;
 
@@ -134,15 +131,6 @@ const CompleteRoundScreen = ({ navigation, route }) => {
               mT={4}
             >
               {totalHit}/{totalShots || 0}
-            </Typography>
-            <Typography
-              fFamily="barlowBold700"
-              size={20}
-              lineHeight={26}
-              color={COLORS.white100}
-              mT={4}
-            >
-              {accuracy}% Accuracy
             </Typography>
             {round.course_name ? (
               <Typography

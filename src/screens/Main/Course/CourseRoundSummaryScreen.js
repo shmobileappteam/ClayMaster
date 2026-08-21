@@ -39,7 +39,6 @@ const CourseRoundSummaryScreen = ({ navigation }) => {
       (a, s) => a + s.shots.filter(sh => sh.hit).length,
       0,
     ) ?? 0;
-  const accuracy = totalShots ? Math.round((totalHits / totalShots) * 100) : 0;
 
   const breakdown = useMemo(() => {
     const tally = {};
@@ -91,9 +90,6 @@ const CourseRoundSummaryScreen = ({ navigation }) => {
           </Typography>
           <Typography fFamily="barlowBold700" size={52} lineHeight={52} color={COLORS.white100} mT={4}>
             {totalHits}/{totalShots}
-          </Typography>
-          <Typography fFamily="barlowBold700" size={20} lineHeight={26} color={COLORS.white100} mT={4}>
-            {accuracy}% Accuracy
           </Typography>
         </View>
 

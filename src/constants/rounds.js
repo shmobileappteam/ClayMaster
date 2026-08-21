@@ -129,6 +129,50 @@ export const scoreFromShots = (shots = []) => {
   };
 };
 
+/**
+ * Station denominator from setup (pairs × 2 targets), not shots taken so far.
+ * Client: show e.g. 1/8 after config, not 1/2 while scoring.
+ */
+export const expectedShotsForStation = (station = {}) => {
+  const pairs = Number(station?.selectedTargetPairs) || 0;
+  if (pairs > 0) return pairs * 2;
+  const allocated = Array.isArray(station?.shots) ? station.shots.length : 0;
+  return allocated;
+};
+
+/** Display hits against configured station total */
+export const stationScoreAgainstExpected = (station = {}) => {
+  const { hits } = scoreFromShots(station?.shots);
+  const expected = expectedShotsForStation(station);
+  return {
+    hits,
+    expected,
+    label: `${hits}/${expected || 0}`,
+  };
+};
+
+/** Short target reminder e.g. "TP · Crosser / Rabbit" */
+export const formatStationTargetReminder = (station = {}, trapsCatalog = []) => {
+  if (!station) return '';
+  const pairAbbr =
+    station.pair_type === 'true_pair'
+      ? 'TP'
+      : station.pair_type === 'report_pair'
+        ? 'RP'
+        : '';
+  const labels = (station.traps || [])
+    .map(t => {
+      const slug = t.presentation || t.selected_presentation || '';
+      if (!slug) return '';
+      const hit = (trapsCatalog || []).find(c => c.slug === slug);
+      return hit?.label || slug;
+    })
+    .filter(Boolean);
+  if (!pairAbbr && !labels.length) return '';
+  if (pairAbbr && labels.length) return `${pairAbbr} · ${labels.join(' / ')}`;
+  return pairAbbr || labels.join(' / ');
+};
+
 export const scoreFromStations = (stations = []) =>
   (stations || []).reduce(
     (acc, st) => {

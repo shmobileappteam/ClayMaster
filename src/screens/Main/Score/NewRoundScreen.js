@@ -97,7 +97,8 @@ const NewRoundScreen = ({ navigation, route }) => {
 
   const [selectedClass, setSelectedClass] = useState(classes?.[0] || 'Master');
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [noOfPeople, setNoOfPeople] = useState({ label: '1', value: '3' });
+  /** Squad size options are 1→6 (shooter order); default size 1 */
+  const [noOfPeople, setNoOfPeople] = useState({ label: '1', value: '1' });
   const [squadSequence, setSquadSequence] = useState({
     label: '1',
     value: '1',

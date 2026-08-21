@@ -28,8 +28,9 @@ import {
 } from '../../../constants/dummydata';
 import {
   buildStationsPayload,
-  scoreFromShots,
+  formatStationTargetReminder,
   scoreFromStations,
+  stationScoreAgainstExpected,
 } from '../../../constants/rounds';
 import { showMessage } from '../../../utils';
 import { hapticHit, hapticMiss, hapticUndo } from '../../../utils/haptics';
@@ -51,7 +52,7 @@ const pairTypeLabel = pairType => {
 
 /** Read-only snapshot of a finished previous station — no edits. */
 const PastStationReadOnly = ({ station, trapsCatalog = [], onBack }) => {
-  const { hits, taken } = scoreFromShots(station?.shots);
+  const { hits, expected } = stationScoreAgainstExpected(station);
   const shots = (station?.shots || []).filter(
     s => s.result === 'dead' || s.result === 'lost',
   );
@@ -61,6 +62,7 @@ const PastStationReadOnly = ({ station, trapsCatalog = [], onBack }) => {
     const hit = (trapsCatalog || []).find(t => t.slug === slug);
     return hit?.label || slug;
   };
+  const targetReminder = formatStationTargetReminder(station, trapsCatalog);
 
   return (
     <ScrollView
@@ -77,6 +79,17 @@ const PastStationReadOnly = ({ station, trapsCatalog = [], onBack }) => {
       >
         Station {station?.station_number}
       </Typography>
+      {targetReminder ? (
+        <Typography
+          size={13}
+          color={COLORS.courseTextMuted}
+          textAlign="center"
+          mT={4}
+          textTransform="capitalize"
+        >
+          {targetReminder}
+        </Typography>
+      ) : null}
       <Typography
         fFamily="barlowBold700"
         size={36}
@@ -84,7 +97,7 @@ const PastStationReadOnly = ({ station, trapsCatalog = [], onBack }) => {
         textAlign="center"
         mT={4}
       >
-        {hits}/{taken || 0}
+        {hits}/{expected || 0}
       </Typography>
 
       <View style={styles.dotsRow}>
@@ -199,8 +212,11 @@ const CourseRoundScreen = ({ navigation }) => {
 
   const setupComplete = isStationSetupComplete(currentStation);
   const shots = currentStation?.shots || [];
-  const stationScore = scoreFromShots(shots);
-  const filledOnStation = stationScore.taken;
+  const stationExpectedScore = stationScoreAgainstExpected(currentStation);
+  const stationTargetReminder = formatStationTargetReminder(
+    currentStation,
+    trapsCatalog,
+  );
   const isShotOpen = s =>
     !s?.result || s.result === '' || s.result === 'empty';
   const stationFull =
@@ -514,7 +530,8 @@ const CourseRoundScreen = ({ navigation }) => {
     ? stations.find(s => s.station_number === viewingPastNumber)
     : null;
 
-  const stationHits = stationScore.hits;
+  const stationHits = stationExpectedScore.hits;
+  const stationExpected = stationExpectedScore.expected;
   const revisitingSetup = editSetupStep != null;
   // Derive from shots — same render as last HIT/MISS (no useEffect lag / miss)
   const showStationFeedback =
@@ -547,8 +564,20 @@ const CourseRoundScreen = ({ navigation }) => {
           >
             Station{' '}
             {viewingPast ? viewingPastNumber : stationNumber}
-            {maxStations ? ` / ${maxStations}` : ''}
+            {maxStations ? ` of ${maxStations}` : ''}
           </Typography>
+          {!viewingPast && stationTargetReminder ? (
+            <Typography
+              size={11}
+              lineHeight={15}
+              color={COLORS.courseTextMuted}
+              mT={2}
+              numberOfLines={1}
+              textTransform="capitalize"
+            >
+              {stationTargetReminder}
+            </Typography>
+          ) : null}
         </View>
         <View style={styles.topBarScore}>
           <Typography
@@ -559,7 +588,7 @@ const CourseRoundScreen = ({ navigation }) => {
             style={styles.uppercase}
             textAlign="right"
           >
-            Score
+            Current Score
           </Typography>
           <Typography
             fFamily="barlowBold700"
@@ -707,7 +736,7 @@ const CourseRoundScreen = ({ navigation }) => {
               textAlign="center"
               mT={8}
             >
-              {stationHits}/{filledOnStation || 0}
+              {stationHits}/{stationExpected || 0}
             </Typography>
           </View>
 
@@ -778,12 +807,12 @@ const CourseRoundScreen = ({ navigation }) => {
             activeOpacity={0.88}
             disabled={scoringLocked}
           >
-            <Icon name="close" iconFamily="Ionicons" size={88} color="#F87171" />
+            <Icon name="close" iconFamily="Ionicons" size={88} color={COLORS.white100} />
             <Typography
               fFamily="barlowBold700"
               size={40}
               lineHeight={44}
-              color="#F87171"
+              color={COLORS.white100}
               mT={4}
               style={styles.hitMissLabel}
             >
@@ -855,8 +884,8 @@ const CourseRoundScreen = ({ navigation }) => {
         visible={confirmCompleteVisible}
         setVisibility={setConfirmCompleteVisible}
         title="Complete Round?"
-        message="Submit this round to the server? Local draft will be cleared."
-        confirmText="Submit"
+        message="Save this round (it will be available for Analytics and other uses)?"
+        confirmText="Save"
         cancelText="Cancel"
         confirmLoading={isPending}
         dismissOnConfirm={false}
@@ -915,8 +944,8 @@ const styles = StyleSheet.create({
     borderRadius: Sizer.vSize(4),
     backgroundColor: COLORS.courseBorder,
   },
-  dotHit: { backgroundColor: COLORS.primary },
-  dotMiss: { backgroundColor: '#EF4444' },
+  dotHit: { backgroundColor: COLORS.green },
+  dotMiss: { backgroundColor: COLORS.destructive },
   tapZones: {
     flex: 1,
     flexDirection: 'column',
@@ -956,17 +985,15 @@ const styles = StyleSheet.create({
   },
   hitZone: {
     flex: 1,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.green,
     borderRadius: Sizer.hSize(16),
     alignItems: 'center',
     justifyContent: 'center',
   },
   missZone: {
     flex: 1,
-    backgroundColor: COLORS.courseSurface,
+    backgroundColor: COLORS.destructive,
     borderRadius: Sizer.hSize(16),
-    borderWidth: 2,
-    borderColor: 'rgba(239, 68, 68, 0.4)',
     alignItems: 'center',
     justifyContent: 'center',
   },

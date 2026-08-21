@@ -3,7 +3,7 @@ import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Typography } from '../../atomComponents';
 import { COLORS } from '../../globalStyle/Theme';
 import Sizer from '../../helpers/Sizer';
-import { scoreFromShots } from '../../constants/rounds';
+import { stationScoreAgainstExpected } from '../../constants/rounds';
 
 const stationFilled = st => {
   const shots = st?.shots || [];
@@ -54,8 +54,7 @@ const StationProgressStrip = ({
           const active = num === currentStationNumber;
           const done = stationFilled(st) && !active;
           const selected = viewingStationNumber === num;
-          const { hits, taken } = scoreFromShots(st?.shots);
-          const scoreLabel = `${hits}/${taken || 0}`;
+          const scoreLabel = stationScoreAgainstExpected(st).label;
 
           const pill = (
             <View
