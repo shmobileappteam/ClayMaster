@@ -102,8 +102,8 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 
 ### B4. Private Community (app)
 
-- [ ] Portal section order (prefer alphabetical / intentional)
-- [ ] Show clear error if create-post fails (needs backend fix / errors)
+- [x] Portal / Services section order (alphabetical)
+- [x] Show clear error if create-post fails (keep draft on screen; clearer messages)
 
 
 

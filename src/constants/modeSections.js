@@ -144,33 +144,8 @@ export const LIBRARY_CORE_SECTIONS = SHARED_TRAINING_ORDER.map(item => ({
   tab: item.library.tab,
 }));
 
-/** Full Library — additional portal sections after the core four. */
+/** Full Library — Services grid (alphabetical for easy scanning — client feedback). */
 export const LIBRARY_PORTAL_SECTIONS = [
-  {
-    label: 'On-line Coaching',
-    desc: 'Book a session',
-    icon: 'people-outline',
-    screen: 'CoachingScreen',
-  },
-  {
-    label: 'Managed Services',
-    desc: 'Scorecard analytics by ClayMaster',
-    icon: 'headset-outline',
-    screen: 'ManagedServiceScreen',
-  },
-  {
-    label: 'Private Community',
-    desc: 'Connect & share',
-    icon: 'chatbubbles-outline',
-    screen: 'CommunityScreen',
-  },
-  {
-    label: 'Video Tutorials',
-    desc: 'Analytics & how-to walkthroughs',
-    icon: 'school-outline',
-    screen: 'InstructionalVideosScreen',
-    params: { catalog: 'tutorial' },
-  },
   {
     label: 'Additional Videos',
     desc: 'Bonus training clips',
@@ -184,17 +159,28 @@ export const LIBRARY_PORTAL_SECTIONS = [
     screen: 'AdditionalDocumentsScreen',
   },
   {
+    label: 'Managed Services',
+    desc: 'Scorecard analytics by ClayMaster',
+    icon: 'headset-outline',
+    screen: 'ManagedServiceScreen',
+  },
+  {
     label: 'Monthly Webcasts',
     desc: 'Live sessions',
     icon: 'radio-outline',
     screen: 'WebcastScreen',
   },
   {
-    label: 'Virtual Tournament',
-    desc: 'Leaderboard (Full Library only)',
-    icon: 'trophy-outline',
-    action: 'tab',
-    tab: 'Tournament',
+    label: 'On-line Coaching',
+    desc: 'Book a session',
+    icon: 'people-outline',
+    screen: 'CoachingScreen',
+  },
+  {
+    label: 'Private Community',
+    desc: 'Connect & share',
+    icon: 'chatbubbles-outline',
+    screen: 'CommunityScreen',
   },
   {
     label: 'Shop',
@@ -202,6 +188,20 @@ export const LIBRARY_PORTAL_SECTIONS = [
     icon: 'bag-outline',
     action: 'tab',
     tab: 'Shop',
+  },
+  {
+    label: 'Video Tutorials',
+    desc: 'Analytics & how-to walkthroughs',
+    icon: 'school-outline',
+    screen: 'InstructionalVideosScreen',
+    params: { catalog: 'tutorial' },
+  },
+  {
+    label: 'Virtual Tournament',
+    desc: 'Leaderboard (Full Library only)',
+    icon: 'trophy-outline',
+    action: 'tab',
+    tab: 'Tournament',
   },
 ];
 

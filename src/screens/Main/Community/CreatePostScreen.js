@@ -32,7 +32,38 @@ import {
   SUGGESTED_TAGS,
 } from '../../../constants/community';
 import validatoinSchema from '../../../validations';
-import { showToast } from '../../../utils';
+import { showMessage } from '../../../utils';
+
+const forumErrorMessage = (res, isEdit) => {
+  const data = res?.data;
+  if (data?.message) return String(data.message);
+
+  const errors = data?.errors;
+  if (errors && typeof errors === 'object') {
+    const first = Object.values(errors).flat?.() || Object.values(errors);
+    const msg = Array.isArray(first) ? first[0] : first;
+    if (msg) return String(msg);
+  }
+
+  if (!res) {
+    return 'Network error. Check your connection and try again. Your draft is still on this screen.';
+  }
+  if (res.status === 401) {
+    return 'Your session expired. Please log in again and retry.';
+  }
+  if (res.status === 403) {
+    return 'You do not have permission to post. An active subscription may be required.';
+  }
+  if (res.status === 404) {
+    return 'Community post endpoint was not found. Please try again later.';
+  }
+  if (res.status >= 500) {
+    return 'Server error while publishing. Please try again in a moment.';
+  }
+  return isEdit
+    ? 'Could not update topic. Please try again.'
+    : 'Could not create topic. Please try again — your draft is still here.';
+};
 
 /** Create or edit forum topic — FormController + Yup. */
 const CreatePostScreen = ({ navigation, route }) => {
@@ -100,15 +131,30 @@ const CreatePostScreen = ({ navigation, route }) => {
       return createForum(values);
     },
     onSuccess: body => {
+      // Some APIs return HTTP 200 with status:false — treat as failure, keep draft on screen
+      if (body?.status === false || body?.success === false) {
+        showMessage({
+          type: 'danger',
+          title: isEdit ? 'Update failed' : 'Could not publish',
+          message:
+            body?.message ||
+            'The server rejected this post. Your draft is still on this screen.',
+          duration: 4500,
+        });
+        return;
+      }
+
       queryClient.invalidateQueries({ queryKey: ['forums'] });
       if (isEdit && editSlug) {
         queryClient.invalidateQueries({ queryKey: ['forum', editSlug] });
       }
-      showToast({
-        title:
-          body?.message ||
-          (isEdit ? 'Topic updated successfully!' : 'Topic created successfully!'),
+      showMessage({
         type: 'success',
+        title: isEdit ? 'Topic updated' : 'Topic published',
+        message:
+          body?.message ||
+          (isEdit ? 'Your changes were saved.' : 'Your post is live in Private Community.'),
+        duration: 3000,
       });
       if (isEdit) {
         navigation.goBack();
@@ -128,20 +174,25 @@ const CreatePostScreen = ({ navigation, route }) => {
     },
     onError: res => {
       if (res?.status === 422) return;
-      showToast({
-        title:
-          res?.status === 403
-            ? res?.data?.message ||
-              'An active subscription is required to post.'
-            : res?.data?.message ||
-              (isEdit ? 'Could not update topic.' : 'Could not create topic.'),
+      showMessage({
         type: 'danger',
+        title: isEdit ? 'Update failed' : 'Could not publish',
+        message: forumErrorMessage(res, isEdit),
+        duration: 5000,
       });
     },
-    on422Error: () => {
-      showToast({
-        title: 'Please check the highlighted fields.',
+    on422Error: parsed => {
+      const first =
+        parsed && typeof parsed === 'object'
+          ? Object.values(parsed).flat?.()?.[0] || Object.values(parsed)[0]
+          : null;
+      showMessage({
         type: 'danger',
+        title: 'Check your fields',
+        message:
+          (typeof first === 'string' && first) ||
+          'Please fix the highlighted fields and try again. Your draft is still here.',
+        duration: 4500,
       });
     },
   });
@@ -392,7 +443,7 @@ const CreatePostScreen = ({ navigation, route }) => {
                   style={[styles.publishBtn, isPending && styles.publishDisabled]}
                   onPress={handleSubmit}
                   activeOpacity={0.88}
-                  disabled={isPending}
+                  disabled={isPending || catsLoading || !categoryOptions.length}
                 >
                   <Icon
                     name={isEdit ? 'checkmark' : 'send'}
