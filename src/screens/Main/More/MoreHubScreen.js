@@ -101,7 +101,7 @@ const MoreHubScreen = ({ navigation }) => {
             color={COLORS.white100}
             mL={8}
           >
-            Switch to On the Course
+            Switch to Field Mode
           </Typography>
         </TouchableOpacity>
       </ScrollView>

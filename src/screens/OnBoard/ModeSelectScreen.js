@@ -57,6 +57,24 @@ const ModeSelectScreen = ({ navigation }) => {
             color={COLORS.textSecondary}
             mT={8}
             textAlign="center"
+            lineHeight={TYPE.body.lineHeight}
+          >
+            Quick overview: ClayMaster has two modes. Use{' '}
+            <Typography fFamily="barlowSemiBold600" color={COLORS.textPrimary}>
+              Field Mode
+            </Typography>{' '}
+            on the course (scorecard, miss tools, drills, saved videos). Use{' '}
+            <Typography fFamily="barlowSemiBold600" color={COLORS.textPrimary}>
+              Full Library Mode
+            </Typography>{' '}
+            when you have solid internet for the full training portal. You can
+            switch anytime from the mode bar at the top.
+          </Typography>
+          <Typography
+            size={TYPE.body.size}
+            color={COLORS.textSecondary}
+            mT={12}
+            textAlign="center"
           >
             Choose your experience
           </Typography>

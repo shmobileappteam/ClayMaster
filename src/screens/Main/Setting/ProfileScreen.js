@@ -134,7 +134,7 @@ const ProfileScreen = ({ navigation }) => {
           ))}
         </View>
 
-        {/* w-full h-12 bg-foreground rounded-lg flex-row center gap-2 */}
+        {/* Switch into Field Mode (same name as mode labels elsewhere) */}
         <TouchableOpacity
           style={[styles.fullWidthBtn, styles.darkBtn]}
           activeOpacity={0.88}
@@ -142,22 +142,10 @@ const ProfileScreen = ({ navigation }) => {
         >
           <Icon name="locate" iconFamily="Ionicons" size={18} color={COLORS.white100} />
           <Typography fFamily="barlowSemiBold600" size={14} lineHeight={21} color={COLORS.white100} mL={8}>
-            Switch to On the Course
+            Switch to Field Mode
           </Typography>
         </TouchableOpacity>
 
-        {/* w-full h-12 border border-cm-orange text-cm-orange rounded-lg */}
-        <TouchableOpacity
-          style={[styles.fullWidthBtn, styles.orangeOutlineBtn]}
-          activeOpacity={0.88}
-          onPress={() => navigateFromTabToStack(navigation, 'CommunityScreen')}
-        >
-          <Typography fFamily="barlowSemiBold600" size={14} lineHeight={21} color={COLORS.primary}>
-            View Community
-          </Typography>
-        </TouchableOpacity>
-
-        {/* w-full h-12 border border-destructive text-destructive rounded-lg */}
         <TouchableOpacity
           style={[styles.fullWidthBtn, styles.destructiveOutlineBtn]}
           activeOpacity={0.88}
@@ -247,11 +235,6 @@ const styles = StyleSheet.create({
   },
   darkBtn: {
     backgroundColor: COLORS.textPrimary,
-  },
-  orangeOutlineBtn: {
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.surface,
   },
   destructiveOutlineBtn: {
     borderWidth: 1,

@@ -34,8 +34,8 @@ import {
 } from '../../../constants/rounds';
 import { showMessage } from '../../../utils';
 import { hapticHit, hapticMiss, hapticUndo } from '../../../utils/haptics';
+import { getScoringLockIdleMs } from '../../../utils/scoringLockSettings';
 
-const SCORING_IDLE_MS = 10000;
 const isStationSetupComplete = station => {
   if (!station?.selectedTargetPairs || !station?.pair_type) return false;
   if (!station.traps || station.traps.length !== 2) return false;
@@ -250,9 +250,11 @@ const CourseRoundScreen = ({ navigation }) => {
 
   const scheduleIdleLock = useCallback(() => {
     clearIdleTimer();
+    const idleMs = getScoringLockIdleMs();
+    if (!idleMs) return;
     idleTimerRef.current = setTimeout(() => {
       setScoringLocked(true);
-    }, SCORING_IDLE_MS);
+    }, idleMs);
   }, [clearIdleTimer]);
 
   const lockScoring = useCallback(() => {
@@ -277,19 +279,16 @@ const CourseRoundScreen = ({ navigation }) => {
   const toggleScoringLock = useCallback(() => {
     setScoringLocked(prev => {
       if (prev) {
-        // Unlock + restart idle countdown
+        // Unlock + restart idle countdown (if auto-lock enabled)
         if (scoringUiActive) {
-          clearIdleTimer();
-          idleTimerRef.current = setTimeout(() => {
-            setScoringLocked(true);
-          }, SCORING_IDLE_MS);
+          scheduleIdleLock();
         }
         return false;
       }
       clearIdleTimer();
       return true;
     });
-  }, [clearIdleTimer, scoringUiActive]);
+  }, [clearIdleTimer, scheduleIdleLock, scoringUiActive]);
 
   useEffect(() => {
     if (!round?.roundId) {

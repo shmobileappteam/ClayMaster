@@ -51,14 +51,14 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 ## App — Priority B
 
 ### B1. Auth / Profile / Modes
-- [ ] Add brief onboarding / orientation (1-page overview)
-- [ ] Fix mode highlight inconsistency (header vs orange mode button)
-- [ ] Make keyboard lock delay user-configurable (e.g. 20s / 60s)
-- [ ] Address or document display sleep / conserve-mode behavior
-- [ ] Remove **Community** from Profile; place with other services
-- [ ] Clarify / rename “Switch to On the Course vs Field Mode” on Profile
-- [ ] Remove reply-time promise from Help & Support (no SLA yet)
-- [ ] About Us screen — update when backend/content synced (or hardcode if PM agrees)
+- [x] Add brief onboarding / orientation (1-page overview on Mode Select)
+- [x] Fix mode highlight inconsistency (orange = current mode only)
+- [x] Make keyboard lock delay user-configurable (Settings: Off / 20s / 60s / 2m)
+- [x] Address or document display sleep / conserve-mode behavior (Help + Settings note)
+- [x] Remove **Community** from Profile; place with other services
+- [x] Clarify / rename “Switch to On the Course vs Field Mode” on Profile (→ Field Mode)
+- [x] Remove reply-time promise from Help & Support (no SLA yet)
+- [x] About Us screen — synced with claymaster.net/about-us (Kevin + Bill bios)
 
 ### B2. Training Library structure (app)
 - [ ] Field Mode: remove **Monthly Webcasts** (Full Library only)

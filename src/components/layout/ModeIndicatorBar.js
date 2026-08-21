@@ -7,7 +7,9 @@ import Sizer from '../../helpers/Sizer';
 import { useModeSwitch } from '../../hooks/useModeSwitch';
 
 /**
- * Persistent mode indicator + one-tap switch (shown on Field and Library screens).
+ * Persistent mode indicator + one-tap switch.
+ * Orange highlights the *current* mode only; switch CTA is neutral so it is not
+ * mistaken for the active mode (client usability feedback).
  */
 const ModeIndicatorBar = ({ variant = 'library' }) => {
   const {
@@ -24,23 +26,23 @@ const ModeIndicatorBar = ({ variant = 'library' }) => {
   const palette = isDark
     ? {
         bg: COLORS.courseBg,
-        border: COLORS.courseBg,
-        text: COLORS.white100,
+        border: COLORS.courseBorder,
         muted: COLORS.courseTextMuted,
-        pillBg: 'rgba(235,108,15,0.2)',
-        pillText: COLORS.primary,
-        btnBg: switchDisabled ? COLORS.courseBorder : COLORS.primary,
-        btnText: COLORS.white100,
+        currentBg: COLORS.primary,
+        currentText: COLORS.white100,
+        btnBg: switchDisabled ? COLORS.courseBorder : COLORS.courseSurface,
+        btnBorder: switchDisabled ? COLORS.courseBorder : COLORS.courseBorder,
+        btnText: switchDisabled ? COLORS.courseTextMuted : COLORS.white100,
       }
     : {
         bg: COLORS.primaryLight,
         border: COLORS.borderMuted,
-        text: COLORS.textPrimary,
         muted: COLORS.textSecondary,
-        pillBg: isFieldMode ? 'rgba(235,108,15,0.15)' : COLORS.surface,
-        pillText: COLORS.primary,
-        btnBg: switchDisabled ? COLORS.borderMuted : COLORS.primary,
-        btnText: COLORS.white100,
+        currentBg: COLORS.primary,
+        currentText: COLORS.white100,
+        btnBg: switchDisabled ? COLORS.borderMuted : COLORS.surface,
+        btnBorder: switchDisabled ? COLORS.borderMuted : COLORS.borderMuted,
+        btnText: switchDisabled ? COLORS.textSecondary : COLORS.textPrimary,
       };
 
   const statusHint =
@@ -61,17 +63,17 @@ const ModeIndicatorBar = ({ variant = 'library' }) => {
       ]}
     >
       <View style={styles.row}>
-        <View style={[styles.pill, { backgroundColor: palette.pillBg }]}>
+        <View style={[styles.pill, { backgroundColor: palette.currentBg }]}>
           <Icon
             name={isFieldMode ? 'locate' : 'library-outline'}
             iconFamily="Ionicons"
             size={14}
-            color={palette.pillText}
+            color={palette.currentText}
           />
           <Typography
             size={11}
             fFamily="barlowSemiBold600"
-            color={palette.pillText}
+            color={palette.currentText}
             mL={6}
             style={styles.uppercase}
           >
@@ -88,10 +90,17 @@ const ModeIndicatorBar = ({ variant = 'library' }) => {
         )}
 
         <TouchableOpacity
-          style={[styles.switchBtn, { backgroundColor: palette.btnBg }]}
+          style={[
+            styles.switchBtn,
+            {
+              backgroundColor: palette.btnBg,
+              borderColor: palette.btnBorder,
+            },
+          ]}
           onPress={switchToOtherMode}
           disabled={switchDisabled}
           activeOpacity={0.88}
+          accessibilityLabel={`Switch to ${otherLabel}`}
         >
           {switchDisabled ? (
             <Icon
@@ -113,8 +122,9 @@ const ModeIndicatorBar = ({ variant = 'library' }) => {
             fFamily="barlowSemiBold600"
             color={switchDisabled ? palette.muted : palette.btnText}
             mL={4}
+            numberOfLines={1}
           >
-            {switchDisabled ? 'No internet' : `→ ${otherLabel}`}
+            {switchDisabled ? 'No internet' : otherLabel}
           </Typography>
         </TouchableOpacity>
       </View>
@@ -157,6 +167,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Sizer.hSize(10),
     paddingVertical: Sizer.vSize(6),
     borderRadius: Sizer.hSize(8),
-    maxWidth: '46%',
+    borderWidth: 1,
+    maxWidth: '48%',
   },
 });

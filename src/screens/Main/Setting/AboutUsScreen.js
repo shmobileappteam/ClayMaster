@@ -7,6 +7,9 @@ import { Header } from '../../../components';
 import { COLORS, GLOBALSTYLE } from '../../../globalStyle/Theme';
 import Sizer from '../../../helpers/Sizer';
 
+/**
+ * Content aligned with https://claymaster.net/about-us (client usability feedback).
+ */
 const AboutUsScreen = () => {
   const { subscriptionEnabled } = useSelector(state => state.app);
 
@@ -27,29 +30,29 @@ const AboutUsScreen = () => {
           size={14}
           mT={10}
           color={COLORS.black}
+          lineHeight={22}
         >
-          ClayMaster provides{' '}
+          We provide internet,{' '}
           <Typography fFamily="barlowBold700">
             {subscriptionEnabled
-              ? 'subscription-based sporting clays performance improvement'
-              : 'expert sporting clays performance improvement'}
+              ? 'subscription-based sporting clays education/training'
+              : 'sporting clays education/training'}
           </Typography>{' '}
-          through a suite of unique tools and services:
+          designed to improve your performance via the following key services.
+          We are continually adding other features as well to bring additional
+          value to our subscribers.
         </Typography>
 
         <View style={styles.listContainer}>
           {[
-            'Detailed Sporting Clays Analytics Tool & other analytics services',
-            <>
-              Target-specific instructional videos presented by{' '}
-              <Typography fFamily="barlowBold700">Kevin DeMichiel</Typography>
-            </>,
-            'Sporting clays practice drills',
-            'Online coaching sessions',
-            'Private community forum for sporting clays enthusiasts',
-            'Monthly webcasts hosted by Kevin DeMichiel',
+            'Detailed Analytics Tool & Other Analytics Services',
+            'Instructional Videos (presented by Kevin DeMichiel)',
+            'Detailed Practice Drills',
+            'On-line Coaching Sessions',
+            'Private Community Forum',
+            'Monthly Webcasts (hosted by Kevin DeMichiel)',
           ].map((item, index) => (
-            <Flex key={index} gap={8} mT={8} algItems={'flex-start'}>
+            <Flex key={index} gap={8} mT={8} algItems="flex-start">
               <Typography size={20} mT={-5}>
                 {'\u2022'}
               </Typography>
@@ -57,6 +60,7 @@ const AboutUsScreen = () => {
                 fFamily="barlowRegular400"
                 size={14}
                 style={{ flex: 1 }}
+                lineHeight={20}
               >
                 {item}
               </Typography>
@@ -64,67 +68,84 @@ const AboutUsScreen = () => {
           ))}
         </View>
 
-        <Typography fFamily="barlowRegular400" size={14} mT={20}>
-          Our team combines expertise from diverse backgrounds:
+        <Typography
+          fFamily="barlowRegular400"
+          size={14}
+          mT={20}
+          color={COLORS.black}
+          lineHeight={22}
+        >
+          Our ClayMaster team combines a retired Fortune 50 supply chain
+          executive who specialized in improvement processes and
+          technology/former Accenture management consultant/USMC Veteran with
+          38+ years of work experience and aspiring sporting clays competitor
+          with two of the top sporting clays competitors and instructors/coaches
+          in the U.S. (
+          <Typography fFamily="barlowBold700">Kevin DeMichiel</Typography> and{' '}
+          <Typography fFamily="barlowBold700">Bill McGuire</Typography>).
         </Typography>
 
-        <View style={styles.listContainer}>
-          <Flex gap={8} mT={8}>
-            <Typography size={20} mT={-5}>
-              {'\u2022'}
-            </Typography>
-            <Typography
-              fFamily="barlowRegular400"
-              size={14}
-              style={{ flex: 1 }}
-            >
-              A retired{' '}
-              <Typography fFamily="barlowBold700">
-                Fortune 50 supply chain executive
-              </Typography>
-              , former Accenture management consultant, and{' '}
-              <Typography fFamily="barlowBold700">USMC Veteran</Typography> with
-              38+ years of experience
-            </Typography>
-          </Flex>
-
-          <Flex gap={8} mT={8}>
-            <Typography size={20} mT={-5}>
-              {'\u2022'}
-            </Typography>
-            <Typography
-              fFamily="barlowRegular400"
-              size={14}
-              style={{ flex: 1 }}
-            >
-              <Typography fFamily="barlowBold700">Kevin DeMichiel</Typography>,
-              ONE of the top sporting clays competitors and instructors in the
-              U.S. Kevin is a 15-time National Sporting Clays Association (NSCA)
-              All-American, 13-time Team USA member (captain of the 2019 team),
-              two-time Georgia State Champion, and a 2017 inductee into the
-              Georgia Sporting Clays Association Hall of Fame
-            </Typography>
-          </Flex>
-        </View>
-
-        <Typography fFamily="barlowRegular400" size={14} mT={20}>
-          At ClayMaster, our mission is to help you improve your sporting clays
-          performance with expert guidance, innovative tools, and a supportive
-          community.
+        <Typography
+          fFamily="barlowRegular400"
+          size={14}
+          mT={12}
+          color={COLORS.black}
+          lineHeight={22}
+        >
+          The combination of Kevin and Bill as our featured instructors/coaches
+          will provide our subscribers with an amazing wealth of sporting clays
+          experience/knowledge.
         </Typography>
+
+        <Typography fFamily="barlowSemiBold600" size={16} mT={24}>
+          Kevin DeMichiel
+        </Typography>
+        <Typography
+          fFamily="barlowRegular400"
+          size={14}
+          mT={8}
+          color={COLORS.black}
+          lineHeight={22}
+        >
+          Kevin is widely known for his straight forward/friendly nature as a
+          professional shooter/instructor/coach. Kevin is from Forsyth, GA and
+          has been shooting for 26 years. He’s a 15x NSCA All-American, 13x Team
+          USA member (serving as Captain of the 2019 team) and 2x GA State
+          Champion. In addition, Kevin was inducted into the GA Sporting Clays
+          Association Hall of Fame in 2017.
+        </Typography>
+
+        <Typography fFamily="barlowSemiBold600" size={16} mT={24}>
+          Bill McGuire
+        </Typography>
+        <Typography
+          fFamily="barlowRegular400"
+          size={14}
+          mT={8}
+          color={COLORS.black}
+          lineHeight={22}
+        >
+          Bill is one of the legends in sporting clays and is also one of the
+          most respected/friendliest gentlemen that you’ll meet. Bill is from
+          Sweetwater, TN and has been shooting for 29 years. He’s a NSCA Hall of
+          Fame member inducted in 2016, TN Sporting Clays Association Hall of
+          Fame member inducted in 2024, 2x NSCA National Champion, 18x NSCA
+          All-American, and 2014, 2015, 2016, and 2020 NSCA Tour Championship
+          Champion.
+        </Typography>
+
         <View style={{ marginTop: Sizer.hSize(30), alignItems: 'center' }}>
           <Typography fFamily="barlowRegular400" size={14} color={COLORS.black}>
-            🌐 Website
+            Website
           </Typography>
-
           <Typography
             fFamily="barlowBold700"
             size={14}
             color={COLORS.primary}
             style={{ textDecorationLine: 'underline', marginTop: 4 }}
-            onPress={() => Linking.openURL('https://www.claymaster.net')}
+            onPress={() => Linking.openURL('https://claymaster.net')}
           >
-            www.claymaster.net
+            claymaster.net
           </Typography>
         </View>
       </ScrollView>
@@ -135,6 +156,7 @@ const AboutUsScreen = () => {
 const styles = StyleSheet.create({
   listContainer: {
     paddingLeft: Sizer.hSize(10),
+    marginTop: Sizer.vSize(8),
   },
 });
 

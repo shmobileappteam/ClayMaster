@@ -17,6 +17,8 @@ export const KEYS = {
   DOWNLOADED_DRILLS: '@cm_downloaded_drills',
   /** Forum unique view tracking (X-Device-Id) */
   DEVICE_ID: '@cm_device_id',
+  /** Field Mode scoring auto-lock idle delay (ms). 0 = manual lock only */
+  SCORING_LOCK_IDLE_MS: '@cm_scoring_lock_idle_ms',
 };
 
 export const STRIPE_PUBLISHABLE_KEY =
