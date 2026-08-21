@@ -6,7 +6,6 @@ import {
   DashboardScreen,
   ProfileScreen,
   ShopScreen,
-  VirtualTournamentScreen,
 } from '../screens';
 import { COLORS } from '../globalStyle/Theme';
 import Sizer from '../helpers/Sizer';
@@ -15,7 +14,10 @@ import Icon from '../helpers/Icon';
 
 const Tab = createBottomTabNavigator();
 
-/** Web BottomTabBar parity: Home, Analytics, Tournament, Shop, Profile */
+/**
+ * Library footer tabs — VT removed per client feedback (access via Services).
+ * Customizable footer is Priority C / later.
+ */
 const TABS = [
   { name: 'Home', label: 'Home', icon: 'home-outline', screen: DashboardScreen },
   {
@@ -23,12 +25,6 @@ const TABS = [
     label: 'Analytics',
     icon: 'stats-chart-outline',
     screen: AnalyticsDashboard,
-  },
-  {
-    name: 'Tournament',
-    label: 'Tournament',
-    icon: 'trophy-outline',
-    screen: VirtualTournamentScreen,
   },
   { name: 'Shop', label: 'Shop', icon: 'bag-outline', screen: ShopScreen },
   {

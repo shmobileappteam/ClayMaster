@@ -49,8 +49,7 @@ export const moreMenus = [
     label: 'Virtual Tournament',
     icon: 'trophy-outline',
     family: 'Ionicons',
-    navLink: 'Tournament',
-    stack: 'BottomTabs',
+    navLink: 'VirtualTournamentScreen',
     stack: null,
   },
   {

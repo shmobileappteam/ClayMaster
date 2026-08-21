@@ -52,7 +52,7 @@ const EXPLORE_ITEMS = [
     label: 'Tournament Analytics',
     desc: 'Competition stats & rankings',
     icon: 'trophy-outline',
-    tab: 'Tournament',
+    screen: 'VirtualTournamentScreen',
   },
 ];
 

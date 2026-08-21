@@ -132,9 +132,9 @@ export function navigateFromTabToTab(navigation, tabName) {
 }
 
 /**
- * Drawer / More menu — web parity:
- * - Tab routes (/analytics, /tournament, /shop) → bottom tab
- * - Stack routes (/scorecard, /scoring) → full-screen stack push
+ * Drawer / More menu:
+ * - Tab routes (Analytics, Shop, …) → bottom tab
+ * - Stack routes (VT, Community, Coaching, …) → full-screen stack push
  */
 export function navigateFromMenuItem(navigation, item) {
   const stack = getStackNavigation(navigation) ?? navigation.getParent?.() ?? navigation;

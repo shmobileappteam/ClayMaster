@@ -12,18 +12,18 @@ Offline scope note: `MS2-PM-Shane-Scope-Notes.md`
 
 ## Backend (not app implementation)
 
-Tracked for backend / content. Do not treat as mobile coding tasks until backend is ready (then wire UI only).
+Tracked for **backend / server / CMS / content** — not mobile coding. App can only play the URLs and show the data the API returns. Until these are ready, treat related app work as UI-only (or blocked). Detail: `MS2-Backend-Server-Change-Request.md`.
 
-- [ ] **Backend** Video playback — fix buffering / smooth play on weak networks
-- [ ] **Backend** Field Mode saved videos — real offline download *(out of current milestone — Shane)*
-- [ ] **Backend** Managed Services Analytics — request flow + attach scorecard + consume sessions
-- [ ] **Backend** On-line Coaching — upcoming session after book + decrement session count
-- [ ] **Backend** Practice drills Classic (9) vs Pro (13) gating
-- [ ] **Backend** Additional Videos portal-style sub-categories
-- [ ] **Backend** Instructional Videos thumbnails + content groups (incl. Tournament Prep Pro)
-- [ ] **Backend** Notifications — how bell items are created / sent
-- [ ] **Backend** About Us — sync team content with website
-- [ ] **Backend** Community create post — reliable create or clear API error
+- [ ] **Video playback (blocker)** — Client videos stall/buffer (e.g. Chandelle), especially on weak/rural nets. Needs CDN / adaptive streaming (HLS), not app tweaks alone.
+- [ ] **Field Mode saved videos** — “Save” today stores a link; watching still needs internet. Needs a real downloadable file for offline on-course use. *(Out of current milestone — Shane / PM.)*
+- [ ] **Managed Services Analytics** — Client wants request analytics + attach scorecard, not purchase-only. API must create the request, attach round/scorecard, and consume sessions correctly.
+- [ ] **On-line Coaching bookings** — After Calendly/book, session must appear in Upcoming and remaining count must go down (webhook / sync with booking system).
+- [ ] **Practice drills Classic (9) vs Pro (13)** — Plan gating must come from API/`can_access` (or equivalent); app only shows lock UI.
+- [ ] **Additional Videos sub-categories** — Portal-style category/subcategory fields so the app can group/browse like the website.
+- [ ] **Instructional Videos** — Thumbnails + content groups (Target Presentations, ClayMaster Vision, Tournament Prep Pro) must exist on the API/CMS.
+- [ ] **Notifications** — Clarify how bell items are created/sent (and push if in scope); app only displays what the API returns.
+- [ ] **About Us** — Team copy (incl. Bill McGuire) should stay in sync with claymaster.net; ideally CMS/API so app doesn’t hardcode forever.
+- [ ] **Community create post** — Create must succeed for valid users, or return a clear error payload so the app can show why it failed.
 
 ---
 
@@ -109,9 +109,9 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 
 ### B5. Virtual Tournament (app)
 
-- [ ] Portal item order (alphabetic / intentional)
-- [ ] Clarify or remove Field Mode option on Leaderboard
-- [ ] Reconsider footer VT tab; explore customizable footer
+- [x] Portal item order (alphabetic — done with B4 Services grid)
+- [x] Remove Field Mode switch on Leaderboard (Full Library–only note instead)
+- [x] Remove VT from footer tab (access via Services / menu / Analytics); customizable footer stays Priority C
 
 ---
 

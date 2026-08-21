@@ -200,8 +200,7 @@ export const LIBRARY_PORTAL_SECTIONS = [
     label: 'Virtual Tournament',
     desc: 'Leaderboard (Full Library only)',
     icon: 'trophy-outline',
-    action: 'tab',
-    tab: 'Tournament',
+    screen: 'VirtualTournamentScreen',
   },
 ];
 

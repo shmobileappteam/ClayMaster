@@ -70,7 +70,12 @@ const VirtualTournamentScreen = ({ navigation }) => {
 
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
-      <LibraryHeader title="Virtual Tournament" showModeIndicator />
+      <LibraryHeader
+        title="Virtual Tournament"
+        showBack
+        showNotification={false}
+        onBack={() => navigation.goBack()}
+      />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -99,7 +104,10 @@ const VirtualTournamentScreen = ({ navigation }) => {
                 fFamily="barlowSemiBold600"
                 style={styles.overline}
               >
-                MONTHLY STANDINGS
+                FULL LIBRARY · MONTHLY STANDINGS
+              </Typography>
+              <Typography size={12} color={COLORS.textMuted} mT={2} mB={2}>
+                Online only — not available in Field Mode
               </Typography>
               <View style={styles.monthRow}>
                 <TouchableOpacity

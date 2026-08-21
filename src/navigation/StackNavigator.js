@@ -39,6 +39,7 @@ import {
   CommunityScreen,
   CommunityDetailScreen,
   CreatePostScreen,
+  VirtualTournamentScreen,
   TournamentEntryScreen,
   ProductDetailScreen,
   OrdersScreen,
@@ -190,6 +191,10 @@ const StackNavigator = () => {
       <Stack.Screen name="CommunityScreen" component={CommunityScreen} />
       <Stack.Screen name="CommunityDetailScreen" component={CommunityDetailScreen} />
       <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
+      <Stack.Screen
+        name="VirtualTournamentScreen"
+        component={VirtualTournamentScreen}
+      />
       <Stack.Screen name="TournamentEntryScreen" component={TournamentEntryScreen} />
 
       <Stack.Screen name="ProductDetailScreen" component={ProductDetailScreen} />
