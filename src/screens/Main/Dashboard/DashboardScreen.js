@@ -176,10 +176,10 @@ const DashboardScreen = ({ navigation }) => {
 
         <View style={styles.section}>
           <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary} mB={4}>
-            Core Training
+            Training
           </Typography>
           <Typography size={12} lineHeight={17} color={COLORS.textSecondary} mB={12}>
-            Same order as {MODE_LABELS.field}
+            Scorecard, drills & videos — same order as {MODE_LABELS.field}
           </Typography>
           <View style={styles.grid}>
             {LIBRARY_CORE_SECTIONS.map(s => (
@@ -210,8 +210,11 @@ const DashboardScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.section}>
-          <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary} mB={12}>
-            Portal
+          <Typography fFamily="barlowSemiBold600" size={20} lineHeight={26} color={COLORS.textPrimary} mB={4}>
+            Services
+          </Typography>
+          <Typography size={12} lineHeight={17} color={COLORS.textSecondary} mB={12}>
+            On-line Coaching, community, documents & more
           </Typography>
           <View style={styles.grid}>
             {LIBRARY_PORTAL_SECTIONS.map(s => (

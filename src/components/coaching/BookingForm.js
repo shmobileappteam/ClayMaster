@@ -81,7 +81,7 @@ const BookingForm = ({
                 {coach.name}
               </Typography>
               <Typography size={12} color={COLORS.textSecondary} mT={2}>
-                Online coaching
+                On-line coaching
               </Typography>
             </View>
           </View>

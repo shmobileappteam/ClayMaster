@@ -42,6 +42,7 @@ const DISABLE_ZOOM_JS = `
 /**
  * In-app Calendly booking — route params: { url, title? }
  * Closes automatically when the invitees confirmation URL loads.
+ * Refreshes sessions so Upcoming + remaining balance can update (needs backend webhook).
  */
 const CalendlyBookingScreen = ({ navigation, route }) => {
   const url = route?.params?.url || null;
@@ -51,23 +52,40 @@ const CalendlyBookingScreen = ({ navigation, route }) => {
   const [error, setError] = useState(null);
   const closedRef = useRef(false);
 
+  const refreshSessions = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    // Webhook may lag — retry a few times for Upcoming / counter
+    const delays = [1500, 4000, 8000];
+    delays.forEach(ms => {
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      }, ms);
+    });
+  }, [queryClient]);
+
   const finishBooking = useCallback(() => {
     if (closedRef.current) return;
     closedRef.current = true;
 
-    queryClient.invalidateQueries({ queryKey: ['sessions'] });
+    refreshSessions();
     showMessage({
       type: 'success',
-      message: 'Session scheduled successfully.',
+      title: 'Session scheduled',
+      message:
+        'Check Upcoming in a moment — balance updates when ClayMaster confirms the booking.',
+      duration: 4500,
     });
 
-    // Let the confirmation page paint briefly, then dismiss smoothly.
     setTimeout(() => {
       if (navigation.canGoBack()) {
-        navigation.goBack();
+        navigation.navigate({
+          name: 'AnalyticsScheduleScreen',
+          params: { tab: 'upcoming', refreshSessions: Date.now() },
+          merge: true,
+        });
       }
-    }, 600);
-  }, [navigation, queryClient]);
+    }, 500);
+  }, [navigation, refreshSessions]);
 
   const handleNavChange = useCallback(
     navState => {
@@ -85,9 +103,9 @@ const CalendlyBookingScreen = ({ navigation, route }) => {
         showBack
         showNotification={false}
         onBack={() => navigation.goBack()}
-         showModeIndicator={false}
+        showModeIndicator={false}
       />
-      {!url ? ( 
+      {!url ? (
         <View style={styles.centered}>
           <Typography color={COLORS.textSecondary} textAlign="center">
             No booking link available.
@@ -104,6 +122,9 @@ const CalendlyBookingScreen = ({ navigation, route }) => {
           {loading && !closedRef.current ? (
             <View style={styles.loader}>
               <AppLoader />
+              <Typography size={13} color={COLORS.textSecondary} mT={12} textAlign="center">
+                Loading booking calendar…
+              </Typography>
             </View>
           ) : null}
           <WebView
@@ -134,6 +155,7 @@ const CalendlyBookingScreen = ({ navigation, route }) => {
             domStorageEnabled
             sharedCookiesEnabled
             thirdPartyCookiesEnabled
+            cacheEnabled
             allowsBackForwardNavigationGestures
             setSupportMultipleWindows={false}
           />
@@ -159,6 +181,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 1,
     backgroundColor: COLORS.mainBg,
+    paddingHorizontal: 24,
   },
   centered: {
     flex: 1,

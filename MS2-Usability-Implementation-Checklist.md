@@ -92,11 +92,11 @@ Tracked for backend / content. Do not treat as mobile coding tasks until backend
 
 ### B3. On-line Coaching (app)
 
-- [ ] Use naming **“On-line Coaching”** (match portal)
-- [ ] Simplify Core Training vs Portal split / navigation
-- [ ] Book Session: focus on booking; show “buy more” only when sessions low (<3)
-- [ ] Refresh Upcoming / counter after book (needs backend sync)
-- [ ] Reduce Book Session init delay where app-controlled
+- [x] Use naming **“On-line Coaching”** (match portal)
+- [x] Simplify Core Training vs Portal split / navigation → **Training** + **Services**
+- [x] Book Session: focus on booking; show “buy more” only when sessions low (&lt;3)
+- [x] Refresh Upcoming / counter after book (app refetch + retries; full sync needs backend webhook)
+- [x] Reduce Book Session init delay where app-controlled (prefetch coaches; Calendly cache)
 
 
 

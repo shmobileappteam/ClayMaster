@@ -1,7 +1,6 @@
 import {
   LIBRARY_CORE_SECTIONS,
   LIBRARY_PORTAL_SECTIONS,
-  MODE_LABELS,
 } from '../constants/modeSections';
 
 /**
@@ -36,11 +35,11 @@ const portalMenuItems = [
 
 export const MENU_SECTIONS = [
   {
-    title: `Core (${MODE_LABELS.field} order)`,
+    title: 'Training',
     items: coreMenuItems,
   },
   {
-    title: 'Portal & More',
+    title: 'Services',
     items: portalMenuItems,
   },
   {

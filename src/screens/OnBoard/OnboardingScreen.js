@@ -22,7 +22,7 @@ const SLIDES = [
   },
   {
     image: onboarding2,
-    title: 'Online Coaching',
+    title: 'On-line Coaching',
     text: 'Book live sessions with top instructors and get personalized feedback between events.',
   },
   {

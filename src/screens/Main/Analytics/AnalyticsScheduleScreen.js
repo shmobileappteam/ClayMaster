@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Linking,
   RefreshControl,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Container, Typography, AppLoader } from '../../../atomComponents';
 import LibraryHeader from '../../../components/layout/LibraryHeader';
 import BookingForm from '../../../components/coaching/BookingForm';
@@ -30,7 +31,7 @@ const TABS = [
 ];
 
 /**
- * Coaching sessions — coaches (Calendly) + appointments from GET /api/sessions
+ * On-line Coaching sessions — coaches (Calendly) + appointments from GET /api/sessions
  */
 const AnalyticsScheduleScreen = ({ navigation, route }) => {
   const blocked = useRequireLibraryMode();
@@ -68,14 +69,18 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
     queryFn: getSessions,
   });
 
-  console.log('sessions', sessions);
+  useFocusEffect(
+    useCallback(() => {
+      refetchSessions();
+    }, [refetchSessions, route?.params?.refreshSessions]),
+  );
+
   const coaches = coachesData?.items || [];
   const { upcoming, past } = useMemo(
     () => splitAppointments(sessions?.appointments),
     [sessions?.appointments],
   );
 
-  console.log('upcoming', upcoming);
   if (blocked) {
     return null;
   }
@@ -131,7 +136,7 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
-        title="Coaching Sessions"
+        title="On-line Coaching"
         showBack
         showNotification={false}
         onBack={() => navigation.goBack()}
@@ -165,7 +170,7 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
               coaches={coaches}
               canBook={sessions?.canBookSession !== false}
               remainingSessions={sessions?.summary?.remainingSessions ?? 0}
-              isLoading={loadingCoaches || loadingSessions}
+              isLoading={loadingCoaches}
               isError={coachesError}
               onRetry={refetchCoaches}
               onBookCoach={handleBookCoach}
@@ -202,8 +207,16 @@ const AnalyticsScheduleScreen = ({ navigation, route }) => {
                     size={40}
                     color={COLORS.textSecondary}
                   />
-                  <Typography size={14} color={COLORS.textSecondary} mT={12}>
-                    No upcoming sessions
+                  <Typography size={14} color={COLORS.textSecondary} mT={12} textAlign="center">
+                    No upcoming sessions yet
+                  </Typography>
+                  <Typography
+                    size={12}
+                    color={COLORS.textSecondary}
+                    mT={8}
+                    textAlign="center"
+                  >
+                    After you book, pull to refresh — confirmation can take a moment.
                   </Typography>
                 </View>
               ) : (
@@ -304,5 +317,6 @@ const styles = StyleSheet.create({
   empty: {
     alignItems: 'center',
     paddingVertical: Sizer.vSize(48),
+    paddingHorizontal: Sizer.hSize(16),
   },
 });

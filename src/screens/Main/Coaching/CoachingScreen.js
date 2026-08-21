@@ -31,12 +31,16 @@ import {
   getSessions,
   purchaseSessions,
   createSessionSetupIntent,
+  getCoaches,
 } from '../../../api/coachingService';
 import { formatMoney } from '../../../constants/coaching';
 import { navigateFromTabToStack } from '../../../navigation/navigationHelpers';
 import { setUser } from '../../../redux/slices/appSlice';
 import { useKeyboard } from '../../../hooks/useKeyboard';
 import { showMessage } from '../../../utils';
+
+/** Show purchase packages only when remaining sessions are low */
+const BUY_MORE_REMAINING_THRESHOLD = 3;
 
 /** ClayMaster-App-UI `Coaching.tsx` → sessions/setup-intent + sessions/purchase */
 const CoachingScreen = ({ navigation }) => {
@@ -56,6 +60,15 @@ const CoachingScreen = ({ navigation }) => {
     queryFn: getSessions,
   });
 
+  const remainingSessions = Number(sessions?.summary?.remainingSessions) || 0;
+  const showBuyMore = remainingSessions < BUY_MORE_REMAINING_THRESHOLD;
+
+  // Prefetch coaches so Book Session opens faster
+  useCustomQuery({
+    queryKey: ['coaches'],
+    queryFn: getCoaches,
+  });
+
   const {
     data: purchaseInfo,
     isLoading: loadingPurchase,
@@ -64,6 +77,7 @@ const CoachingScreen = ({ navigation }) => {
   } = useCustomQuery({
     queryKey: ['sessionPurchaseInfo'],
     queryFn: getSessionPurchaseInfo,
+    enabled: showBuyMore || loadingSessions,
   });
 
   const [bundleType, setBundleType] = useState(null);
@@ -311,7 +325,7 @@ const CoachingScreen = ({ navigation }) => {
   };
 
   const canBook = sessions?.canBookSession !== false;
-  const loading = loadingSessions || loadingPurchase;
+  const loading = loadingSessions || (showBuyMore && loadingPurchase);
   const paying = loadingIntent || isProcessingPayment || purchasing;
   const payOverlay =
     loadingIntent || purchasing || (isProcessingPayment && !modalVisible);
@@ -319,7 +333,7 @@ const CoachingScreen = ({ navigation }) => {
   return (
     <Container isPadding={false} backgroundColor={COLORS.mainBg}>
       <LibraryHeader
-        title="Coaching"
+        title="On-line Coaching"
         showBack
         showNotification={false}
         onBack={() => navigation.goBack()}
@@ -339,6 +353,11 @@ const CoachingScreen = ({ navigation }) => {
                 </Typography>
               </TouchableOpacity>
             ) : null}
+
+            <Typography size={14} color={COLORS.textSecondary} mB={16} lineHeight={20}>
+              Book a live session with a ClayMaster coach. Your remaining balance
+              updates after booking confirms.
+            </Typography>
 
             <View style={styles.statsRow}>
               {stats.map(stat => (
@@ -387,60 +406,82 @@ const CoachingScreen = ({ navigation }) => {
               </Typography>
             </TouchableOpacity>
 
-            <Typography
-              fFamily={TYPE.h2.fFamily}
-              size={TYPE.h2.size}
-              color={COLORS.textPrimary}
-              mT={SPACING.section}
-              mB={SPACING.component}
+            <TouchableOpacity
+              style={styles.upcomingLink}
+              activeOpacity={0.88}
+              onPress={() =>
+                navigateFromTabToStack(navigation, 'AnalyticsScheduleScreen', {
+                  tab: 'upcoming',
+                })
+              }
             >
-              Buy Sessions
-            </Typography>
+              <Typography fFamily="barlowSemiBold600" size={14} color={COLORS.primary}>
+                View upcoming sessions
+              </Typography>
+            </TouchableOpacity>
 
-            {purchaseError ? (
-              <TouchableOpacity onPress={refetchPurchase}>
-                <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
-                  Could not load packages. Tap to retry.
+            {showBuyMore ? (
+              <>
+                <Typography
+                  fFamily={TYPE.h2.fFamily}
+                  size={TYPE.h2.size}
+                  color={COLORS.textPrimary}
+                  mT={SPACING.section}
+                  mB={SPACING.component}
+                >
+                  Buy more sessions
                 </Typography>
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.packages}>
-                {packages.map(pkg => (
-                  <View key={pkg.bundleType} style={[GLOBALSTYLE.screenCard, styles.packageCard]}>
-                    <View style={{ flex: 1, paddingRight: 12 }}>
-                      <Typography
-                        fFamily="barlowSemiBold600"
-                        size={TYPE.body.size}
-                        color={COLORS.textPrimary}
-                      >
-                        {pkg.title}
-                      </Typography>
-                      <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
-                        {pkg.desc}
-                      </Typography>
-                    </View>
-                    <TouchableOpacity
-                      style={styles.priceBtn}
-                      activeOpacity={0.88}
-                      disabled={paying}
-                      onPress={() => startPurchase(pkg.bundleType)}
-                    >
-                      {loadingIntent && bundleType === pkg.bundleType ? (
-                        <AppLoader compact size="small" color={COLORS.white100} />
-                      ) : (
-                        <Typography
-                          fFamily="barlowSemiBold600"
-                          size={TYPE.body.size}
-                          color={COLORS.white100}
+                <Typography size={13} color={COLORS.textSecondary} mB={12}>
+                  You have {remainingSessions} session
+                  {remainingSessions === 1 ? '' : 's'} left. Purchase more below.
+                </Typography>
+
+                {purchaseError ? (
+                  <TouchableOpacity onPress={refetchPurchase}>
+                    <Typography color={COLORS.primary} fFamily="barlowSemiBold600">
+                      Could not load packages. Tap to retry.
+                    </Typography>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.packages}>
+                    {packages.map(pkg => (
+                      <View key={pkg.bundleType} style={[GLOBALSTYLE.screenCard, styles.packageCard]}>
+                        <View style={{ flex: 1, paddingRight: 12 }}>
+                          <Typography
+                            fFamily="barlowSemiBold600"
+                            size={TYPE.body.size}
+                            color={COLORS.textPrimary}
+                          >
+                            {pkg.title}
+                          </Typography>
+                          <Typography size={TYPE.caption.size} color={COLORS.textSecondary} mT={2}>
+                            {pkg.desc}
+                          </Typography>
+                        </View>
+                        <TouchableOpacity
+                          style={styles.priceBtn}
+                          activeOpacity={0.88}
+                          disabled={paying}
+                          onPress={() => startPurchase(pkg.bundleType)}
                         >
-                          {pkg.priceLabel}
-                        </Typography>
-                      )}
-                    </TouchableOpacity>
+                          {loadingIntent && bundleType === pkg.bundleType ? (
+                            <AppLoader compact size="small" color={COLORS.white100} />
+                          ) : (
+                            <Typography
+                              fFamily="barlowSemiBold600"
+                              size={TYPE.body.size}
+                              color={COLORS.white100}
+                            >
+                              {pkg.priceLabel}
+                            </Typography>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            )}
+                )}
+              </>
+            ) : null}
           </>
         )}
       </ScrollView>
@@ -547,6 +588,11 @@ const styles = StyleSheet.create({
   },
   bookBtnDisabled: {
     opacity: 0.5,
+  },
+  upcomingLink: {
+    alignItems: 'center',
+    marginTop: Sizer.vSize(14),
+    paddingVertical: Sizer.vSize(6),
   },
   packages: {
     gap: Sizer.vSize(SPACING.component),
