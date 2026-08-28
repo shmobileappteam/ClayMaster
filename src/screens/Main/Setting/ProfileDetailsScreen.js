@@ -23,7 +23,7 @@ import { editProfile } from '../../../api/userService';
 import { setUser } from '../../../redux/slices/appSlice';
 import { formatBackendErrors, maskPhoneNumber, showToast } from '../../../utils';
 import useImagePicker from '../../../hooks/useImagePicker';
-import { BASE_URL } from '../../../api/endpoints';
+import { getBaseUrl } from '../../../api/endpoints';
 import validatoinSchema from '../../../validations';
 
 /**
@@ -62,7 +62,7 @@ const ProfileDetailsScreen = ({ navigation }) => {
   const remoteAvatar = user?.profile_image
     ? String(user.profile_image).startsWith('http')
       ? user.profile_image
-      : `${BASE_URL}${String(user.profile_image).replace(/^\//, '')}`
+      : `${getBaseUrl()}${String(user.profile_image).replace(/^\//, '')}`
     : null;
   const avatarUri = imageUri?.uri || remoteAvatar;
 

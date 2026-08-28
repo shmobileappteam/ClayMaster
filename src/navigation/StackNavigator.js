@@ -14,6 +14,7 @@ import {
   NotificationScreen,
   ProfileDetailsScreen,
   SettingsScreen,
+  DeveloperScreen,
   ResetPasswordScreen,
   SavedScoredcardSuccessScreen,
   ScorecardDetailsScreen,
@@ -155,6 +156,7 @@ const StackNavigator = () => {
       <Stack.Screen name="ScorecardDetailsScreen" component={ScorecardDetailsScreen} />
       <Stack.Screen name="ProfileDetailsScreen" component={ProfileDetailsScreen} />
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="DeveloperScreen" component={DeveloperScreen} />
       <Stack.Screen name="ChangePasswordScreen" component={ChangePasswordScreen} />
       <Stack.Screen name="DeleteAccountScreen" component={DeleteAccountScreen} />
       <Stack.Screen name="AboutUsScreen" component={AboutUsScreen} />

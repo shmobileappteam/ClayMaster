@@ -15,7 +15,7 @@ import Sizer from '../../helpers/Sizer';
 import { AppIconSvg, AppLogoSvg } from '../../assets/svgs';
 import SlideInView from '../../animations/SlideView';
 import { useSelector } from 'react-redux';
-import { BASE_URL } from '../../api/endpoints';
+import { getBaseUrl } from '../../api/endpoints';
 
 const APP_BAR_SIDE = Sizer.hSize(48);
 
@@ -71,7 +71,7 @@ const Header = ({
                   <View style={styles.avatarRing}>
                     <Avatar.Image
                       source={{
-                        uri: `${BASE_URL}${user?.profile_image}`,
+                        uri: `${getBaseUrl()}${user?.profile_image}`,
                       }}
                       size={Sizer.hSize(48)}
                       style={{ backgroundColor: COLORS.orange400 }}
