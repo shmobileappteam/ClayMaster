@@ -19,6 +19,7 @@ import ScorecardDetailsScreen from './Main/Score/ScorecardDetailsScreen';
 import ProfileDetailsScreen from './Main/Setting/ProfileDetailsScreen';
 import ProfileScreen from './Main/Setting/ProfileScreen';
 import SettingsScreen from './Main/Setting/SettingsScreen';
+import DeveloperScreen from './Main/Setting/DeveloperScreen';
 import ChangePasswordScreen from './Main/Setting/ChangePasswordScreen';
 import DeleteAccountScreen from './Main/Setting/DeleteAccountScreen';
 import AboutUsScreen from './Main/Setting/AboutUsScreen';
@@ -94,6 +95,7 @@ export {
   ProfileDetailsScreen,
   ProfileScreen,
   SettingsScreen,
+  DeveloperScreen,
   ChangePasswordScreen,
   DeleteAccountScreen,
   AboutUsScreen,

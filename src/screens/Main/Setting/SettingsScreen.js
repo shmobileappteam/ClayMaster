@@ -17,6 +17,8 @@ import {
   SCORING_LOCK_OPTIONS,
   setScoringLockIdleMs,
 } from '../../../utils/scoringLockSettings';
+import { APP_VERSION, getApiEnv, isBetaEnv } from '../../../utils/apiEnvironment';
+import useSecretGate from '../../../hooks/useSecretGate';
 
 /** ClayMaster-App-UI `SettingsPage.tsx` */
 const OPTIONS = [
@@ -44,6 +46,12 @@ const SettingsScreen = ({ navigation }) => {
     [subscriptionEnabled],
   );
   const [lockIdleMs, setLockIdleMs] = useState(getScoringLockIdleMs);
+
+  // Hidden entry to Developer Options — tap the version line 7x. Nothing in the
+  // UI advertises it; a normal user only ever sees the version string.
+  const { registerTap, remaining } = useSecretGate({
+    onUnlock: () => navigateFromTabToStack(navigation, 'DeveloperScreen'),
+  });
 
   const onSelectLock = value => {
     setScoringLockIdleMs(value);
@@ -155,6 +163,18 @@ const SettingsScreen = ({ navigation }) => {
             </TouchableOpacity>
           ))}
         </View>
+
+        <TouchableOpacity
+          onPress={registerTap}
+          activeOpacity={1}
+          style={styles.versionRow}
+        >
+          <Typography size={12} color={COLORS.textSecondary} textAlign="center">
+            App Version {APP_VERSION}
+            {isBetaEnv() ? ` · ${getApiEnv().label}` : ''}
+            {remaining != null ? `  (${remaining})` : ''}
+          </Typography>
+        </TouchableOpacity>
       </ScrollView>
     </Container>
   );
@@ -203,5 +223,9 @@ const styles = StyleSheet.create({
   },
   menuIconDanger: {
     backgroundColor: 'rgba(220, 38, 38, 0.1)',
+  },
+  versionRow: {
+    marginTop: Sizer.vSize(28),
+    paddingVertical: Sizer.vSize(10),
   },
 });

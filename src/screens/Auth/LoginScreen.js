@@ -22,11 +22,20 @@ import {
   ensureSubscriptionConfig,
   getSubscriptionEnabledFromStore,
 } from '../../api/subscriptionConfig';
+// import { getApiEnv, isBetaEnv } from '../../utils/apiEnvironment';
+import useSecretGate from '../../hooks/useSecretGate';
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(false);
+
+  // Second hidden entry to Developer Options — tap the title 7x. Settings is
+  // behind login, so without this a tester whose account only exists on beta
+  // could never reach the environment switch.
+  const { registerTap } = useSecretGate({
+    onUnlock: () => navigation.navigate('DeveloperScreen'),
+  });
 
   // Login Mutation:
   const { mutateAsync: requestLogin, isPending } = useCustomMutation({
@@ -76,6 +85,8 @@ const LoginScreen = ({ navigation }) => {
           textAlign="center"
           mT={52}
           fFamily="barlowBoldItalic700"
+          onPress={registerTap}
+          suppressHighlighting
         >
           Welcome Back!{' '}
         </Typography>
@@ -83,6 +94,18 @@ const LoginScreen = ({ navigation }) => {
         <Typography size={16} textAlign="center" color={COLORS.black200} mT={8}>
           Sign in to continue{' '}
         </Typography>
+
+        {/* Environment / tap-countdown indicator — intentionally hidden so the
+            login screen shows no extra text at all. The 7-tap gate on the title
+            above still works silently. Uncomment (with the import at the top) to
+            surface it again.
+
+        {(isBetaEnv() || remaining != null) && (
+          <Typography size={12} textAlign="center" color={COLORS.black200} mT={6}>
+            {isBetaEnv() ? getApiEnv().label : ''}
+            {remaining != null ? ` (${remaining})` : ''}
+          </Typography>
+        )} */}
 
         <FormController
           initialValues={{

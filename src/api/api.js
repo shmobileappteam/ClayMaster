@@ -2,7 +2,7 @@ import axios from 'axios';
 import { MMKV } from 'react-native-mmkv';
 import { QueryClient } from '@tanstack/react-query';
 //----
-import { API_DOMAIN } from './endpoints';
+import { getApiDomain } from './endpoints';
 import { showMessage } from '../utils';
 
 import { AUTH_APIS_DISABLED, KEYS } from '../constants';
@@ -33,11 +33,14 @@ export const queryClient = new QueryClient({
 export const storage = new MMKV();
 
 const api = axios.create({
-  baseURL: API_DOMAIN,
+  baseURL: getApiDomain(),
 });
 
 api.interceptors.request.use(
   async config => {
+    // Re-read every request: Developer Options can switch beta/live at runtime.
+    config.baseURL = getApiDomain();
+
     // const token = await AsyncStorage.getItem(KEYS.ACCESS_TOKEN);
     const token = storage.getString(KEYS.ACCESS_TOKEN);
     // console.log('🚀 ~ token:', token);

@@ -1,6 +1,6 @@
 /** Forum / Community UI helpers — API mappers (no dummy posts). */
 
-import { BASE_URL } from '../api/endpoints';
+import { getBaseUrl } from '../api/endpoints';
 
 export const getInitials = name =>
   (name || '')
@@ -13,7 +13,7 @@ export const getInitials = name =>
 
 /**
  * API often returns relative paths like `storage/images/profile/….JPG`.
- * Prefix with BASE_URL (same as Profile / Header).
+ * Prefix with the active base URL (same as Profile / Header).
  */
 export const resolveMediaUrl = path => {
   if (!path || typeof path !== 'string') return null;
@@ -27,7 +27,8 @@ export const resolveMediaUrl = path => {
   ) {
     return trimmed;
   }
-  const base = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
+  const baseUrl = getBaseUrl();
+  const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
   return `${base}${trimmed.replace(/^\//, '')}`;
 };
 

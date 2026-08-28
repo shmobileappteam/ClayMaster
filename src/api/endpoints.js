@@ -1,9 +1,6 @@
-// ✅ Base URLs
-export const BASE_URL = __DEV__
-  ? 'https://claymaster.net/beta/'
-  : 'https://claymaster.net/beta/';
-
-export const API_DOMAIN = `${BASE_URL}api/`;
+// ✅ Base URLs — resolved at runtime so the hidden Developer Options screen can
+// point a release build at beta. See `utils/apiEnvironment`.
+export { getBaseUrl, getApiDomain } from '../utils/apiEnvironment';
 
 /** Country State City API root */
 export const CSC_DOMAIN = 'https://api.countrystatecity.in/v1/';
